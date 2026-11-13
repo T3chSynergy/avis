@@ -1,0 +1,19 @@
+@page
+@model Avis.Web.Pages.Auftraege.IndexModel
+@{
+    ViewData["Title"] = "Alle Aufträge";
+}
+<h1>Alle Aufträge</h1>
+
+<nav class="filter" aria-label="Status">
+    <a asp-page="Index" asp-route-status="aktiv" aria-current="@(Model.Status == "aktiv" ? "page" : null)">Offen und in Bearbeitung</a>
+    <a asp-page="Index" asp-route-status="offen" aria-current="@(Model.Status == "offen" ? "page" : null)">Offen</a>
+    <a asp-page="Index" asp-route-status="bearbeitung" aria-current="@(Model.Status == "bearbeitung" ? "page" : null)">In Bearbeitung</a>
+    <a asp-page="Index" asp-route-status="abgeschlossen" aria-current="@(Model.Status == "abgeschlossen" ? "page" : null)">Abgeschlossen</a>
+</nav>
+
+<partial name="_Auftragsliste" model="Model.Auftraege" />
+@if (Model.Gekuerzt)
+{
+    <p class="erklaerung">Es werden die ersten @IndexModel.Hoechstzahl Aufträge angezeigt.</p>
+}

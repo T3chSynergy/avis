@@ -1,0 +1,52 @@
+@model IReadOnlyList<Auftrag>
+@if (Model.Count == 0)
+{
+    <p class="leer">Keine Aufträge.</p>
+}
+else
+{
+    <table class="liste">
+        <thead>
+            <tr>
+                <th scope="col">Nr.</th>
+                <th scope="col">Prio</th>
+                <th scope="col">Betreff</th>
+                <th scope="col">Kunde</th>
+                <th scope="col">Gruppe</th>
+                <th scope="col">Bearbeiter</th>
+                <th scope="col">Termin</th>
+                <th scope="col">Erstellt</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model)
+            {
+                <tr>
+                    <td>@a.Id</td>
+                    <td><span class="prio prio-@a.Prioritaet" title="Dringlichkeit @a.Dringlichkeit.Text(), Wichtigkeit @a.Wichtigkeit.Text()">P@(a.Prioritaet)</span></td>
+                    <td>
+                        <a asp-page="/Auftraege/Details" asp-route-id="@a.Id">@a.Betreff</a>
+                        @if (a.BevorzugterBearbeiter is not null && a.Status == AuftragStatus.Offen)
+                        {
+                            <span class="hinweis @(a.BevorzugterBearbeiterId == User.BenutzerId() ? "mich" : "")">für @a.BevorzugterBearbeiter.Name</span>
+                        }
+                    </td>
+                    <td>@a.Kunde.Name</td>
+                    <td>@a.Gruppe.Name</td>
+                    <td>
+                        @if (a.Status == AuftragStatus.Abgeschlossen)
+                        {
+                            <span class="status">abgeschlossen</span>
+                        }
+                        else
+                        {
+                            @(a.Bearbeiter?.Name ?? "–")
+                        }
+                    </td>
+                    <td>@(a.Termin?.ToString("dd.MM.yyyy") ?? "")</td>
+                    <td>@Ortszeit.Anzeigen(a.ErstelltAm)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

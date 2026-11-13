@@ -1,0 +1,16 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Meine Aufträge";
+}
+<h1>Meine Aufträge</h1>
+
+<h2>Bei mir in Bearbeitung</h2>
+<partial name="_Auftragsliste" model="Model.InBearbeitung" />
+
+@if (Model.FuerMich.Count > 0)
+{
+    <h2>Für mich vorgemerkt</h2>
+    <p class="erklaerung">Diese Aufträge liegen offen in einer Gruppe und nennen dich als bevorzugten Bearbeiter.</p>
+    <partial name="_Auftragsliste" model="Model.FuerMich" />
+}

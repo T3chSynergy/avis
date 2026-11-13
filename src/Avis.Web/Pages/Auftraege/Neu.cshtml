@@ -1,0 +1,112 @@
+@page
+@model Avis.Web.Pages.Auftraege.NeuModel
+@{
+    ViewData["Title"] = "Auftrag erfassen";
+}
+<h1>Auftrag erfassen</h1>
+
+<form method="post" class="formular">
+    <div asp-validation-summary="ModelOnly" class="meldung fehler"></div>
+
+    <fieldset>
+        <legend>Kunde</legend>
+        <p class="erklaerung">Gibt es zur E-Mail-Adresse schon einen Kunden, wird der Auftrag ihm zugeordnet. Sonst wird der Kunde angelegt.</p>
+        <div class="reihe">
+            <div class="feld">
+                <label asp-for="Eingabe.KundeName">Name</label>
+                <input asp-for="Eingabe.KundeName" autocomplete="off" />
+                <span asp-validation-for="Eingabe.KundeName" class="feldfehler"></span>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.KundeEmail">E-Mail</label>
+                <input asp-for="Eingabe.KundeEmail" type="email" autocomplete="off" />
+                <span asp-validation-for="Eingabe.KundeEmail" class="feldfehler"></span>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.KundeTelefon">Telefon</label>
+                <input asp-for="Eingabe.KundeTelefon" autocomplete="off" />
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Auftrag</legend>
+        <div class="feld">
+            <label asp-for="Eingabe.Betreff">Betreff</label>
+            <input asp-for="Eingabe.Betreff" />
+            <span asp-validation-for="Eingabe.Betreff" class="feldfehler"></span>
+        </div>
+        <div class="feld">
+            <label asp-for="Eingabe.Beschreibung">Beschreibung</label>
+            <textarea asp-for="Eingabe.Beschreibung" rows="6"></textarea>
+            <span asp-validation-for="Eingabe.Beschreibung" class="feldfehler"></span>
+        </div>
+        <div class="reihe">
+            <div class="feld">
+                <label asp-for="Eingabe.Eingang">Eingang</label>
+                <select asp-for="Eingabe.Eingang">
+                    <option value="@Eingang.Telefon">Telefon</option>
+                    <option value="@Eingang.EMail">E-Mail</option>
+                    <option value="@Eingang.Web">Web</option>
+                </select>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.KategorieId">Kategorie</label>
+                <select asp-for="Eingabe.KategorieId" asp-items="Model.Kategorien">
+                    <option value="">–</option>
+                </select>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.StandortId">Standort</label>
+                <select asp-for="Eingabe.StandortId" asp-items="Model.Standorte">
+                    <option value="">–</option>
+                </select>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.Geraet">Gerät</label>
+                <input asp-for="Eingabe.Geraet" />
+            </div>
+        </div>
+        <div class="reihe">
+            <div class="feld">
+                <label asp-for="Eingabe.Dringlichkeit">Dringlichkeit</label>
+                <select asp-for="Eingabe.Dringlichkeit">
+                    <option value="@Stufe.Niedrig">niedrig</option>
+                    <option value="@Stufe.Mittel">mittel</option>
+                    <option value="@Stufe.Hoch">hoch</option>
+                </select>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.Wichtigkeit">Wichtigkeit</label>
+                <select asp-for="Eingabe.Wichtigkeit">
+                    <option value="@Stufe.Niedrig">niedrig</option>
+                    <option value="@Stufe.Mittel">mittel</option>
+                    <option value="@Stufe.Hoch">hoch</option>
+                </select>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.Termin">Termin</label>
+                <input asp-for="Eingabe.Termin" type="date" />
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Zuordnung</legend>
+        <div class="reihe">
+            <div class="feld">
+                <label asp-for="Eingabe.GruppeId">Gruppe</label>
+                <select asp-for="Eingabe.GruppeId" asp-items="Model.Gruppen"></select>
+            </div>
+            <div class="feld ankreuz">
+                <input asp-for="Eingabe.SofortUebernehmen" />
+                <label asp-for="Eingabe.SofortUebernehmen">Ich übernehme den Auftrag sofort</label>
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="knoepfe">
+        <button type="submit" class="haupt">Auftrag erfassen</button>
+        <a asp-page="/Index">Abbrechen</a>
+    </div>
+</form>

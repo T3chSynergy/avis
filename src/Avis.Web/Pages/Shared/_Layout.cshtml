@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] – AVIS</title>
+    <link rel="stylesheet" href="~/css/avis.css" asp-append-version="true" />
+</head>
+<body>
+    <a class="sprung" href="#inhalt">Zum Inhalt</a>
+    <header class="kopf">
+        <a class="marke" asp-page="/Index">AVIS</a>
+        @if (User.IstBearbeiter())
+        {
+            <nav aria-label="Hauptnavigation">
+                <a asp-page="/Index">Meine Aufträge</a>
+                <a asp-page="/Gruppen/Index">Gruppen</a>
+                <a asp-page="/Auftraege/Index">Alle Aufträge</a>
+                <a asp-page="/Auftraege/Neu">Auftrag erfassen</a>
+            </nav>
+        }
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="konto">
+                <span>@User.Anzeigename()</span>
+                @if (User.IstBearbeiter())
+                {
+                    <a asp-page="/Gruppen/Meine">Meine Gruppen</a>
+                }
+                @if (ViewData["Testanmeldung"] as bool? == true)
+                {
+                    <a asp-page="/Anmeldung">Benutzer wechseln</a>
+                }
+            </div>
+        }
+    </header>
+    <main id="inhalt">
+        @if (TempData["Meldung"] is string meldung)
+        {
+            <p class="meldung" role="status">@meldung</p>
+        }
+        @if (TempData["Fehler"] is string fehler)
+        {
+            <p class="meldung fehler" role="alert">@fehler</p>
+        }
+        @RenderBody()
+    </main>
+</body>
+</html>

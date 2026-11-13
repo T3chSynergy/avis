@@ -1,6 +1,6 @@
 # AVIS – Konzept
 
-Stand: 13.11.2026 · Status: Entwurf, Technik noch nicht entschieden
+Stand: 13.11.2026 · Status: Entwurf
 
 AVIS (Auftrags-, Verfolgungs- und Informationssystem) ist das Ticketsystem der
 IT. Es ersetzt die Jira-Lösung und knüpft an das frühere, in Classic ASP
@@ -206,29 +206,35 @@ Mailsystem ist Exchange.
 
 ## 8. Technik
 
-Noch nicht entschieden. Fest steht unabhängig von der Sprache:
+| Baustein | Entscheidung |
+|---|---|
+| Anwendung | ASP.NET Core mit Razor Pages auf .NET 10 (Langzeit-Support) |
+| Betrieb | Windows Server mit IIS |
+| Anmeldung | Windows-Anmeldung über Active Directory, ohne Passworteingabe |
+| Datenbank | SQLite, Zugriff über Entity Framework Core |
+| Mail | Exchange |
 
-- Seiten werden auf dem Server erzeugt. Kein separates JavaScript-Frontend mit
-  eigener Build-Kette und API-Schicht, für Listen und Formulare ist das unnötig.
-- Datenbankzugriff über eine Abstraktionsschicht, damit die Datenbank
-  austauschbar bleibt.
+Grundsätze:
+
+- Seiten werden auf dem Server erzeugt. Es gibt kein separates
+  JavaScript-Frontend mit eigener Build-Kette und API-Schicht.
+- AVIS bringt keine fremden Oberflächenbibliotheken mit, das Stylesheet ist
+  selbst geschrieben.
 - Anhänge liegen im Dateisystem, nicht in der Datenbank.
+- Die Rollen (Bearbeiter, Administrator) stehen in der Benutzertabelle von
+  AVIS. Active Directory liefert nur, wer angemeldet ist.
 
-Zur Wahl stehen:
+### Späterer Wechsel zu SQL Server
 
-| | ASP.NET Core (Razor Pages) | Python (Django) |
-|---|---|---|
-| Betrieb auf Windows Server / IIS | nativ | möglich, aber umständlicher |
-| Betrieb auf Linux | möglich | nativ |
-| Anmeldung ohne Passwort über Active Directory | eingebaut | über vorgeschalteten Webserver oder LDAP |
-| Verwaltungsoberfläche für Stammdaten | selbst zu bauen | mitgeliefert |
-| Einstieg für gelegentliche Pflege | höher | niedriger |
+Ein Wechsel ist möglich und vorbereitet:
 
-Die Entscheidung hängt an drei Punkten: auf welchem Server AVIS läuft, wie sich
-die Benutzer anmelden sollen und wer es künftig pflegt.
-
-SQLite reicht für die Last aus. Ein Datenbankserver lohnt sich nur, wenn es
-dafür ohnehin einen gesicherten Betrieb im Haus gibt.
+- Das Datenmodell nutzt keine Besonderheiten von SQLite. Zeitpunkte liegen in
+  UTC vor, alle Textfelder außer Beschreibung und Verlaufstext haben eine
+  Höchstlänge, Fremdschlüssel löschen nichts mit.
+- Für den Wechsel wird der Datenbankanbieter ausgetauscht und der Satz der
+  Migrationen für SQL Server neu erzeugt. Die Daten werden einmalig übertragen.
+- Die Suche verhält sich bei Groß- und Kleinschreibung je nach Datenbank
+  unterschiedlich. Das ist beim Wechsel zu prüfen.
 
 ## 9. Ausbaustufen
 
@@ -241,8 +247,8 @@ dafür ohnehin einen gesicherten Betrieb im Haus gibt.
 
 ## 10. Offene Punkte
 
-- Server: Windows oder Linux
-- Anmeldung: automatisch über Active Directory oder eigenes Login
 - Exchange: im Haus oder Exchange Online, und welcher Zugriff auf das
   Hotline-Postfach freigeschaltet ist
-- Technik gemäß Abschnitt 8
+- Anzeigename und E-Mail-Adresse neuer Benutzer: Die Windows-Anmeldung liefert
+  nur den Anmeldenamen. Die übrigen Angaben müssen aus dem Active Directory
+  gelesen oder von Hand gepflegt werden.

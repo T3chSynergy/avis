@@ -1,0 +1,136 @@
+@page "/Auftraege/{id:int}"
+@model Avis.Web.Pages.Auftraege.DetailsModel
+@{
+    var a = Model.Auftrag;
+    ViewData["Title"] = $"Auftrag {a.Id}";
+    var ich = User.BenutzerId();
+    var meiner = a.BearbeiterId == ich;
+}
+<p class="pfad">Auftrag @a.Id</p>
+<h1>@a.Betreff</h1>
+
+<div class="zustand">
+    <span class="prio prio-@a.Prioritaet">P@(a.Prioritaet)</span>
+    <span class="status status-@a.Status">@a.Status.Text()</span>
+    <span>
+        Gruppe <strong>@a.Gruppe.Name</strong>@if (a.Status == AuftragStatus.InBearbeitung)
+        {<text>, bei <strong>@a.Bearbeiter!.Name</strong></text>}
+        @if (a.Status == AuftragStatus.Offen && a.BevorzugterBearbeiter is not null)
+        {<text>, bevorzugt an <strong>@a.BevorzugterBearbeiter.Name</strong></text>}
+    </span>
+</div>
+
+<div class="spalten">
+    <section aria-labelledby="h-auftrag">
+        <h2 id="h-auftrag">Auftrag</h2>
+        <p class="text">@a.Beschreibung</p>
+        <dl class="angaben">
+            <dt>Kunde</dt>
+            <dd>
+                @a.Kunde.Name
+                @if (a.Kunde.Email is not null) {<text> · <a href="mailto:@a.Kunde.Email">@a.Kunde.Email</a></text>}
+                @if (a.Kunde.Telefon is not null) {<text> · Tel. @a.Kunde.Telefon</text>}
+            </dd>
+            <dt>Dringlichkeit</dt>
+            <dd>@a.Dringlichkeit.Text()</dd>
+            <dt>Wichtigkeit</dt>
+            <dd>@a.Wichtigkeit.Text()</dd>
+            <dt>Termin</dt>
+            <dd>@(a.Termin?.ToString("dd.MM.yyyy") ?? "–")</dd>
+            <dt>Kategorie</dt>
+            <dd>@(a.Kategorie?.Name ?? "–")</dd>
+            <dt>Standort</dt>
+            <dd>@(a.Standort?.Name ?? "–")</dd>
+            <dt>Gerät</dt>
+            <dd>@(a.Geraet ?? "–")</dd>
+            <dt>Eingang</dt>
+            <dd>@a.Eingang.Text(), erfasst von @a.ErfasstVon.Name am @Ortszeit.Anzeigen(a.ErstelltAm)</dd>
+        </dl>
+
+        <h2>Verlauf</h2>
+        <ol class="verlauf">
+            @foreach (var v in a.Verlauf.OrderBy(v => v.Zeitpunkt).ThenBy(v => v.Id))
+            {
+                <li class="@(v.FuerKundenSichtbar ? "" : "intern")">
+                    <div class="kopfzeile">
+                        <strong>@v.Art.Text()</strong>
+                        <span>@v.Benutzer.Name · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
+                        @if (!v.FuerKundenSichtbar) { <span class="hinweis">intern</span> }
+                    </div>
+                    @if (v.Beschreibung is not null) { <p>@v.Beschreibung</p> }
+                    @if (v.Text is not null) { <p class="text">@v.Text</p> }
+                </li>
+            }
+        </ol>
+    </section>
+
+    <section class="aktionen" aria-labelledby="h-aktionen">
+        <h2 id="h-aktionen">Aktionen</h2>
+
+        @if (a.Status == AuftragStatus.Abgeschlossen)
+        {
+            <form method="post" asp-page-handler="WiederOeffnen">
+                <input type="hidden" name="version" value="@a.Version" />
+                <h3>Wieder öffnen</h3>
+                <label for="oeffnen-text">Grund (optional)</label>
+                <textarea id="oeffnen-text" name="text" rows="2"></textarea>
+                <button type="submit">Wieder öffnen</button>
+            </form>
+        }
+        else
+        {
+            @if (!meiner)
+            {
+                <form method="post" asp-page-handler="Uebernehmen">
+                    <input type="hidden" name="version" value="@a.Version" />
+                    <button type="submit" class="haupt">
+                        @(a.Status == AuftragStatus.Offen ? "Übernehmen" : $"Von {a.Bearbeiter!.Name} übernehmen")
+                    </button>
+                </form>
+            }
+
+            <form method="post" asp-page-handler="Weiterleiten">
+                <input type="hidden" name="version" value="@a.Version" />
+                <h3>Weiterleiten</h3>
+                <label for="ziel">An Gruppe</label>
+                <select id="ziel" name="gruppeId" asp-items="Model.Gruppen" required>
+                    <option value="">Bitte wählen</option>
+                </select>
+                <label for="bevorzugt">Bevorzugter Bearbeiter (optional)</label>
+                <select id="bevorzugt" name="bevorzugtId" asp-items="Model.Bearbeiter">
+                    <option value="">–</option>
+                </select>
+                <label for="weiter-text">Hinweis an die Gruppe (intern, optional)</label>
+                <textarea id="weiter-text" name="text" rows="2"></textarea>
+                <button type="submit">Weiterleiten</button>
+            </form>
+
+            <form method="post" asp-page-handler="NachrichtAnKunden">
+                <input type="hidden" name="version" value="@a.Version" />
+                <h3>Nachricht an den Kunden</h3>
+                <label for="kunde-text">Der Kunde sieht diesen Text.</label>
+                <textarea id="kunde-text" name="text" rows="3" required></textarea>
+                <button type="submit">An den Kunden senden</button>
+            </form>
+
+            @if (meiner)
+            {
+                <form method="post" asp-page-handler="Abschliessen">
+                    <input type="hidden" name="version" value="@a.Version" />
+                    <h3>Abschließen</h3>
+                    <label for="abschluss-text">Abschlusstext für den Kunden</label>
+                    <textarea id="abschluss-text" name="text" rows="3" required></textarea>
+                    <button type="submit" class="haupt">Abschließen</button>
+                </form>
+            }
+        }
+
+        <form method="post" asp-page-handler="InternerKommentar" class="intern">
+            <input type="hidden" name="version" value="@a.Version" />
+            <h3>Interner Kommentar</h3>
+            <label for="intern-text">Der Kunde sieht diesen Text nicht.</label>
+            <textarea id="intern-text" name="text" rows="3" required></textarea>
+            <button type="submit">Intern speichern</button>
+        </form>
+    </section>
+</div>
