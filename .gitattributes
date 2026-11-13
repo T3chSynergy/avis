@@ -1,0 +1,6 @@
+# Textdateien haben überall dieselben Zeilenenden, auch unter Windows.
+# Sonst enthielten mehrzeilige Texte im Code je nach Rechner andere Zeichen.
+* text=auto eol=lf
+
+*.ico binary
+*.png binary

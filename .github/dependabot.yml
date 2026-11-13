@@ -1,6 +1,6 @@
 # Dependabot schlägt Aktualisierungen der NuGet-Pakete, des Werkzeugs
-# dotnet-ef und des .NET-SDK vor: montags früh, zusammengehörige Pakete in
-# einem gemeinsamen Pull Request.
+# dotnet-ef, des .NET-SDK und der Aktionen in den Workflows vor: montags
+# früh, zusammengehörige Pakete in einem gemeinsamen Pull Request.
 #
 # AVIS bleibt auf .NET 10 (LTS). Den Sprung auf die nächste Hauptversion von
 # .NET und der Pakete, die an sie gebunden sind, schlägt Dependabot deshalb
@@ -49,3 +49,15 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+
+  # Die Aktionen in den Workflows unter .github/workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    groups:
+      actions:
+        patterns: ["*"]
