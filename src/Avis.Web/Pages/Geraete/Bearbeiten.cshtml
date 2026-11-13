@@ -1,0 +1,67 @@
+@page "/Geraete/Bearbeiten/{id:int?}"
+@model Avis.Web.Pages.Geraete.BearbeitenModel
+@{
+    ViewData["Title"] = Model.Id is null ? "Gerät anlegen" : "Gerät bearbeiten";
+}
+<p class="pfad"><a asp-page="Index">Geräte</a></p>
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" class="formular">
+    <button type="submit" class="unsichtbar" tabindex="-1" aria-hidden="true">Speichern</button>
+    <div asp-validation-summary="ModelOnly" class="meldung fehler"></div>
+
+    <fieldset>
+        <legend>Gerät</legend>
+        <div class="reihe">
+            <div class="feld">
+                <label asp-for="Eingabe.Inventarnummer">Inventarnummer</label>
+                <input asp-for="Eingabe.Inventarnummer" autocomplete="off" />
+                <span asp-validation-for="Eingabe.Inventarnummer" class="feldfehler"></span>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.Bezeichnung">Bezeichnung</label>
+                <input asp-for="Eingabe.Bezeichnung" autocomplete="off" />
+                <span asp-validation-for="Eingabe.Bezeichnung" class="feldfehler"></span>
+            </div>
+        </div>
+        <div class="reihe">
+            <div class="feld">
+                <label asp-for="Eingabe.Typ">Typ (optional)</label>
+                <input asp-for="Eingabe.Typ" autocomplete="off" />
+                <span asp-validation-for="Eingabe.Typ" class="feldfehler"></span>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.StandortId">Standort</label>
+                <select asp-for="Eingabe.StandortId" asp-items="Model.Standorte">
+                    <option value="">–</option>
+                </select>
+                <span asp-validation-for="Eingabe.StandortId" class="feldfehler"></span>
+            </div>
+        </div>
+        <div class="ankreuz">
+            <input asp-for="Eingabe.Aktiv" />
+            <label asp-for="Eingabe.Aktiv">In Betrieb. Ausgemusterte Geräte lassen sich nicht mehr neu verknüpfen.</label>
+        </div>
+    </fieldset>
+
+    <fieldset class="kunde">
+        <legend>Nutzer</legend>
+        <partial name="_Kundenauswahl" model="Model.Kundenauswahl" />
+    </fieldset>
+
+    <div class="knoepfe">
+        <button type="submit" class="haupt">Speichern</button>
+        @if (Model.Id is null)
+        {
+            <a asp-page="Index">Abbrechen</a>
+        }
+        else
+        {
+            <a asp-page="Details" asp-route-id="@Model.Id">Abbrechen</a>
+        }
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/kundensuche.js" asp-append-version="true"></script>
+}

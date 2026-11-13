@@ -1,0 +1,17 @@
+@page
+@model Avis.Web.Pages.Meine.IndexModel
+@{
+    ViewData["Title"] = "Meine Aufträge";
+}
+<h1>Meine Aufträge</h1>
+<p><a class="knopf haupt" asp-page="Neu">Neuer Auftrag</a></p>
+
+<h2>Laufend</h2>
+<partial name="_MeineListe" model="Model.Laufend" />
+
+<h2>Abgeschlossen</h2>
+<partial name="_MeineListe" model="Model.Abgeschlossen" />
+@if (Model.Gekuerzt)
+{
+    <p class="erklaerung">Es werden die letzten @IndexModel.Hoechstzahl abgeschlossenen Aufträge angezeigt.</p>
+}

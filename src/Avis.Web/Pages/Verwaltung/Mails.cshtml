@@ -1,0 +1,56 @@
+@page
+@model MailsModel
+@{
+    ViewData["Title"] = "Mails";
+}
+<h1>Verwaltung</h1>
+<partial name="_Bereiche" />
+<h2>Mails</h2>
+<p class="erklaerung">
+    Mailversand: <strong>@Model.Art</strong>.
+    Die letzten @MailsModel.Hoechstzahl Benachrichtigungen. Eine Mail wird bis zu @Avis.Web.Mail.Benachrichtigungsversand.Hoechstversuche Mal versucht.
+</p>
+
+@if (Model.Mails.Count == 0)
+{
+    <p class="leer">Noch keine Benachrichtigungen.</p>
+}
+else
+{
+    <table class="liste">
+        <thead>
+            <tr>
+                <th scope="col">Zeit</th>
+                <th scope="col">Auftrag</th>
+                <th scope="col">Anlass</th>
+                <th scope="col">An</th>
+                <th scope="col">Status</th>
+                <th scope="col">Versuche</th>
+                <th scope="col">Hinweis</th>
+                <th scope="col"><span class="unsichtbar">Aktion</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model.Mails)
+            {
+                <tr>
+                    <td>@Ortszeit.Anzeigen(m.ErstelltAm)</td>
+                    <td><a asp-page="/Auftraege/Details" asp-route-id="@m.AuftragId">@m.AuftragId</a></td>
+                    <td>@m.Anlass.Text()</td>
+                    <td>@m.An</td>
+                    <td>@MailsModel.Text(m.Status)</td>
+                    <td>@m.Versuche</td>
+                    <td>@m.Hinweis</td>
+                    <td>
+                        @if (m.Status == BenachrichtigungStatus.Fehlgeschlagen)
+                        {
+                            <form method="post" asp-page-handler="Erneut" asp-route-id="@m.Id">
+                                <button type="submit">Erneut versuchen</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

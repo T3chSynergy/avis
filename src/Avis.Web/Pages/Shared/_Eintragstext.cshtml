@@ -1,0 +1,9 @@
+@model Avis.Web.Pages.Shared.Eintragstext
+@Markdowntext.AlsHtml(Model.Text, Model.Anhaenge, a => Url.Page("/Anhaenge/Index", new { id = a.Id, bild = "true" }))
+@if (Model.AnhaengeAuflisten)
+{
+    var uebrige = Model.Anhaenge
+        .Where(a => !Markdowntext.Verweist(Model.Text, a) && !Markdowntext.Verweist(Model.Verweistext, a))
+        .ToList();
+    <partial name="_Anhaenge" model="uebrige" />
+}

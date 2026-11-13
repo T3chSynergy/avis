@@ -1,0 +1,72 @@
+@model Avis.Web.Pages.Auftraege.AuftragFelder
+@{
+    var auswahl = (Avis.Web.Pages.Auftraege.AuftragAuswahl)ViewData["Auswahl"]!;
+    // Aufgeklappt, sobald dort etwas steht oder das Formular Fehler hat.
+    var weitereOffen = Model.StandortId is not null || Model.Termin is not null
+        || !string.IsNullOrWhiteSpace(Model.Geraet) || !string.IsNullOrWhiteSpace(Model.Inventarnummer)
+        || !ViewData.ModelState.IsValid;
+}
+<div class="feld">
+    <label asp-for="Betreff">Betreff</label>
+    <input asp-for="Betreff" />
+    <span asp-validation-for="Betreff" class="feldfehler"></span>
+</div>
+<div class="feld">
+    <label asp-for="Beschreibung">Beschreibung</label>
+    <textarea asp-for="Beschreibung" rows="6" data-markdown></textarea>
+    <span asp-validation-for="Beschreibung" class="feldfehler"></span>
+</div>
+<div class="reihe">
+    <div class="feld">
+        <label asp-for="Dringlichkeit">Dringlichkeit</label>
+        <select asp-for="Dringlichkeit">
+            <option value="@Stufe.Niedrig">niedrig</option>
+            <option value="@Stufe.Mittel">mittel</option>
+            <option value="@Stufe.Hoch">hoch</option>
+        </select>
+    </div>
+    <div class="feld">
+        <label asp-for="Wichtigkeit">Wichtigkeit</label>
+        <select asp-for="Wichtigkeit">
+            <option value="@Stufe.Niedrig">niedrig</option>
+            <option value="@Stufe.Mittel">mittel</option>
+            <option value="@Stufe.Hoch">hoch</option>
+        </select>
+    </div>
+    <div class="feld">
+        <label asp-for="KategorieId">Kategorie</label>
+        <select asp-for="KategorieId" asp-items="auswahl.Kategorien">
+            <option value="">–</option>
+        </select>
+        <span asp-validation-for="KategorieId" class="feldfehler"></span>
+    </div>
+</div>
+<details class="weitere" open="@weitereOffen">
+    <summary>Weitere Angaben: Standort, Gerät, Termin</summary>
+    <div class="reihe">
+        <div class="feld">
+            <label asp-for="StandortId">Standort</label>
+            <select asp-for="StandortId" asp-items="auswahl.Standorte">
+                <option value="">–</option>
+            </select>
+            <span asp-validation-for="StandortId" class="feldfehler"></span>
+        </div>
+        <div class="feld">
+            <label asp-for="Termin">Termin</label>
+            <input asp-for="Termin" type="date" />
+        </div>
+    </div>
+    <div class="reihe">
+        <div class="feld">
+            <label asp-for="Inventarnummer">Gerät aus dem Inventar (Inventarnummer)</label>
+            <input asp-for="Inventarnummer" list="geraetevorschlaege" autocomplete="off" />
+            <datalist id="geraetevorschlaege" data-url="@Url.Page("/Geraete/Vorschlaege")"></datalist>
+            <span asp-validation-for="Inventarnummer" class="feldfehler"></span>
+        </div>
+        <div class="feld">
+            <label asp-for="Geraet">Gerät (Freitext)</label>
+            <input asp-for="Geraet" />
+            <span asp-validation-for="Geraet" class="feldfehler"></span>
+        </div>
+    </div>
+</details>

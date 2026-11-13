@@ -1,0 +1,38 @@
+@page
+@model AnmeldungModel
+@{
+    ViewData["Title"] = "Testanmeldung";
+}
+<h1>Testanmeldung</h1>
+<p class="erklaerung">Diese Seite gibt es nur in der Entwicklungsumgebung. Im Betrieb erfolgt die Anmeldung über Windows.</p>
+
+<form method="post">
+    <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+    <table class="liste schmal">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Rolle</th>
+                <th scope="col"><span class="unsichtbar">Aktion</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var b in Model.Benutzer)
+            {
+                <tr>
+                    <td>@b.Name</td>
+                    <td>@(b.IstAdministrator ? "Administrator" : b.IstBearbeiter ? "Bearbeiter" : "Kunde")</td>
+                    <td><button type="submit" name="anmeldename" value="@b.Anmeldename">Als @b.Name anmelden</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="kasten">
+        <h3>Als neues Konto anmelden</h3>
+        <p class="erklaerung">Wie jemand, der AVIS zum ersten Mal öffnet. Das Konto wird dabei angelegt und hat keine Rolle.</p>
+        <label for="neu">Anmeldename</label>
+        <input id="neu" name="neu" maxlength="200" autocomplete="off" />
+        <button type="submit" name="anmeldename" value="">Anmelden</button>
+    </div>
+</form>

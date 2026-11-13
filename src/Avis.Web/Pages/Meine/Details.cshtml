@@ -1,0 +1,82 @@
+@page "/Meine/{id:int}"
+@model Avis.Web.Pages.Meine.DetailsModel
+@{
+    var a = Model.Auftrag;
+    ViewData["Title"] = $"Auftrag {a.Id}";
+}
+<p class="pfad"><a asp-page="Index">Meine Aufträge</a> · Auftrag @a.Id</p>
+<h1>@a.Betreff</h1>
+
+<div class="zustand">
+    <span class="status status-@a.Status">@a.Status.Text()</span>
+    @if (a.Status == AuftragStatus.InBearbeitung)
+    {
+        <span>bei <strong>@a.Bearbeiter!.Name</strong></span>
+    }
+    else if (a.Status == AuftragStatus.Offen)
+    {
+        <span>Der Auftrag liegt bei der IT und wartet auf einen Bearbeiter.</span>
+    }
+</div>
+
+<section aria-labelledby="h-auftrag">
+    <h2 id="h-auftrag">Auftrag</h2>
+    <partial name="_Eintragstext" model="new Avis.Web.Pages.Shared.Eintragstext(a.Beschreibung, Model.Verlauf.SelectMany(v => v.Anhaenge).ToList(), AnhaengeAuflisten: false)" />
+    <dl class="angaben">
+        <dt>Erstellt</dt>
+        <dd>@Ortszeit.Anzeigen(a.ErstelltAm)</dd>
+        <dt>Standort</dt>
+        <dd>@(a.Standort?.Name ?? "–")</dd>
+        <dt>Gerät</dt>
+        <dd>@(a.Geraet ?? "–")</dd>
+        @if (a.Termin is not null)
+        {
+            <dt>Termin</dt>
+            <dd>@a.Termin.Value.ToString("dd.MM.yyyy")</dd>
+        }
+    </dl>
+</section>
+
+<section aria-labelledby="h-verlauf">
+    <h2 id="h-verlauf">Verlauf</h2>
+    <ol class="verlauf">
+        @foreach (var v in Model.Verlauf)
+        {
+            <li>
+                <div class="kopfzeile">
+                    <strong>@DetailsModel.Titel(v.Art)</strong>
+                    <span>@(!DetailsModel.VomKunden(v.Art) ? "IT" : v.Benutzer.Anmeldename == Avis.Web.Posteingang.Mailannahme.Systemkonto ? "per E-Mail" : v.Benutzer.Name) · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
+                </div>
+                <partial name="_Eintragstext" model="new Avis.Web.Pages.Shared.Eintragstext(DetailsModel.ZeigtText(v.Art) ? v.Text : null, v.Anhaenge, Verweistext: v.Art == VerlaufArt.Erfasst ? a.Beschreibung : null)" />
+            </li>
+        }
+    </ol>
+</section>
+
+<section class="kasten breit" aria-labelledby="h-antwort">
+    @if (a.Status == AuftragStatus.Abgeschlossen)
+    {
+        <h2 id="h-antwort">Wieder öffnen</h2>
+        <form method="post" enctype="multipart/form-data">
+            <p class="erklaerung">Der Auftrag ist abgeschlossen. Besteht das Problem weiter, lässt er sich hier wieder öffnen.</p>
+            <label for="text">Was ist noch offen?</label>
+            <textarea id="text" name="text" rows="6" data-markdown>@Model.Entwurf</textarea>
+            <partial name="_Dateifeld" model='"dateien"' />
+            <button type="submit" class="haupt">Auftrag wieder öffnen</button>
+        </form>
+    }
+    else
+    {
+        <h2 id="h-antwort">Antworten</h2>
+        <form method="post" enctype="multipart/form-data">
+            <label for="text">Nachricht an die IT</label>
+            <textarea id="text" name="text" rows="6" data-markdown>@Model.Entwurf</textarea>
+            <partial name="_Dateifeld" model='"dateien"' />
+            <button type="submit" class="haupt">Absenden</button>
+        </form>
+    }
+</section>
+
+@section Scripts {
+    <script src="~/js/editor.js" asp-append-version="true"></script>
+}

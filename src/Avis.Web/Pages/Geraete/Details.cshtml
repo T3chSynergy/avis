@@ -1,0 +1,47 @@
+@page "/Geraete/{id:int}"
+@model Avis.Web.Pages.Geraete.DetailsModel
+@{
+    var g = Model.Geraet;
+    ViewData["Title"] = g.Inventarnummer;
+}
+<p class="pfad"><a asp-page="Index">Geräte</a></p>
+<h1>@g.Inventarnummer · @g.Bezeichnung</h1>
+
+<div class="spalten">
+    <section aria-labelledby="h-auftraege">
+        <h2 id="h-auftraege">Laufende Aufträge</h2>
+        <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Laufend)" />
+
+        <h2>Abgeschlossene Aufträge</h2>
+        <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Abgeschlossen)" />
+        @if (Model.Gekuerzt)
+        {
+            <p class="erklaerung">Es werden die letzten @DetailsModel.Hoechstzahl abgeschlossenen Aufträge angezeigt.</p>
+        }
+    </section>
+
+    <section class="kasten" aria-labelledby="h-angaben">
+        <h3 id="h-angaben">Angaben</h3>
+        <dl class="angaben">
+            <dt>Inventarnummer</dt>
+            <dd>@g.Inventarnummer</dd>
+            <dt>Bezeichnung</dt>
+            <dd>@g.Bezeichnung</dd>
+            <dt>Typ</dt>
+            <dd>@(g.Typ ?? "–")</dd>
+            <dt>Standort</dt>
+            <dd>@(g.Standort?.Name ?? "–")</dd>
+            <dt>Nutzer</dt>
+            <dd>
+                @if (g.Kunde is null) {<text>–</text>}
+                else { <a asp-page="/Kunden/Details" asp-route-id="@g.KundeId">@g.Kunde.Name</a> }
+            </dd>
+            <dt>Status</dt>
+            <dd>@(g.Aktiv ? "in Betrieb" : "ausgemustert")</dd>
+        </dl>
+        @if (User.IstAdministrator())
+        {
+            <p><a asp-page="Bearbeiten" asp-route-id="@g.Id">Bearbeiten</a></p>
+        }
+    </section>
+</div>

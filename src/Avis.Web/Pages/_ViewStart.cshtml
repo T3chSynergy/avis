@@ -1,0 +1,5 @@
+@inject Microsoft.Extensions.Options.IOptions<AnmeldungOptionen> Anmeldung
+@{
+    Layout = "_Layout";
+    ViewData["Testanmeldung"] = Anmeldung.Value.Art == AnmeldungOptionen.Entwicklung;
+}

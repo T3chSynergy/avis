@@ -1,0 +1,38 @@
+@page
+@model Avis.Web.Pages.Gruppen.MeineModel
+@{
+    ViewData["Title"] = "Meine Gruppen";
+}
+<h1>Meine Gruppen</h1>
+<p class="erklaerung">Trag dich in die Gruppen ein, deren Aufträge du bearbeitest oder vertrittst. In gesperrte Gruppen trägt dich der Administrator ein.</p>
+
+<table class="liste schmal">
+    <thead>
+        <tr>
+            <th scope="col">Gruppe</th>
+            <th scope="col">Mitglieder</th>
+            <th scope="col"><span class="unsichtbar">Aktion</span></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var g in Model.Gruppen)
+        {
+            <tr>
+                <td>@g.Name @if (g.IstMitglied) { <span class="hinweis mich">Mitglied</span> } @if (g.Gesperrt) { <span class="hinweis">gesperrt</span> }</td>
+                <td>@g.Mitglieder</td>
+                <td>
+                    @if (g.Gesperrt)
+                    {
+                        <span class="status">über den Administrator</span>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="@(g.IstMitglied ? "Austreten" : "Beitreten")" asp-route-id="@g.Id">
+                            <button type="submit" class="@(g.IstMitglied ? "" : "haupt")">@(g.IstMitglied ? "Austreten" : "Beitreten")</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

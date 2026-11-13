@@ -1,0 +1,359 @@
+:root {
+    --grund: #f6f7f9;
+    --flaeche: #ffffff;
+    --text: #1b2430;
+    --gedaempft: #5a6675;
+    --linie: #d8dde4;
+    /* Blau steht für alles, was man anklicken kann: Schaltflächen und Links.
+       Reine Gestaltung wie der Kopf oder Markierungen nutzt es nicht. */
+    --akzent: #1565c0;
+    --akzent-dunkel: #0e4f9c;
+    --akzent-text: #ffffff;
+    --kopf: #25303d;
+    --intern: #fff6dc;
+    --intern-linie: #d9b84a;
+    --gut: #e6f3ea;
+    --gut-linie: #4d9463;
+    --schlecht: #fbe9e7;
+    --schlecht-linie: #c0483b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--grund);
+    color: var(--text);
+    font: 15px/1.5 "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+
+a { color: var(--akzent); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 3px solid #f0a000;
+    outline-offset: 2px;
+}
+
+.sprung { position: absolute; left: -9999px; }
+.sprung:focus { left: 8px; top: 8px; background: var(--flaeche); padding: 6px 10px; z-index: 10; }
+.unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* Kopf: oben Name, Suche, die wichtigste Aktion und das Konto, darunter die Bereiche. */
+.kopf { background: var(--flaeche); border-bottom: 1px solid var(--linie); }
+.kopf-oben {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 20px;
+    padding: 10px 24px;
+    background: var(--kopf);
+    color: #fff;
+}
+.kopf .marke { color: var(--akzent-text); text-decoration: none; font-weight: 700; font-size: 20px; letter-spacing: 1px; }
+.kopf-rechts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin-left: auto; }
+
+.schnellsuche { margin: 0; flex: 0 1 380px; }
+.schnellsuche input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) { padding: 6px 10px; border: 0; }
+
+/* Die wichtigste Aktion der Seite. */
+.kopf a.neu {
+    display: inline-block; padding: 7px 16px; border-radius: 6px; border: 1px solid #6ea4ea;
+    background: var(--akzent); color: #fff; font-weight: 700; text-decoration: none; white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.kopf a.neu:hover, .kopf a.neu[aria-current="page"] { background: var(--akzent-dunkel); }
+.kopf a.neu span { font-size: 18px; line-height: 1; margin-right: 2px; }
+
+/* Konto mit Menü. Öffnet und schließt ohne Skript, das Skript schließt es zusätzlich bei Klick daneben. */
+.konto { position: relative; font-weight: 600; }
+details.konto summary { cursor: pointer; list-style: none; padding: 6px 2px; white-space: nowrap; }
+details.konto summary::-webkit-details-marker { display: none; }
+details.konto summary::after { content: "▾"; margin-left: 6px; font-size: 12px; }
+details.konto .menue {
+    position: absolute; right: 0; top: 100%; z-index: 5; min-width: 230px;
+    background: var(--flaeche); border: 1px solid var(--linie); border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 4px 0; font-weight: 400;
+}
+details.konto .menue a { display: block; padding: 7px 14px; color: var(--text); text-decoration: none; white-space: nowrap; }
+details.konto .menue a:hover, details.konto .menue a[aria-current="page"] { background: #eef1f5; }
+
+/* Die Bereiche als Reiter, der aktuelle ist unterstrichen. */
+.bereiche { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 4px; padding: 0 16px; }
+.bereiche a {
+    display: flex; align-items: center; gap: 6px; padding: 10px 10px 8px;
+    color: var(--text); text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap;
+}
+.bereiche a:hover { background: #eef1f5; }
+.bereiche a[aria-current="page"] { border-bottom-color: var(--kopf); font-weight: 700; }
+.bereiche .trenner { width: 1px; margin: 10px 8px; background: var(--linie); }
+.bereiche .zahl {
+    min-width: 22px; padding: 0 6px; border-radius: 11px; background: #e3e8ee; color: var(--gedaempft);
+    font-size: 12px; font-weight: 600; text-align: center; line-height: 20px;
+}
+.bereiche .zahl.voll { background: var(--kopf); color: #fff; }
+
+main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
+
+h1 { font-size: 24px; margin: 0 0 16px; }
+h2 { font-size: 18px; margin: 28px 0 10px; }
+h3 { font-size: 15px; margin: 0 0 8px; }
+.pfad { margin: 0; color: var(--gedaempft); }
+.erklaerung, .leer { color: var(--gedaempft); margin: 0 0 12px; }
+.anzahl {
+    display: inline-block; min-width: 24px; padding: 0 7px; margin-left: 6px;
+    border-radius: 12px; background: var(--linie); font-size: 13px; text-align: center; font-weight: 600;
+}
+
+.meldung {
+    padding: 10px 14px; margin: 0 0 16px;
+    background: var(--gut); border-left: 4px solid var(--gut-linie);
+}
+.meldung.fehler { background: var(--schlecht); border-left-color: var(--schlecht-linie); }
+.meldung ul { margin: 0; padding-left: 18px; }
+.validation-summary-valid { display: none; }
+
+table.liste {
+    width: 100%; border-collapse: collapse; background: var(--flaeche);
+    border: 1px solid var(--linie);
+}
+table.liste.schmal { max-width: 760px; }
+table.liste th, table.liste td { padding: 8px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--linie); }
+table.liste th { font-size: 13px; color: var(--gedaempft); font-weight: 600; background: #eef1f5; white-space: nowrap; }
+table.liste tbody tr:hover { background: #f3f6fa; }
+table.liste form { margin: 0; }
+
+.prio {
+    display: inline-block; min-width: 30px; padding: 1px 6px; border-radius: 4px;
+    font-weight: 700; font-size: 13px; text-align: center; border: 1px solid transparent;
+}
+.prio-1 { background: #b3261e; color: #fff; }
+.prio-2 { background: #f6d5b0; color: #5c2c00; border-color: #c9772b; }
+.prio-3 { background: #fbf0b8; color: #4d3f00; border-color: #c2a31c; }
+.prio-4 { background: #e3e8ee; color: #2c3a4a; border-color: #9aa7b6; }
+.prio-5 { background: #f1f3f5; color: #55606d; border-color: #c3cad3; }
+
+.hinweis {
+    display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px;
+    font-size: 12px; background: #e3e8ee; color: #2c3a4a; white-space: nowrap;
+}
+.hinweis.mich { background: var(--kopf); color: #fff; }
+.status { color: var(--gedaempft); }
+
+.filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.filter a {
+    padding: 4px 12px; border: 1px solid var(--linie); border-radius: 16px;
+    background: var(--flaeche); text-decoration: none;
+}
+.filter a[aria-current="page"] { background: var(--kopf); border-color: var(--kopf); color: #fff; }
+
+.zustand { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 8px; }
+.zustand .status {
+    padding: 1px 8px; border-radius: 4px; background: #e3e8ee; color: #2c3a4a; font-weight: 600; font-size: 13px;
+}
+.zustand .status-InBearbeitung { background: #d9e8fa; color: #0f3d73; }
+.zustand .status-Abgeschlossen { background: var(--gut); color: #1f5732; }
+
+.spalten { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 32px; align-items: start; }
+@media (max-width: 900px) { .spalten { grid-template-columns: minmax(0, 1fr); } }
+
+.text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 12px; }
+
+dl.angaben { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+dl.angaben dt { color: var(--gedaempft); }
+dl.angaben dd { margin: 0; overflow-wrap: anywhere; }
+
+ol.verlauf { list-style: none; margin: 0; padding: 0; }
+ol.verlauf > li {
+    background: var(--flaeche); border: 1px solid var(--linie); border-left: 4px solid #9aa7b6;
+    padding: 8px 12px; margin-bottom: 8px;
+}
+ol.verlauf > li.intern { background: var(--intern); border-left-color: var(--intern-linie); }
+ol.verlauf .kopfzeile { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+ol.verlauf .kopfzeile span { color: var(--gedaempft); font-size: 13px; }
+ol.verlauf p { margin: 4px 0 0; }
+
+form.formular fieldset {
+    background: var(--flaeche); border: 1px solid var(--linie); padding: 12px 14px; margin: 0 0 12px;
+}
+
+label { display: block; font-weight: 600; margin: 8px 0 3px; }
+h3 + label { margin-top: 0; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea {
+    width: 100%; padding: 6px 8px; font: inherit; color: inherit;
+    background: #fff; border: 1px solid #8793a1; border-radius: 4px;
+}
+textarea { resize: vertical; }
+
+/* Schaltflächen: Rahmen, runde Ecken und ein leichter Schatten. So sieht nur aus, was man drücken kann. */
+button, a.knopf, label.knopf {
+    display: inline-block; font: inherit; font-weight: 600; line-height: 1.4; padding: 7px 16px; cursor: pointer;
+    background: #fff; color: var(--text); border: 1px solid #7b8794; border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.14); text-decoration: none; white-space: nowrap;
+}
+button { margin-top: 10px; }
+label.knopf { margin: 0; }
+button:hover, a.knopf:hover, label.knopf:hover { background: #eef1f5; border-color: #5a6675; }
+button:active, a.knopf:active, label.knopf:active { box-shadow: none; transform: translateY(1px); }
+button.haupt, a.knopf.haupt, label.knopf.haupt { background: var(--akzent); border-color: var(--akzent-dunkel); color: #fff; }
+button.haupt:hover, a.knopf.haupt:hover, label.knopf.haupt:hover { background: var(--akzent-dunkel); border-color: var(--akzent-dunkel); }
+table.liste button { margin-top: 0; }
+
+form.formular { max-width: 900px; }
+form.formular legend { font-weight: 700; padding: 0 6px; }
+.reihe { display: flex; flex-wrap: wrap; gap: 0 16px; }
+.reihe .feld { flex: 1 1 180px; }
+.feld.ankreuz { display: flex; align-items: center; gap: 8px; padding-top: 26px; }
+.feld.ankreuz label { margin: 0; font-weight: 400; }
+.feldfehler { color: #a3261a; font-size: 13px; }
+.knoepfe { display: flex; align-items: center; gap: 16px; }
+.knoepfe button { margin-top: 0; }
+
+/* Verwaltung */
+.kasten {
+    background: var(--flaeche); border: 1px solid var(--linie); padding: 12px 14px; margin: 16px 0 0; max-width: 560px;
+}
+.kasten.schmal { margin-top: 0; }
+.kasten dl.angaben { margin-bottom: 8px; }
+.ankreuz { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.ankreuz label { margin: 0; font-weight: 400; }
+.kasten .erklaerung { margin: 4px 0 0; }
+.kasten .knoepfe { margin-top: 12px; }
+table.liste tr.inaktiv td, table.liste tr.inaktiv a { color: var(--gedaempft); }
+.spalten.gleich { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.spalten.gleich .kasten { margin-top: 0; max-width: none; }
+.spalten.gleich section .kasten { margin-top: 12px; }
+@media (max-width: 900px) { .spalten.gleich { grid-template-columns: minmax(0, 1fr); } }
+select:disabled, input:disabled { background: #eef1f5; color: var(--gedaempft); }
+.kasten dl.angaben { grid-template-columns: 200px minmax(0, 1fr); }
+table.liste.schmal td { vertical-align: middle; }
+
+/* Auftrag bearbeiten */
+.nebenaktion { margin-left: 10px; font-size: 14px; font-weight: 400; }
+ol.verlauf p.text { margin: 4px 0 0; }
+
+/* Kunden */
+.kundensuche, .suchzeile { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 12px; }
+.kundensuche .feld, .suchzeile .feld { flex: 1 1 260px; max-width: 520px; }
+.kundensuche button, .suchzeile button { margin-top: 0; }
+.suchzeile { margin-bottom: 16px; }
+ul.auswahl { list-style: none; margin: 10px 0 0; padding: 0; }
+ul.auswahl li { display: flex; align-items: baseline; gap: 8px; padding: 5px 8px; border-top: 1px solid var(--linie); }
+ul.auswahl li:last-child { border-bottom: 1px solid var(--linie); }
+ul.auswahl li:has(input:checked) { background: #e8f0fa; }
+ul.auswahl label { margin: 0; font-weight: 400; flex: 1; cursor: pointer; }
+#kundentreffer .erklaerung { margin: 10px 0 0; }
+.neukunde { margin-top: 10px; }
+fieldset.kunde:has(#kunde-neu:not(:checked)) .neukunde { display: none; }
+.spalten > .kasten { margin-top: 0; }
+
+/* Seiten für Kunden */
+
+
+/* Suche */
+.suchzeile .feld { flex: 0 1 240px; }
+.suchzeile .feld.breit { flex: 1 1 300px; max-width: 520px; }
+.suchzeile > a { padding-bottom: 7px; }
+
+/* Geräte */
+.spalten > section.kasten { margin-top: 0; }
+.spalten > section.kasten dl.angaben { grid-template-columns: 130px minmax(0, 1fr); }
+
+/* Anhänge */
+ul.anhaenge { list-style: none; margin: 6px 0 0; padding: 0; }
+ul.anhaenge li { padding: 1px 0 1px 18px; position: relative; overflow-wrap: anywhere; }
+ul.anhaenge li::before { content: "↓"; position: absolute; left: 2px; color: var(--gedaempft); }
+ul.anhaenge span { color: var(--gedaempft); font-size: 13px; white-space: nowrap; }
+input[type="file"] { padding: 4px; background: #fff; }
+
+/* Auftragsseite: Schaltflächen wählen, welches Formular darunter aufgeht. */
+.aktionen { margin: 24px 0 8px; }
+.aktionen .leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.aktionen .leiste form { margin: 0; }
+.aktionen .leiste button { margin-top: 0; }
+label.wahl:has(input:checked) { background: #e3e8ee; border-color: #5a6675; box-shadow: inset 0 1px 3px rgba(16, 24, 40, 0.25); }
+label.wahl.haupt:has(input:checked) { background: var(--akzent-dunkel); }
+label.wahl.intern { background: var(--intern); border-color: #b3922e; }
+label.wahl.intern:hover { background: #fbeab5; }
+label.wahl.intern:has(input:checked) { background: #f3dc94; }
+label:has(input.unsichtbar:focus-visible) { outline: 3px solid #f0a000; outline-offset: 2px; }
+
+.panel {
+    display: none; margin-top: 12px; padding: 14px 16px;
+    background: var(--flaeche); border: 1px solid #9aa7b6; border-radius: 6px;
+}
+.panel.intern { background: var(--intern); border-color: var(--intern-linie); }
+.aktionen:has(.leiste input[value="oeffnen"]:checked) .panel[data-aktion="oeffnen"],
+.aktionen:has(.leiste input[value="abschliessen"]:checked) .panel[data-aktion="abschliessen"],
+.aktionen:has(.leiste input[value="nachricht"]:checked) .panel[data-aktion="nachricht"],
+.aktionen:has(.leiste input[value="weiterleiten"]:checked) .panel[data-aktion="weiterleiten"],
+.aktionen:has(.leiste input[value="intern"]:checked) .panel[data-aktion="intern"] { display: block; }
+/* Ältere Browser ohne :has() zeigen alle Formulare untereinander. */
+@supports not selector(:has(*)) { .aktionen .panel { display: block; } }
+
+.panelkopf { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.panelkopf h3 { margin: 0 0 4px; font-size: 16px; }
+label.schliessen { margin: 0; font-weight: 400; color: var(--akzent); text-decoration: underline; cursor: pointer; }
+.panel form { margin: 0; }
+.panel textarea { min-height: 96px; }
+
+/* Angaben zum Auftrag in der Seitenspalte. */
+.spalten > aside.kasten { margin-top: 0; max-width: none; }
+aside.kasten h2 { margin: 0 0 8px; font-size: 16px; }
+aside.kasten dl.angaben { grid-template-columns: 84px minmax(0, 1fr); gap: 6px 12px; }
+.nebenlinks { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 14px 0 0; }
+h2 .nebenaktion { color: var(--gedaempft); }
+.kasten.breit { max-width: none; margin-top: 24px; }
+.kasten.breit h2 { margin-top: 0; }
+
+/* Markierungen in Listen. */
+.marke-wartet {
+    display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 10px; white-space: nowrap;
+    background: #fde4c8; color: #7a3b00; border: 1px solid #e59a4c; font-size: 12px; font-weight: 600;
+}
+.zustand .marke-wartet { margin-left: 0; font-size: 13px; }
+.termin strong { font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+.termin.ueberfaellig { color: #a3261a; font-weight: 600; }
+.termin.heute { color: #8a5a00; font-weight: 600; }
+
+/* Selten gebrauchte Felder beim Erfassen. */
+details.weitere { margin-top: 10px; }
+details.weitere summary { cursor: pointer; font-weight: 600; color: var(--akzent); padding: 4px 0; }
+
+/* Mit Markdown formatierter Text. */
+.md { overflow-wrap: anywhere; margin: 0 0 12px; }
+ol.verlauf .md { margin: 4px 0 0; }
+.md > :first-child { margin-top: 0; }
+.md > :last-child { margin-bottom: 0; }
+.md p, .md ul, .md ol, .md blockquote, .md pre { margin: 0 0 8px; }
+.md ul, .md ol { padding-left: 24px; }
+.md h1, .md h2, .md h3, .md h4, .md h5, .md h6 { font-size: 1.05em; margin: 10px 0 6px; }
+.md code { font-family: Consolas, "Cascadia Mono", Menlo, monospace; font-size: 0.92em; background: #eef1f5; padding: 1px 4px; border-radius: 3px; }
+.md pre { background: #eef1f5; padding: 8px 10px; border-radius: 4px; overflow-x: auto; }
+.md pre code { background: none; padding: 0; white-space: pre; }
+.md blockquote { border-left: 3px solid #9aa7b6; padding-left: 10px; color: var(--gedaempft); }
+.md hr { border: 0; border-top: 1px solid var(--linie); margin: 10px 0; }
+li.intern .md code, li.intern .md pre { background: #f3e6b8; }
+
+/* Eine Datei wird über das Textfeld gezogen. */
+textarea.ablegen { outline: 3px dashed var(--akzent); outline-offset: 2px; }
+
+/* Bilder im Verlauf und Vorschau vor dem Absenden. */
+ul.bilder { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 0; padding: 0; }
+ul.bilder li { display: flex; flex-direction: column; gap: 3px; max-width: 260px; }
+ul.bilder img { display: block; max-width: 260px; max-height: 180px; border: 1px solid var(--linie); border-radius: 4px; background: #fff; }
+ul.bilder span { color: var(--gedaempft); font-size: 13px; overflow-wrap: anywhere; }
+ul.dateivorschau { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 0; padding: 0; }
+ul.dateivorschau:empty { display: none; }
+ul.dateivorschau li {
+    display: flex; flex-direction: column; gap: 4px; align-items: flex-start; max-width: 200px;
+    padding: 6px; background: var(--flaeche); border: 1px solid var(--linie); border-radius: 4px; font-size: 13px;
+}
+ul.dateivorschau img { max-width: 186px; max-height: 120px; border-radius: 3px; }
+ul.dateivorschau span { overflow-wrap: anywhere; }
+ul.dateivorschau button { margin: 0; padding: 1px 8px; font-size: 13px; box-shadow: none; }
+
+/* Tabellen und Bilder im Text, zum Beispiel aus einer Mail. */
+.md table { border-collapse: collapse; margin: 0 0 8px; }
+.md th, .md td { border: 1px solid var(--linie); padding: 3px 8px; text-align: left; vertical-align: top; }
+.md th { background: #eef1f5; }
+.md img { display: block; max-width: 100%; max-height: 480px; margin: 6px 0; border: 1px solid var(--linie); border-radius: 4px; }
+.aktionen .voraussetzung { margin: 10px 0 0; }

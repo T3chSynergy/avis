@@ -1,6 +1,6 @@
 # AVIS – Konzept
 
-Stand: 13.11.2026 · Status: Entwurf, Technik noch nicht entschieden
+Stand: 13.11.2026 · Status: Entwurf
 
 AVIS (Auftrags-, Verfolgungs- und Informationssystem) ist das Ticketsystem der
 IT. Es ersetzt die Jira-Lösung und knüpft an das frühere, in Classic ASP
@@ -27,9 +27,9 @@ Leitsatz: Was das alte AVIS nicht brauchte, braucht das neue auch nicht.
 
 | Rolle | Darf |
 |---|---|
-| Kunde | eigene Aufträge erstellen, eigene Aufträge und deren Stand sehen, Rückfragen beantworten |
-| Bearbeiter | Aufträge erfassen, alle Aufträge sehen (außer gesperrte Gruppen), übernehmen, weiterleiten, abschließen, sich selbst Gruppen zuordnen |
-| Administrator | Gruppen, Kategorien, Standorte, Kunden und Geräte pflegen, Mitglieder gesperrter Gruppen zuordnen, Rollen vergeben |
+| Kunde | eigene Aufträge erstellen, eigene Aufträge und deren Stand sehen, Rückfragen beantworten. Jedes Anmeldekonto ohne Rolle ist Kunde, auch Bearbeiter können eigene Aufträge stellen |
+| Bearbeiter | Aufträge erfassen, alle Aufträge sehen (außer gesperrte Gruppen), übernehmen, weiterleiten, abschließen, sich selbst Gruppen zuordnen, Kunden anlegen und pflegen |
+| Administrator | Gruppen, Kategorien, Standorte und Geräte pflegen, Mitglieder gesperrter Gruppen zuordnen, Rollen vergeben |
 
 „Kunde" ist der Anwender, für den ein Auftrag bearbeitet wird.
 
@@ -57,13 +57,21 @@ Aufträge gesperrter Gruppen auch während der Bearbeitung geschützt bleiben.
 |---|---|---|
 | Erfassen | Kunde, Bearbeiter, E-Mail-Eingang | Auftrag entsteht in einer Gruppe, Standard ist die IT-Hotline |
 | Übernehmen | jeder Bearbeiter, der den Auftrag sehen darf | Bearbeiter wird gesetzt, auch wenn schon ein anderer eingetragen ist |
-| Weiterleiten | Bearbeiter | neue Gruppe wird gesetzt, Bearbeiter wird geleert, optional bevorzugter Bearbeiter |
-| Interner Kommentar | Bearbeiter | Eintrag im Verlauf, für den Kunden unsichtbar |
-| Nachricht an den Kunden | Bearbeiter | Eintrag im Verlauf, der Kunde sieht ihn und erhält eine Mail |
+| Weiterleiten | wer den Auftrag bearbeitet | neue Gruppe wird gesetzt, Bearbeiter wird geleert, optional bevorzugter Bearbeiter |
+| Interner Kommentar | wer den Auftrag bearbeitet | Eintrag im Verlauf, für den Kunden unsichtbar |
+| Nachricht an den Kunden | wer den Auftrag bearbeitet | Eintrag im Verlauf, der Kunde sieht ihn und erhält eine Mail |
 | Antwort des Kunden | Kunde | Eintrag im Verlauf |
-| Ändern | Bearbeiter | Felder anpassen, Änderung steht im Verlauf |
-| Abschließen | zuständiger Bearbeiter | Auftrag ist erledigt, mit Abschlusstext für den Kunden |
-| Wieder öffnen | Bearbeiter | Auftrag liegt wieder offen in seiner letzten Gruppe |
+| Ändern | wer den Auftrag bearbeitet | Angaben und Kunde anpassen, Änderung steht im Verlauf |
+| Abschließen | wer den Auftrag bearbeitet | Auftrag ist erledigt, mit Abschlusstext für den Kunden |
+| Wieder öffnen | jeder Bearbeiter, der den Auftrag sehen darf | Auftrag liegt wieder offen in seiner letzten Gruppe |
+| Wieder öffnen | Kunde | wie oben, mit Begründung. Wer den Auftrag zuletzt bearbeitet hat, wird als bevorzugter Bearbeiter genannt und erhält eine Mail |
+
+Übernehmen ist die Voraussetzung für alles Weitere: Nur wer den Auftrag
+bearbeitet, leitet ihn weiter, kommentiert ihn, schreibt dem Kunden, ändert
+Angaben oder schließt ihn ab. Ein offener Auftrag in einer Gruppe lässt sich
+nur ansehen und übernehmen. Wer einem anderen den Auftrag abnimmt, übernimmt
+ihn ebenfalls zuerst. Scheidet ein Bearbeiter aus, gibt die Verwaltung seine
+Aufträge an ihre Gruppen zurück.
 
 Aufträge aus dem Kundenformular und aus dem E-Mail-Eingang gehen immer an die
 IT-Hotline und werden dort zuerst bearbeitet. Ein Bearbeiter, den ein Kunde
@@ -91,7 +99,11 @@ Mails an den Kunden.
 - Offene Gruppe: Jeder Bearbeiter trägt sich selbst ein und aus. Das regelt
   auch Vertretungen.
 - Gesperrte Gruppe: Nur der Administrator ordnet Mitglieder zu. Aufträge dieser
-  Gruppe sehen nur ihre Mitglieder, der Kunde und der Erfasser.
+  Gruppe sehen nur ihre Mitglieder, der Kunde, der Erfasser und wer den Auftrag
+  gerade bearbeitet. Auch Administratoren sehen sie nur als Mitglied.
+- Wird ein Auftrag aus einer gesperrten Gruppe weitergeleitet, sehen ihn danach
+  wieder alle Bearbeiter, mit seinem ganzen Verlauf.
+- Die Eingangsgruppe kann nicht gesperrt sein.
 
 ### Verlauf
 
@@ -105,7 +117,7 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 |---|---|---|
 | Nummer | automatisch | fortlaufend |
 | Betreff | Text | Pflicht |
-| Beschreibung | Text | Pflicht |
+| Beschreibung | Text | Pflicht. Wie alle längeren Texte mit Markdown formatierbar |
 | Kunde | Verweis auf Kundentabelle | nicht zwingend der Erfasser |
 | Erfasst von | Person | automatisch |
 | Eingang | Web, E-Mail, Telefon | automatisch bzw. Vorgabe |
@@ -119,7 +131,7 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 | Gruppe | Gruppe | aktuelle Zuordnung |
 | Bearbeiter | Person | leer, solange der Auftrag offen ist |
 | Bevorzugter Bearbeiter | Person | optional, wird beim Weiterleiten gesetzt |
-| Anhänge | Dateien | am Auftrag oder an einem Verlaufseintrag |
+| Anhänge | Dateien | am Auftrag, an Kommentaren, Nachrichten und Antworten. Anhänge an internen Kommentaren sieht der Kunde nicht. Bilder erscheinen als Vorschau und lassen sich mit Strg+V einfügen |
 | Verlauf | Einträge | automatisch |
 
 Das Kundenformular zeigt nur Betreff, Beschreibung, Standort, Gerät und
@@ -148,15 +160,22 @@ können, ohne dass sich am Auftrag etwas ändert.
 - Jeder Auftrag verweist auf einen Kunden.
 - Meldet sich ein Kunde an oder schreibt eine Mail, wird er über Anmeldename
   bzw. Mailadresse zugeordnet. Gibt es ihn noch nicht, wird er angelegt.
-- Die Hotline kann am Telefon einen Kunden suchen oder neu anlegen.
+- Die Mailadresse eines Anmeldekontos stammt aus dem Active Directory oder vom
+  Administrator, nie von der Person selbst. So kann sich niemand die Aufträge
+  eines anderen zuordnen.
+- Die Hotline kann am Telefon einen Kunden suchen oder neu anlegen. Gesucht
+  wird über Name, E-Mail, Telefon und Organisationseinheit.
+- Eine E-Mail-Adresse gehört zu genau einem Kunden.
 - Am Kunden sind seine bisherigen Aufträge sichtbar.
 
 ### Gerätetabelle
 
 - Inventarnummer, Bezeichnung, Typ, Standort, optional der Kunde, der das Gerät
   nutzt
-- Ein Auftrag kann mit einem Gerät verknüpft werden, muss aber nicht. Das
-  Freitextfeld bleibt daneben bestehen.
+- Ein Auftrag kann über die Inventarnummer mit einem Gerät verknüpft werden,
+  muss aber nicht. Das Freitextfeld bleibt daneben bestehen.
+- Ausgemusterte Geräte bleiben an ihren Aufträgen, lassen sich aber nicht mehr
+  neu verknüpfen.
 - Am Gerät sind seine bisherigen Aufträge sichtbar.
 
 ### Vorbereitung für externe Quellen
@@ -180,7 +199,9 @@ passenden Geräteeintrag erfassen.
 
 - Meine Aufträge: alles, was ich gerade in Bearbeitung habe
 - Gruppen: offene Aufträge meiner Gruppen, bevorzugt an mich gerichtete markiert
-- Alle Aufträge: Suche und Filter über alles, was ich sehen darf
+- Alle Aufträge: Suche in Betreff, Beschreibung, Gerät, Kunde und Verlauf,
+  Filter nach Status, Gruppe und Bearbeiter, über alles, was ich sehen darf.
+  Eine Auftragsnummer führt direkt zum Auftrag
 - Auftrag erfassen: für einen Kunden, z. B. am Telefon
 - Auftrag: Felder, Verlauf, Anhänge und die Aktionen aus Abschnitt 3
 - Kunden und Geräte: suchen, ansehen, zugehörige Aufträge
@@ -188,47 +209,73 @@ passenden Geräteeintrag erfassen.
 
 **Administrator**
 
-- Gruppen, Kategorien, Standorte, Kunden, Geräte, Rollen
+- Gruppen, Kategorien, Standorte, Geräte, Rollen
 
 ## 7. E-Mail
 
 Mailsystem ist Exchange.
 
-- Eingang: Eine Mail an das Hotline-Postfach erzeugt einen Auftrag in der
-  Gruppe IT-Hotline. Der Absender wird über die Kundentabelle zugeordnet,
-  Betreff und Text werden übernommen, Anhänge angehängt.
+- Eingang: AVIS ruft das Hotline-Postfach über IMAP ab. Eine Mail erzeugt
+  einen Auftrag in der Gruppe IT-Hotline. Der Absender wird über die
+  Kundentabelle zugeordnet, Betreff und Text werden übernommen, Anhänge
+  angehängt.
 - Antworten mit Auftragsnummer im Betreff landen als Antwort des Kunden im
-  Verlauf des bestehenden Auftrags.
-- Ausgang: Der Kunde erhält eine Mail bei Erfassung, bei Nachrichten an ihn und
-  beim Abschluss. Interne Kommentare werden nie verschickt.
-- Bearbeiter erhalten keine Mails für Gruppenaufträge, höchstens einen Hinweis,
-  wenn sie als bevorzugter Bearbeiter genannt werden.
+  Verlauf des bestehenden Auftrags, wenn sie vom Kunden dieses Auftrags
+  kommen. Ein abgeschlossener Auftrag wird dadurch wieder geöffnet.
+- Die Mail des Bearbeiters, der den Auftrag bearbeitet, wird ein interner
+  Kommentar.
+- Nennt jemand anderes eine Auftragsnummer, entsteht ein neuer Auftrag. Niemand
+  kann per Mail in den Auftrag eines anderen schreiben.
+- Automatische Mails wie Abwesenheitsnotizen werden übergangen.
+- Die Formatierung einer HTML-Mail bleibt erhalten, soweit sie eindeutig ist:
+  fett, kursiv, Überschriften, Links, Listen und kleine, einfache Tabellen.
+  Bilder im Text der Mail stehen im Auftrag an derselben Stelle.
+- Ausgang: Versand über SMTP. Der Kunde erhält eine Mail bei Erfassung, bei
+  Nachrichten an ihn und beim Abschluss. Interne Kommentare, Weiterleitungen
+  und Gruppen stehen in keiner Mail an den Kunden.
+- Bearbeiter erhalten keine Mails für Gruppenaufträge. Der zuständige
+  Bearbeiter erhält eine Mail, wenn der Kunde antwortet, und wer als
+  bevorzugter Bearbeiter genannt wird, erhält einen Hinweis.
+- Der Betreff jeder Mail beginnt mit der Auftragsnummer in der Form
+  `[AVIS-123]`, damit Antworten später zugeordnet werden können.
+- Ist der Mailserver nicht erreichbar, geht nichts verloren: Mails werden
+  vorgemerkt und später erneut versucht.
 
 ## 8. Technik
 
-Noch nicht entschieden. Fest steht unabhängig von der Sprache:
+| Baustein | Entscheidung |
+|---|---|
+| Anwendung | ASP.NET Core mit Razor Pages auf .NET 10 (Langzeit-Support) |
+| Betrieb | Windows Server mit IIS |
+| Anmeldung | Windows-Anmeldung über Active Directory, ohne Passworteingabe |
+| Datenbank | SQLite, Zugriff über Entity Framework Core |
+| Mail | Exchange im Haus: Versand über SMTP, Abruf über IMAP |
 
-- Seiten werden auf dem Server erzeugt. Kein separates JavaScript-Frontend mit
-  eigener Build-Kette und API-Schicht, für Listen und Formulare ist das unnötig.
-- Datenbankzugriff über eine Abstraktionsschicht, damit die Datenbank
-  austauschbar bleibt.
-- Anhänge liegen im Dateisystem, nicht in der Datenbank.
+Grundsätze:
 
-Zur Wahl stehen:
+- Seiten werden auf dem Server erzeugt. Es gibt kein separates
+  JavaScript-Frontend mit eigener Build-Kette und API-Schicht. Einzelne kleine
+  Skripte machen Seiten bequemer, etwa die Kundensuche während des Tippens.
+  Ohne sie funktioniert alles.
+- AVIS bringt keine fremden Oberflächenbibliotheken mit, das Stylesheet ist
+  selbst geschrieben.
+- Anhänge liegen im Dateisystem, nicht in der Datenbank. Bilder werden
+  angezeigt, alles andere wird nur als Download ausgeliefert.
+- Texte werden als reiner Text gespeichert. Markdown formatiert nur die Anzeige.
+- Die Rollen (Bearbeiter, Administrator) stehen in der Benutzertabelle von
+  AVIS. Active Directory liefert nur, wer angemeldet ist.
 
-| | ASP.NET Core (Razor Pages) | Python (Django) |
-|---|---|---|
-| Betrieb auf Windows Server / IIS | nativ | möglich, aber umständlicher |
-| Betrieb auf Linux | möglich | nativ |
-| Anmeldung ohne Passwort über Active Directory | eingebaut | über vorgeschalteten Webserver oder LDAP |
-| Verwaltungsoberfläche für Stammdaten | selbst zu bauen | mitgeliefert |
-| Einstieg für gelegentliche Pflege | höher | niedriger |
+### Späterer Wechsel zu SQL Server
 
-Die Entscheidung hängt an drei Punkten: auf welchem Server AVIS läuft, wie sich
-die Benutzer anmelden sollen und wer es künftig pflegt.
+Ein Wechsel ist möglich und vorbereitet:
 
-SQLite reicht für die Last aus. Ein Datenbankserver lohnt sich nur, wenn es
-dafür ohnehin einen gesicherten Betrieb im Haus gibt.
+- Das Datenmodell nutzt keine Besonderheiten von SQLite. Zeitpunkte liegen in
+  UTC vor, alle Textfelder außer Beschreibung und Verlaufstext haben eine
+  Höchstlänge, Fremdschlüssel löschen nichts mit.
+- Für den Wechsel wird der Datenbankanbieter ausgetauscht und der Satz der
+  Migrationen für SQL Server neu erzeugt. Die Daten werden einmalig übertragen.
+- Die Suche verhält sich bei Groß- und Kleinschreibung je nach Datenbank
+  unterschiedlich. Das ist beim Wechsel zu prüfen.
 
 ## 9. Ausbaustufen
 
@@ -241,8 +288,8 @@ dafür ohnehin einen gesicherten Betrieb im Haus gibt.
 
 ## 10. Offene Punkte
 
-- Server: Windows oder Linux
-- Anmeldung: automatisch über Active Directory oder eigenes Login
-- Exchange: im Haus oder Exchange Online, und welcher Zugriff auf das
-  Hotline-Postfach freigeschaltet ist
-- Technik gemäß Abschnitt 8
+- Der Abruf über IMAP ist gegen einen IMAP-Server erprobt, aber noch nicht
+  gegen Exchange.
+- Die Abfrage des Active Directory für Name, E-Mail, Telefon und Abteilung
+  neuer Konten ist eingebaut, aber noch nicht an einem echten Verzeichnis
+  erprobt.

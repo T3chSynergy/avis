@@ -1,0 +1,84 @@
+@model Avis.Web.Pages.Shared.Auftragsliste
+@inject TimeProvider Uhr
+@{
+    var heute = Ortszeit.Heute(Uhr);
+    var jetzt = Uhr.GetUtcNow().UtcDateTime;
+}
+@if (Model.Auftraege.Count == 0)
+{
+    <p class="leer">Keine Aufträge.</p>
+}
+else
+{
+    <table class="liste">
+        <thead>
+            <tr>
+                <th scope="col">Nr.</th>
+                <th scope="col">Prio</th>
+                <th scope="col">Betreff</th>
+                @if (!Model.OhneKunde) { <th scope="col">Kunde</th> }
+                @if (!Model.OhneGruppe) { <th scope="col">Gruppe</th> }
+                @if (!Model.OhneBearbeiter) { <th scope="col">Bearbeiter</th> }
+                <th scope="col">Termin</th>
+                <th scope="col">Alter</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model.Auftraege)
+            {
+                var laeuft = a.Status != AuftragStatus.Abgeschlossen;
+                <tr>
+                    <td>@a.Id</td>
+                    <td><span class="prio prio-@a.Prioritaet" title="Dringlichkeit @a.Dringlichkeit.Text(), Wichtigkeit @a.Wichtigkeit.Text()">P@(a.Prioritaet)</span></td>
+                    <td>
+                        <a asp-page="/Auftraege/Details" asp-route-id="@a.Id">@a.Betreff</a>
+                        @if (a.KundeWartetSeit is not null && laeuft)
+                        {
+                            <span class="marke-wartet" title="Der Kunde wartet seit @Ortszeit.Anzeigen(a.KundeWartetSeit.Value) auf eine Reaktion">Kunde wartet</span>
+                        }
+                        @if (a.BevorzugterBearbeiter is not null && a.Status == AuftragStatus.Offen)
+                        {
+                            <span class="hinweis @(a.BevorzugterBearbeiterId == User.BenutzerId() ? "mich" : "")">für @a.BevorzugterBearbeiter.Name</span>
+                        }
+                    </td>
+                    @if (!Model.OhneKunde) { <td>@a.Kunde.Name</td> }
+                    @if (!Model.OhneGruppe)
+                    {
+                        <td>@a.Gruppe.Name @if (a.Gruppe.Gesperrt) { <span class="hinweis">gesperrt</span> }</td>
+                    }
+                    @if (!Model.OhneBearbeiter)
+                    {
+                        <td>@(laeuft ? a.Bearbeiter?.Name ?? "–" : a.Bearbeiter?.Name ?? "")</td>
+                    }
+                    <td>
+                        @if (a.Termin is { } termin)
+                        {
+                            if (laeuft && termin < heute)
+                            {
+                                <span class="termin ueberfaellig">@termin.ToString("dd.MM.yyyy") <strong>überfällig</strong></span>
+                            }
+                            else if (laeuft && termin == heute)
+                            {
+                                <span class="termin heute">@termin.ToString("dd.MM.yyyy") <strong>heute</strong></span>
+                            }
+                            else
+                            {
+                                @termin.ToString("dd.MM.yyyy")
+                            }
+                        }
+                    </td>
+                    <td>
+                        @if (laeuft)
+                        {
+                            <span title="Erstellt am @Ortszeit.Anzeigen(a.ErstelltAm)">@Anzeige.Dauer(jetzt - a.ErstelltAm)</span>
+                        }
+                        else
+                        {
+                            <span class="status" title="Erstellt am @Ortszeit.Anzeigen(a.ErstelltAm)">abgeschlossen @Ortszeit.Datum(a.AbgeschlossenAm!.Value)</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

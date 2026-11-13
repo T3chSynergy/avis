@@ -1,0 +1,28 @@
+@page "/Auftraege/{id:int}/Kunde"
+@model Avis.Web.Pages.Auftraege.KundeAendernModel
+@{
+    ViewData["Title"] = $"Kunde von Auftrag {Model.Id} ändern";
+}
+<p class="pfad"><a asp-page="Details" asp-route-id="@Model.Id">Auftrag @Model.Id</a></p>
+<h1>Kunde ändern</h1>
+<p class="erklaerung">Bisher: <strong>@Model.Bisher</strong>. Die Änderung steht im Verlauf.</p>
+
+<form method="post" class="formular">
+    <button type="submit" class="unsichtbar" tabindex="-1" aria-hidden="true">Speichern</button>
+    <input type="hidden" name="version" value="@Model.Version" />
+
+    <fieldset class="kunde">
+        <legend>Neuer Kunde des Auftrags</legend>
+        <partial name="_Kundenauswahl" model="Model.Kundenauswahl" />
+        <p class="erklaerung">Fehlt der Kunde, lege ihn zuerst unter <a asp-page="/Kunden/Index">Kunden</a> an.</p>
+    </fieldset>
+
+    <div class="knoepfe">
+        <button type="submit" class="haupt">Speichern</button>
+        <a asp-page="Details" asp-route-id="@Model.Id">Abbrechen</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/kundensuche.js" asp-append-version="true"></script>
+}

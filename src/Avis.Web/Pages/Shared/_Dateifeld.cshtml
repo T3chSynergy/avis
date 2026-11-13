@@ -1,0 +1,4 @@
+@model string
+@inject Microsoft.Extensions.Options.IOptions<Avis.Web.Anhaenge.AnhangOptionen> Anhaenge
+<label for="@Model">Anhänge (optional, höchstens @Anhaenge.Value.HoechstgroesseMb MB je Datei)</label>
+<input id="@Model" name="dateien" type="file" multiple />

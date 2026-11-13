@@ -1,0 +1,60 @@
+@page
+@model Avis.Web.Pages.Meine.NeuModel
+@{
+    ViewData["Title"] = "Neuer Auftrag";
+}
+<h1>Neuer Auftrag</h1>
+<p class="erklaerung">Der Auftrag geht an die IT-Hotline.</p>
+
+<form method="post" class="formular" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="meldung fehler"></div>
+    <fieldset>
+        <legend>Auftrag</legend>
+        <div class="feld">
+            <label asp-for="Eingabe.Betreff">Worum geht es?</label>
+            <input asp-for="Eingabe.Betreff" />
+            <span asp-validation-for="Eingabe.Betreff" class="feldfehler"></span>
+        </div>
+        <div class="feld">
+            <label asp-for="Eingabe.Beschreibung">Beschreibung</label>
+            <textarea asp-for="Eingabe.Beschreibung" rows="8" data-markdown></textarea>
+            <span asp-validation-for="Eingabe.Beschreibung" class="feldfehler"></span>
+        </div>
+        <div class="reihe">
+            <div class="feld">
+                <label asp-for="Eingabe.StandortId">Standort</label>
+                <select asp-for="Eingabe.StandortId" asp-items="Model.Standorte">
+                    <option value="">–</option>
+                </select>
+                <span asp-validation-for="Eingabe.StandortId" class="feldfehler"></span>
+            </div>
+            <div class="feld">
+                <label asp-for="Eingabe.Geraet">Betroffenes Gerät (optional)</label>
+                <input asp-for="Eingabe.Geraet" />
+                <span asp-validation-for="Eingabe.Geraet" class="feldfehler"></span>
+            </div>
+        </div>
+        <div class="feld">
+            <partial name="_Dateifeld" model='"dateien"' />
+            <span asp-validation-for="Dateien" class="feldfehler"></span>
+        </div>
+    </fieldset>
+
+    @if (Model.Email is null)
+    {
+        <p class="erklaerung">Für dieses Konto ist keine E-Mail-Adresse hinterlegt. Es kommen deshalb keine Mails zum Auftrag. Der Stand steht unter „Meine Aufträge".</p>
+    }
+    else
+    {
+        <p class="erklaerung">Mails zum Auftrag gehen an @Model.Email.</p>
+    }
+
+    <div class="knoepfe">
+        <button type="submit" class="haupt">Auftrag absenden</button>
+        <a asp-page="Index">Abbrechen</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/editor.js" asp-append-version="true"></script>
+}

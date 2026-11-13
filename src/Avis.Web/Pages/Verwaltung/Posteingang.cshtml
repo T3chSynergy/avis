@@ -1,0 +1,50 @@
+@page
+@model PosteingangModel
+@{
+    ViewData["Title"] = "Posteingang";
+}
+<h1>Verwaltung</h1>
+<partial name="_Bereiche" />
+<h2>Posteingang</h2>
+<p class="erklaerung">
+    Abruf des Postfachs: <strong>@Model.Art</strong>.
+    Die letzten @PosteingangModel.Hoechstzahl Mails und was AVIS damit getan hat.
+</p>
+
+@if (Model.Mails.Count == 0)
+{
+    <p class="leer">Noch keine Mails.</p>
+}
+else
+{
+    <table class="liste">
+        <thead>
+            <tr>
+                <th scope="col">Zeit</th>
+                <th scope="col">Von</th>
+                <th scope="col">Betreff</th>
+                <th scope="col">Ergebnis</th>
+                <th scope="col">Auftrag</th>
+                <th scope="col">Hinweis</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model.Mails)
+            {
+                <tr>
+                    <td>@Ortszeit.Anzeigen(m.EmpfangenAm)</td>
+                    <td>@m.Von</td>
+                    <td>@m.Betreff</td>
+                    <td>@PosteingangModel.Text(m.Ergebnis)</td>
+                    <td>
+                        @if (m.AuftragId is not null)
+                        {
+                            <a asp-page="/Auftraege/Details" asp-route-id="@m.AuftragId">@m.AuftragId</a>
+                        }
+                    </td>
+                    <td>@m.Hinweis</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

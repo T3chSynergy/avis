@@ -1,0 +1,91 @@
+@page "/Verwaltung/Gruppen/{id:int}"
+@model GruppeBearbeitenModel
+@{
+    var g = Model.Gruppe;
+    ViewData["Title"] = $"Gruppe {g.Name}";
+}
+<h1>Verwaltung</h1>
+<partial name="_Bereiche" />
+<h2>Gruppe @g.Name</h2>
+
+<div class="spalten gleich">
+    <form method="post" asp-page-handler="Speichern" class="kasten">
+        <h3>Angaben</h3>
+        <label for="name">Name</label>
+        <input id="name" name="name" value="@g.Name" maxlength="100" required />
+        <label for="beschreibung">Beschreibung (optional)</label>
+        <input id="beschreibung" name="beschreibung" value="@g.Beschreibung" maxlength="500" />
+
+        <div class="ankreuz">
+            <input type="checkbox" id="eingang" name="eingangsgruppe" value="true" checked="@g.IstEingangsgruppe" disabled="@g.IstEingangsgruppe" />
+            <label for="eingang">Eingangsgruppe: Hier landen neue Aufträge</label>
+        </div>
+        @if (g.IstEingangsgruppe)
+        {
+            <p class="erklaerung">Um das zu ändern, lege eine andere Gruppe als Eingangsgruppe fest.</p>
+        }
+
+        <div class="ankreuz">
+            <input type="checkbox" id="gesperrt" name="gesperrt" value="true" checked="@g.Gesperrt" />
+            <label for="gesperrt">Gesperrt: Nur Mitglieder sehen die Aufträge, und nur der Administrator ordnet Mitglieder zu</label>
+        </div>
+
+        <div class="ankreuz">
+            <input type="checkbox" id="aktiv" name="aktiv" value="true" checked="@g.Aktiv" />
+            <label for="aktiv">Aktiv</label>
+        </div>
+        <p class="erklaerung">
+            Laufende Aufträge in dieser Gruppe: @Model.Laufend.
+            Eine Gruppe lässt sich nur deaktivieren, wenn sie keine laufenden Aufträge hat und nicht Eingangsgruppe ist.
+        </p>
+
+        <div class="knoepfe">
+            <button type="submit" class="haupt">Speichern</button>
+            <a asp-page="Gruppen">Zurück zur Liste</a>
+        </div>
+    </form>
+
+    <section aria-labelledby="h-mitglieder">
+        <h3 id="h-mitglieder">Mitglieder</h3>
+        <p class="erklaerung">@(g.Gesperrt ? "Die Gruppe ist gesperrt. Mitglieder werden nur hier zugeordnet." : "Bearbeiter tragen sich selbst ein und aus. Hier kannst du nachhelfen.")</p>
+        @if (g.Mitglieder.Count == 0)
+        {
+            <p class="leer">Keine Mitglieder.</p>
+        }
+        else
+        {
+            <table class="liste">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col"><span class="unsichtbar">Aktion</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in g.Mitglieder.OrderBy(m => m.Name))
+                    {
+                        <tr>
+                            <td>@m.Name</td>
+                            <td>
+                                <form method="post" asp-page-handler="MitgliedEntfernen" asp-route-benutzerId="@m.Id">
+                                    <button type="submit">@m.Name entfernen</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (Model.Kandidaten.Count > 0)
+        {
+            <form method="post" asp-page-handler="MitgliedHinzufuegen" class="kasten">
+                <label for="benutzerId">Bearbeiter hinzufügen</label>
+                <select id="benutzerId" name="benutzerId" asp-items="Model.Kandidaten" required>
+                    <option value="">Bitte wählen</option>
+                </select>
+                <button type="submit">Hinzufügen</button>
+            </form>
+        }
+    </section>
+</div>

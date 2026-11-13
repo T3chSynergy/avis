@@ -1,0 +1,31 @@
+@model IReadOnlyList<Auftrag>
+@if (Model.Count == 0)
+{
+    <p class="leer">Keine Aufträge.</p>
+}
+else
+{
+    <table class="liste">
+        <thead>
+            <tr>
+                <th scope="col">Nr.</th>
+                <th scope="col">Betreff</th>
+                <th scope="col">Stand</th>
+                <th scope="col">Erstellt</th>
+                <th scope="col">Letzte Änderung</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model)
+            {
+                <tr>
+                    <td>@a.Id</td>
+                    <td><a asp-page="Details" asp-route-id="@a.Id">@a.Betreff</a></td>
+                    <td>@a.Status.Text()</td>
+                    <td>@Ortszeit.Anzeigen(a.ErstelltAm)</td>
+                    <td>@Ortszeit.Anzeigen(a.GeaendertAm)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

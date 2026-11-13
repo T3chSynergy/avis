@@ -1,0 +1,55 @@
+@page
+@model Avis.Web.Pages.Geraete.IndexModel
+@{
+    ViewData["Title"] = "Geräte";
+}
+<h1>Geräte</h1>
+
+<form method="get" class="suchzeile" role="search">
+    <div class="feld breit">
+        <label for="q">Suche nach Inventarnummer, Bezeichnung, Typ oder Nutzer</label>
+        <input id="q" name="q" value="@Model.Q" type="search" autocomplete="off" />
+    </div>
+    <button type="submit" class="haupt">Suchen</button>
+    @if (User.IstAdministrator())
+    {
+        <a asp-page="Bearbeiten">Gerät anlegen</a>
+    }
+</form>
+
+@if (Model.Geraete.Count == 0)
+{
+    <p class="leer">Keine Geräte gefunden.</p>
+}
+else
+{
+    <table class="liste">
+        <thead>
+            <tr>
+                <th scope="col">Inventarnummer</th>
+                <th scope="col">Bezeichnung</th>
+                <th scope="col">Typ</th>
+                <th scope="col">Standort</th>
+                <th scope="col">Nutzer</th>
+                <th scope="col">Laufende Aufträge</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var g in Model.Geraete)
+            {
+                <tr class="@(g.Aktiv ? "" : "inaktiv")">
+                    <td><a asp-page="Details" asp-route-id="@g.Id">@g.Inventarnummer</a> @if (!g.Aktiv) { <span class="hinweis">ausgemustert</span> }</td>
+                    <td>@g.Bezeichnung</td>
+                    <td>@g.Typ</td>
+                    <td>@g.Standort</td>
+                    <td>@g.Nutzer</td>
+                    <td>@g.Laufend</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Gekuerzt)
+    {
+        <p class="erklaerung">Es werden die ersten @IndexModel.Hoechstzahl Geräte angezeigt. Gib mehr ein, um die Suche einzugrenzen.</p>
+    }
+}

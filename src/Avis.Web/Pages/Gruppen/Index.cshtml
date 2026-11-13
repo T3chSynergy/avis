@@ -1,0 +1,16 @@
+@page
+@model Avis.Web.Pages.Gruppen.IndexModel
+@{
+    ViewData["Title"] = "Gruppen";
+}
+<h1>Offene Aufträge meiner Gruppen</h1>
+
+@if (Model.Gruppen.Count == 0)
+{
+    <p class="leer">Du bist in keiner Gruppe. Unter <a asp-page="/Gruppen/Meine">Meine Gruppen</a> kannst du dich eintragen.</p>
+}
+@foreach (var gruppe in Model.Gruppen)
+{
+    <h2>@gruppe.Name <span class="anzahl">@Model.Offen[gruppe.Id].Count</span></h2>
+    <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Offen[gruppe.Id], OhneGruppe: true, OhneBearbeiter: true)" />
+}

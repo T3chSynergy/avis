@@ -1,0 +1,36 @@
+@model Avis.Web.Pages.Kunden.Kundenauswahl
+@using Avis.Web.Pages.Kunden
+@if (Model.Gesucht && Model.Treffer.All(k => k.Id == Model.GewaehltId))
+{
+    <p class="erklaerung">Keine Kunden gefunden.</p>
+}
+else if (!Model.Gesucht && Model.Treffer.Count == 0)
+{
+    <p class="erklaerung">Suche nach Name, E-Mail, Telefon oder Organisationseinheit, mit mindestens @Kundenauswahl.Mindestlaenge Zeichen.</p>
+}
+<ul class="auswahl">
+    @foreach (var k in Model.Treffer)
+    {
+        <li>
+            <input type="radio" name="kundeId" id="kunde-@k.Id" value="@k.Id" checked="@(k.Id == Model.GewaehltId)" />
+            <label for="kunde-@k.Id">
+                <strong>@k.Name</strong>
+                @if (k.Email is not null) {<text> · @k.Email</text>}
+                @if (k.Telefon is not null) {<text> · Tel. @k.Telefon</text>}
+                @if (k.Organisationseinheit is not null) {<text> · @k.Organisationseinheit</text>}
+                @if (k.Standort is not null) {<text> · @k.Standort.Name</text>}
+            </label>
+        </li>
+    }
+    @if (Model.Leertext is not null)
+    {
+        <li>
+            <input type="radio" name="kundeId" id="kunde-neu" value="" checked="@(Model.GewaehltId is null)" />
+            <label for="kunde-neu">@Model.Leertext</label>
+        </li>
+    }
+</ul>
+@if (Model.Mehr)
+{
+    <p class="erklaerung">Es gibt weitere Treffer. Gib mehr ein, um die Suche einzugrenzen.</p>
+}
