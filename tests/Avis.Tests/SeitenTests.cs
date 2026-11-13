@@ -21,6 +21,12 @@ public class AvisAnwendung : WebApplicationFactory<Program>
     /// <summary>Fängt alle Mails auf, die die Anwendung versendet.</summary>
     public Postfach Postfach { get; } = new();
 
+    /// <summary>Der Ordner, in dem die Anwendung Anhänge ablegt.</summary>
+    public string Anhangordner => Path.Combine(_ordner, "Anhaenge");
+
+    public int DateienInDerAblage() =>
+        Directory.Exists(Anhangordner) ? Directory.EnumerateFiles(Anhangordner, "*", SearchOption.AllDirectories).Count() : 0;
+
     /// <summary>Steht für das Active Directory.</summary>
     public Testverzeichnis Verzeichnis { get; } = new();
 
@@ -36,6 +42,9 @@ public class AvisAnwendung : WebApplicationFactory<Program>
         builder.UseSetting("Mail:BasisUrl", "https://avis.test/");
         // Die Tests stoßen den Versand selbst an.
         builder.UseSetting("Mail:ImHintergrundSenden", "false");
+        builder.UseSetting("Anhaenge:Ordner", Anhangordner);
+        builder.UseSetting("Anhaenge:HoechstgroesseMb", "1");
+        builder.UseSetting("Anhaenge:Hoechstzahl", "3");
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<IMailversand>(Postfach);
@@ -126,6 +135,25 @@ public static partial class ClientExtensions
         var seite = await client.GetStringAsync(formularSeite);
         felder["__RequestVerificationToken"] = TokenMuster().Match(seite).Groups[1].Value;
         return await client.PostAsync(ziel, new FormUrlEncodedContent(felder));
+    }
+
+    /// <summary>Wie PostFormularAsync, aber mit Dateien im Feld "dateien".</summary>
+    public static async Task<HttpResponseMessage> PostMitDateienAsync(
+        this HttpClient client, string formularSeite, string ziel, Dictionary<string, string> felder, params (string Name, byte[] Inhalt)[] dateien)
+    {
+        var seite = await client.GetStringAsync(formularSeite);
+        felder["__RequestVerificationToken"] = TokenMuster().Match(seite).Groups[1].Value;
+
+        var inhalt = new MultipartFormDataContent();
+        foreach (var (name, wert) in felder)
+            inhalt.Add(new StringContent(wert), name);
+        foreach (var (name, bytes) in dateien)
+        {
+            var teil = new ByteArrayContent(bytes);
+            teil.Headers.ContentType = new("application/octet-stream");
+            inhalt.Add(teil, "dateien", name);
+        }
+        return await client.PostAsync(ziel, inhalt);
     }
 }
 

@@ -6,6 +6,7 @@
     {
         403 => ("Kein Zugriff", "Dieses Konto ist für diese Seite nicht freigeschaltet."),
         404 => ("Nicht gefunden", "Diese Seite oder dieser Auftrag existiert nicht."),
+        413 => ("Zu groß", "Die hochgeladenen Dateien sind zusammen zu groß. Bitte weniger oder kleinere Dateien anhängen."),
         _ => ("Fehler", $"Die Anfrage konnte nicht verarbeitet werden (Status {code})."),
     };
     ViewData["Title"] = titel;

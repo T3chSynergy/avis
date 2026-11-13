@@ -50,6 +50,7 @@
                     {
                         <p class="text">@v.Text</p>
                     }
+                    <partial name="_Anhaenge" model="v.Anhaenge" />
                 </li>
             }
         </ol>
@@ -63,9 +64,10 @@
         }
         else
         {
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 <label for="text">Nachricht an die IT</label>
-                <textarea id="text" name="text" rows="5" required></textarea>
+                <textarea id="text" name="text" rows="5"></textarea>
+                <partial name="_Dateifeld" model='"dateien"' />
                 <button type="submit" class="haupt">Absenden</button>
             </form>
         }

@@ -19,10 +19,21 @@ public enum VerlaufArt
 /// </summary>
 public class Verlaufseintrag
 {
+    private readonly List<Anhang> _anhaenge = [];
+
     private Verlaufseintrag() { }
 
-    internal Verlaufseintrag(Auftrag auftrag, VerlaufArt art, Benutzer benutzer, DateTime zeitpunkt, string? beschreibung, string? text)
+    internal Verlaufseintrag(
+        Auftrag auftrag,
+        VerlaufArt art,
+        Benutzer benutzer,
+        DateTime zeitpunkt,
+        string? beschreibung,
+        string? text,
+        IEnumerable<Anhang>? anhaenge = null)
     {
+        if (anhaenge is not null)
+            _anhaenge.AddRange(anhaenge);
         Auftrag = auftrag;
         Art = art;
         Benutzer = benutzer;
@@ -53,6 +64,8 @@ public class Verlaufseintrag
 
     /// <summary>Vom Benutzer geschriebener Text.</summary>
     public string? Text { get; private set; }
+
+    public IReadOnlyList<Anhang> Anhaenge => _anhaenge;
 
     /// <summary>Der Text in Kleinbuchstaben, für die Suche.</summary>
     public string? Suchtext { get; private set; }

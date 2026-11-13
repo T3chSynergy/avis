@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Avis.Web.Anhaenge;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -13,7 +14,7 @@ namespace Avis.Web.Pages.Meine;
 /// Das Formular für Kunden. Es fragt nur das Nötigste, alles andere ergänzt
 /// die Hotline. Der Auftrag geht immer an die Eingangsgruppe.
 /// </summary>
-public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr) : PageModel
+public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, Anhangablage ablage) : PageModel
 {
     public class Formular
     {
@@ -32,6 +33,9 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr) : 
 
     [BindProperty]
     public Formular Eingabe { get; set; } = new();
+
+    [BindProperty]
+    public List<IFormFile> Dateien { get; set; } = [];
 
     public List<SelectListItem> Standorte { get; private set; } = [];
     public string? Email { get; private set; }
@@ -68,6 +72,18 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr) : 
             return Page();
         }
 
+        List<Anhang> anhaenge;
+        try
+        {
+            anhaenge = await ablage.SpeichernAsync(Dateien);
+        }
+        catch (AuftragException ex)
+        {
+            ModelState.AddModelError(nameof(Dateien), ex.Message);
+            await SeiteVorbereitenAsync(kunde);
+            return Page();
+        }
+
         var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
         var auftrag = Auftrag.Erfassen(
             new AuftragAngaben(Eingabe.Betreff!, Eingabe.Beschreibung!) { Standort = standort, Geraet = Eingabe.Geraet },
@@ -75,10 +91,19 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr) : 
             ich,
             eingang,
             Eingang.Web,
-            uhr.GetUtcNow().UtcDateTime);
+            uhr.GetUtcNow().UtcDateTime,
+            anhaenge);
 
         db.Auftraege.Add(auftrag);
-        await db.SaveChangesAsync();
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch
+        {
+            ablage.Verwerfen(anhaenge);
+            throw;
+        }
 
         TempData["Meldung"] = $"Der Auftrag {auftrag.Id} ist bei der IT-Hotline eingegangen.";
         return RedirectToPage("Details", new { id = auftrag.Id });

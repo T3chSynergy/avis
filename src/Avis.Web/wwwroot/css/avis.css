@@ -45,8 +45,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .kopf a { color: var(--akzent-text); text-decoration: none; }
 .kopf a:hover { text-decoration: underline; }
 .kopf .marke { font-weight: 700; font-size: 18px; letter-spacing: 1px; }
-.kopf nav { display: flex; flex-wrap: wrap; gap: 4px 18px; flex: 1; }
-.kopf .konto { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; }
+/* Erste Zeile: Name, Suche, Konto. Zweite Zeile: die Navigation. */
+.kopf nav { display: flex; flex-wrap: wrap; gap: 4px 18px; order: 3; flex-basis: 100%; }
+.kopf .konto { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; margin-left: auto; }
 .kopf .konto span { font-weight: 600; }
 
 main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
@@ -120,11 +121,11 @@ dl.angaben dt { color: var(--gedaempft); }
 dl.angaben dd { margin: 0; overflow-wrap: anywhere; }
 
 ol.verlauf { list-style: none; margin: 0; padding: 0; }
-ol.verlauf li {
+ol.verlauf > li {
     background: var(--flaeche); border: 1px solid var(--linie); border-left: 4px solid var(--akzent);
     padding: 8px 12px; margin-bottom: 8px;
 }
-ol.verlauf li.intern { background: var(--intern); border-left-color: var(--intern-linie); }
+ol.verlauf > li.intern { background: var(--intern); border-left-color: var(--intern-linie); }
 ol.verlauf .kopfzeile { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
 ol.verlauf .kopfzeile span { color: var(--gedaempft); font-size: 13px; }
 ol.verlauf p { margin: 4px 0 0; }
@@ -212,7 +213,7 @@ a.knopf.haupt:hover { background: #184c87; }
 
 /* Suche */
 .schnellsuche { margin: 0; }
-.schnellsuche input { width: 200px; padding: 4px 8px; border: 0; }
+.schnellsuche input { width: 240px; padding: 4px 8px; border: 0; }
 .suchzeile .feld { flex: 0 1 190px; }
 .suchzeile .feld.breit { flex: 1 1 300px; max-width: 520px; }
 .suchzeile > a { padding-bottom: 7px; }
@@ -220,3 +221,10 @@ a.knopf.haupt:hover { background: #184c87; }
 /* Geräte */
 .spalten > section.kasten { margin-top: 0; }
 .spalten > section.kasten dl.angaben { grid-template-columns: 130px minmax(0, 1fr); }
+
+/* Anhänge */
+ul.anhaenge { list-style: none; margin: 6px 0 0; padding: 0; }
+ul.anhaenge li { padding: 1px 0 1px 18px; position: relative; overflow-wrap: anywhere; }
+ul.anhaenge li::before { content: "↓"; position: absolute; left: 2px; color: var(--gedaempft); }
+ul.anhaenge span { color: var(--gedaempft); font-size: 13px; white-space: nowrap; }
+input[type="file"] { padding: 4px; background: #fff; }

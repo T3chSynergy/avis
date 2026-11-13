@@ -1,3 +1,4 @@
+using Avis.Web.Anhaenge;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -12,7 +13,7 @@ namespace Avis.Web.Pages.Meine;
 /// Kunden bestimmt ist: keine internen Kommentare, keine Weiterleitungen,
 /// keine Gruppen.
 /// </summary>
-public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr) : PageModel
+public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, Anhangablage ablage) : PageModel
 {
     public Auftrag Auftrag { get; private set; } = null!;
     public IReadOnlyList<Verlaufseintrag> Verlauf { get; private set; } = [];
@@ -42,6 +43,7 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
             .Include(a => a.Bearbeiter)
             .Include(a => a.Standort)
             .Include(a => a.Verlauf).ThenInclude(v => v.Benutzer)
+            .Include(a => a.Verlauf).ThenInclude(v => v.Anhaenge)
             .FirstOrDefaultAsync(a => a.Id == id && a.KundeId == kunde.Id);
         if (auftrag is null)
             return NotFound();
@@ -54,25 +56,25 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(int id, string? text)
+    public async Task<IActionResult> OnPostAsync(int id, string? text, List<IFormFile> dateien)
     {
         var kunde = await zuordnung.FuerBenutzerAsync(User.BenutzerId());
         var auftrag = await db.Auftraege.FirstOrDefaultAsync(a => a.Id == id && a.KundeId == kunde.Id);
         if (auftrag is null)
             return NotFound();
 
+        var anhaenge = new List<Anhang>();
         try
         {
-            if (string.IsNullOrWhiteSpace(text))
-                throw new AuftragException("Bitte einen Text eingeben.");
-
+            anhaenge = await ablage.SpeichernAsync(dateien);
             var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
-            auftrag.KundeAntwortet(ich, text, uhr.GetUtcNow().UtcDateTime);
+            auftrag.KundeAntwortet(ich, text, uhr.GetUtcNow().UtcDateTime, anhaenge);
             await db.SaveChangesAsync();
             TempData["Meldung"] = "Die Nachricht wurde an die IT gesendet.";
         }
         catch (AuftragException ex)
         {
+            ablage.Verwerfen(anhaenge);
             TempData["Fehler"] = ex.Message;
         }
 

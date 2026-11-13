@@ -5,7 +5,7 @@
 }
 <h1>Auftrag erfassen</h1>
 
-<form method="post" class="formular">
+<form method="post" class="formular" enctype="multipart/form-data">
     <div asp-validation-summary="ModelOnly" class="meldung fehler"></div>
 
     @* Die Eingabetaste in einem Textfeld löst die erste Schaltfläche des Formulars aus. Das soll das Erfassen sein, nicht die Suche. *@
@@ -39,6 +39,10 @@
     <fieldset>
         <legend>Auftrag</legend>
         <partial name="_Auftragsfelder" for="Eingabe.Felder" view-data='new ViewDataDictionary(ViewData) { ["Auswahl"] = Model.Auswahl }' />
+        <div class="feld">
+            <partial name="_Dateifeld" model='"dateien"' />
+            <span asp-validation-for="Dateien" class="feldfehler"></span>
+        </div>
     </fieldset>
 
     <fieldset>

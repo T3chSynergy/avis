@@ -17,6 +17,39 @@ namespace Avis.Web.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.15");
 
+            modelBuilder.Entity("Avis.Web.Domain.Anhang", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Ablagename")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Dateiname")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Groesse")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Inhaltstyp")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("VerlaufseintragId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VerlaufseintragId");
+
+                    b.ToTable("Anhaenge", (string)null);
+                });
+
             modelBuilder.Entity("Avis.Web.Domain.Auftrag", b =>
                 {
                     b.Property<int>("Id")
@@ -424,6 +457,17 @@ namespace Avis.Web.Data.Migrations
                     b.ToTable("Gruppenmitglieder", (string)null);
                 });
 
+            modelBuilder.Entity("Avis.Web.Domain.Anhang", b =>
+                {
+                    b.HasOne("Avis.Web.Domain.Verlaufseintrag", "Verlaufseintrag")
+                        .WithMany("Anhaenge")
+                        .HasForeignKey("VerlaufseintragId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Verlaufseintrag");
+                });
+
             modelBuilder.Entity("Avis.Web.Domain.Auftrag", b =>
                 {
                     b.HasOne("Avis.Web.Domain.Benutzer", "Bearbeiter")
@@ -561,6 +605,11 @@ namespace Avis.Web.Data.Migrations
             modelBuilder.Entity("Avis.Web.Domain.Auftrag", b =>
                 {
                     b.Navigation("Verlauf");
+                });
+
+            modelBuilder.Entity("Avis.Web.Domain.Verlaufseintrag", b =>
+                {
+                    b.Navigation("Anhaenge");
                 });
 #pragma warning restore 612, 618
         }

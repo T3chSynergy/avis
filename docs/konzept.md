@@ -91,7 +91,11 @@ Mails an den Kunden.
 - Offene Gruppe: Jeder Bearbeiter trägt sich selbst ein und aus. Das regelt
   auch Vertretungen.
 - Gesperrte Gruppe: Nur der Administrator ordnet Mitglieder zu. Aufträge dieser
-  Gruppe sehen nur ihre Mitglieder, der Kunde und der Erfasser.
+  Gruppe sehen nur ihre Mitglieder, der Kunde, der Erfasser und wer den Auftrag
+  gerade bearbeitet. Auch Administratoren sehen sie nur als Mitglied.
+- Wird ein Auftrag aus einer gesperrten Gruppe weitergeleitet, sehen ihn danach
+  wieder alle Bearbeiter, mit seinem ganzen Verlauf.
+- Die Eingangsgruppe kann nicht gesperrt sein.
 
 ### Verlauf
 
@@ -119,7 +123,7 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 | Gruppe | Gruppe | aktuelle Zuordnung |
 | Bearbeiter | Person | leer, solange der Auftrag offen ist |
 | Bevorzugter Bearbeiter | Person | optional, wird beim Weiterleiten gesetzt |
-| Anhänge | Dateien | am Auftrag oder an einem Verlaufseintrag |
+| Anhänge | Dateien | am Auftrag, an Kommentaren, Nachrichten und Antworten. Anhänge an internen Kommentaren sieht der Kunde nicht |
 | Verlauf | Einträge | automatisch |
 
 Das Kundenformular zeigt nur Betreff, Beschreibung, Standort, Gerät und
@@ -160,8 +164,10 @@ können, ohne dass sich am Auftrag etwas ändert.
 
 - Inventarnummer, Bezeichnung, Typ, Standort, optional der Kunde, der das Gerät
   nutzt
-- Ein Auftrag kann mit einem Gerät verknüpft werden, muss aber nicht. Das
-  Freitextfeld bleibt daneben bestehen.
+- Ein Auftrag kann über die Inventarnummer mit einem Gerät verknüpft werden,
+  muss aber nicht. Das Freitextfeld bleibt daneben bestehen.
+- Ausgemusterte Geräte bleiben an ihren Aufträgen, lassen sich aber nicht mehr
+  neu verknüpfen.
 - Am Gerät sind seine bisherigen Aufträge sichtbar.
 
 ### Vorbereitung für externe Quellen
@@ -185,7 +191,9 @@ passenden Geräteeintrag erfassen.
 
 - Meine Aufträge: alles, was ich gerade in Bearbeitung habe
 - Gruppen: offene Aufträge meiner Gruppen, bevorzugt an mich gerichtete markiert
-- Alle Aufträge: Suche und Filter über alles, was ich sehen darf
+- Alle Aufträge: Suche in Betreff, Beschreibung, Gerät, Kunde und Verlauf,
+  Filter nach Status, Gruppe und Bearbeiter, über alles, was ich sehen darf.
+  Eine Auftragsnummer führt direkt zum Auftrag
 - Auftrag erfassen: für einen Kunden, z. B. am Telefon
 - Auftrag: Felder, Verlauf, Anhänge und die Aktionen aus Abschnitt 3
 - Kunden und Geräte: suchen, ansehen, zugehörige Aufträge
@@ -233,7 +241,8 @@ Grundsätze:
   Ohne sie funktioniert alles.
 - AVIS bringt keine fremden Oberflächenbibliotheken mit, das Stylesheet ist
   selbst geschrieben.
-- Anhänge liegen im Dateisystem, nicht in der Datenbank.
+- Anhänge liegen im Dateisystem, nicht in der Datenbank. Sie werden nur als
+  Download ausgeliefert.
 - Die Rollen (Bearbeiter, Administrator) stehen in der Benutzertabelle von
   AVIS. Active Directory liefert nur, wer angemeldet ist.
 

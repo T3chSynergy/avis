@@ -6,7 +6,7 @@ Was AVIS können soll und warum, steht im [Konzept](docs/konzept.md).
 
 ## Stand
 
-Die Ausbaustufen 1 und 2 sind umgesetzt. Vorhanden sind:
+Die Ausbaustufen 1 bis 3 sind umgesetzt. Vorhanden sind:
 
 - Datenmodell mit Aufträgen, Verlauf, Gruppen, Benutzern, Kunden, Kategorien und
   Standorten
@@ -24,10 +24,13 @@ Die Ausbaustufen 1 und 2 sind umgesetzt. Vorhanden sind:
   Nachrichten sehen, der IT antworten
 - Mails über SMTP: an den Kunden bei Erfassung, Nachricht und Abschluss, an
   Bearbeiter bei einer Antwort des Kunden und als bevorzugter Bearbeiter
+- Gesperrte Gruppen, deren Aufträge nur ihre Mitglieder sehen
+- Suche über alle Aufträge mit Filtern nach Status, Gruppe und Bearbeiter
+- Gerätetabelle, mit der Aufträge über die Inventarnummer verknüpft werden
+- Anhänge an Aufträgen, Kommentaren, Nachrichten und Antworten
 - Testanmeldung für die Entwicklung, Windows-Anmeldung für den Betrieb
 
-Als Nächstes folgt Ausbaustufe 3 mit Anhängen, Suche, gesperrten Gruppen und
-der Gerätetabelle.
+Als Nächstes folgt Ausbaustufe 4 mit dem E-Mail-Eingang über Exchange.
 
 ## Voraussetzungen
 
@@ -66,6 +69,7 @@ und die Seiten gegen eine laufende Anwendung mit eigener Datenbank
 | `src/Avis.Web/Data` | Datenbankzugriff, Migrationen, Start- und Testdaten |
 | `src/Avis.Web/Anmeldung` | Anmeldung, Rollen, Verzeichnisabfrage, Zuordnung von Konto und Kunde |
 | `src/Avis.Web/Mail` | Mailtexte und Versand |
+| `src/Avis.Web/Anhaenge` | Ablage hochgeladener Dateien |
 | `src/Avis.Web/Pages` | Seiten |
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
 | `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen; ohne sie funktioniert alles |
@@ -105,6 +109,9 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 | `Mail:Benutzer`, `Mail:Kennwort` | Nur wenn der Mailserver eine Anmeldung verlangt |
 | `Mail:Absender`, `Mail:Absendername` | Absenderadresse und angezeigter Name |
 | `Mail:BasisUrl` | Adresse von AVIS für die Links in den Mails |
+| `Anhaenge:Ordner` | Ordner für Anhänge, relativ zum Ordner der Anwendung, Standard `App_Data/Anhaenge` |
+| `Anhaenge:HoechstgroesseMb` | Höchstgröße einer Datei, Standard 10 |
+| `Anhaenge:Hoechstzahl` | Höchstzahl der Dateien je Upload, Standard 10 |
 
 Die Testanmeldung und die Testdaten lassen sich nur in der
 Entwicklungsumgebung einschalten. Im Betrieb bricht der Start sonst ab.
@@ -123,6 +130,19 @@ Dort lässt sich eine fehlgeschlagene Mail erneut anstoßen.
 
 Die Texte aller Mails stehen in `src/Avis.Web/Mail/Mailtexte.cs`.
 
+## Anhänge
+
+Die Dateien liegen im Dateisystem unter `Anhaenge:Ordner`, sortiert nach Jahr
+und Monat und mit einem von AVIS vergebenen Namen. In der Datenbank stehen
+Dateiname, Größe und Ablageort. Zur Datensicherung gehören deshalb die
+Datenbank und dieser Ordner.
+
+Anhänge werden immer als Download ausgeliefert und nie im Browser angezeigt.
+Wer einen Anhang bekommt, entscheidet der Verlaufseintrag, an dem er hängt.
+
+Ein Upload darf insgesamt höchstens so groß sein, wie der Webserver zulässt.
+Bei IIS sind das in der Voreinstellung rund 30 MB je Anfrage.
+
 ## Betrieb unter IIS
 
 Dieser Teil ist noch nicht auf einem echten Server erprobt.
@@ -131,7 +151,7 @@ Dieser Teil ist noch nicht auf einem echten Server erprobt.
 - In der IIS-Site ist die Windows-Authentifizierung einzuschalten und die
   anonyme Authentifizierung auszuschalten.
 - Das Konto des Anwendungspools braucht Schreibrechte auf den Ordner
-  `App_Data`.
+  `App_Data`. Dort liegen die Datenbank und die Anhänge.
 - Der erste Administrator wird über `Anmeldung:Administratoren` festgelegt.
 - Der Hintergrundversand läuft nur, solange die Anwendung läuft. Damit IIS sie
   nicht nach Leerlauf beendet, den Anwendungspool auf „AlwaysRunning" stellen

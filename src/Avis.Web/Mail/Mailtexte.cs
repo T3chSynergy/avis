@@ -24,6 +24,9 @@ public static class Mailtexte
         var fuerKunden = basis is null ? null : $"{basis}/Meine/{auftrag.Id}";
         var fuerBearbeiter = basis is null ? null : $"{basis}/Auftraege/{auftrag.Id}";
         var kunde = auftrag.Kunde;
+        var anhaenge = eintrag.Anhaenge.Count == 0
+            ? null
+            : "Anhänge, abrufbar im Auftrag: " + string.Join(", ", eintrag.Anhaenge.OrderBy(a => a.Id).Select(a => a.Dateiname));
 
         switch (eintrag.Art)
         {
@@ -37,6 +40,7 @@ public static class Mailtexte
                 return AnKunden(kunde, auftrag, "Nachricht",
                     $"zum Auftrag {auftrag.Id} „{auftrag.Betreff}“ gibt es eine Nachricht der IT:",
                     eintrag.Text,
+                    anhaenge,
                     Link("Antworten ist hier möglich:", fuerKunden));
 
             case VerlaufArt.Abgeschlossen:
@@ -51,6 +55,7 @@ public static class Mailtexte
                 return AnBearbeiter(auftrag.Bearbeiter, auftrag, "Antwort",
                     $"{kunde.Name} hat zum Auftrag {auftrag.Id} „{auftrag.Betreff}“ geantwortet:",
                     eintrag.Text,
+                    anhaenge,
                     fuerBearbeiter);
 
             case VerlaufArt.Weitergeleitet:

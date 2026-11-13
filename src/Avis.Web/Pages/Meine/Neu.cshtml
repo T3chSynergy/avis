@@ -6,7 +6,7 @@
 <h1>Neuer Auftrag</h1>
 <p class="erklaerung">Der Auftrag geht an die IT-Hotline.</p>
 
-<form method="post" class="formular">
+<form method="post" class="formular" enctype="multipart/form-data">
     <div asp-validation-summary="ModelOnly" class="meldung fehler"></div>
     <fieldset>
         <legend>Auftrag</legend>
@@ -33,6 +33,10 @@
                 <input asp-for="Eingabe.Geraet" />
                 <span asp-validation-for="Eingabe.Geraet" class="feldfehler"></span>
             </div>
+        </div>
+        <div class="feld">
+            <partial name="_Dateifeld" model='"dateien"' />
+            <span asp-validation-for="Dateien" class="feldfehler"></span>
         </div>
     </fieldset>
 

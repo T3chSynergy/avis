@@ -1,6 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Avis.Web;
+using Avis.Web.Anhaenge;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Mail;
@@ -24,6 +25,8 @@ builder.Services.AddSingleton<Ortszeit>();
 builder.AddAvisAnmeldung();
 builder.AddAvisVerzeichnis();
 builder.AddAvisMail();
+builder.Services.Configure<AnhangOptionen>(builder.Configuration.GetSection("Anhaenge"));
+builder.Services.AddSingleton<Anhangablage>();
 
 builder.Services.AddRazorPages(o =>
 {
@@ -31,6 +34,7 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Verwaltung", Rollen.Administrator);
     o.Conventions.AuthorizePage("/Geraete/Bearbeiten", Rollen.Administrator);
     o.Conventions.AuthorizeFolder("/Meine", Richtlinien.Angemeldet);
+    o.Conventions.AuthorizeFolder("/Anhaenge", Richtlinien.Angemeldet);
     o.Conventions.AuthorizePage("/Index", Richtlinien.Angemeldet);
     o.Conventions.AllowAnonymousToPage("/Anmeldung");
     o.Conventions.AllowAnonymousToPage("/Fehler");

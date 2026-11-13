@@ -1,3 +1,4 @@
+using Avis.Web.Anhaenge;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -8,8 +9,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Auftraege;
 
-public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
+public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageModel
 {
+    /// <summary>In dieser Anfrage gespeicherte Dateien. Scheitert die Aktion, werden sie wieder gelöscht.</summary>
+    private readonly List<Anhang> _neueAnhaenge = [];
+
     public Auftrag Auftrag { get; private set; } = null!;
     public List<SelectListItem> Gruppen { get; private set; } = [];
     public List<SelectListItem> Bearbeiter { get; private set; } = [];
@@ -28,6 +32,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
             .Include(a => a.Standort)
             .Include(a => a.Inventargeraet)
             .Include(a => a.Verlauf).ThenInclude(v => v.Benutzer)
+            .Include(a => a.Verlauf).ThenInclude(v => v.Anhaenge)
             .FirstOrDefaultAsync(a => a.Id == id);
         if (auftrag is null)
             return NotFound();
@@ -65,15 +70,22 @@ public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
             auftrag.Weiterleiten(ziel, ich, jetzt, bevorzugt, text);
         });
 
-    public Task<IActionResult> OnPostInternerKommentarAsync(int id, int version, string? text) =>
+    public Task<IActionResult> OnPostInternerKommentarAsync(int id, int version, string? text, List<IFormFile> dateien) =>
         AusfuehrenAsync(id, version, "Der interne Kommentar wurde gespeichert.",
-            (auftrag, ich, jetzt) => auftrag.InternKommentieren(ich, Pflichttext(text), jetzt),
+            async (auftrag, ich, jetzt) => auftrag.InternKommentieren(ich, text, jetzt, await AnhaengeSpeichernAsync(dateien)),
             versionPruefen: false);
 
-    public Task<IActionResult> OnPostNachrichtAnKundenAsync(int id, int version, string? text) =>
+    public Task<IActionResult> OnPostNachrichtAnKundenAsync(int id, int version, string? text, List<IFormFile> dateien) =>
         AusfuehrenAsync(id, version, "Die Nachricht an den Kunden wurde gespeichert.",
-            (auftrag, ich, jetzt) => auftrag.NachrichtAnKunden(ich, Pflichttext(text), jetzt),
+            async (auftrag, ich, jetzt) => auftrag.NachrichtAnKunden(ich, text, jetzt, await AnhaengeSpeichernAsync(dateien)),
             versionPruefen: false);
+
+    private async Task<List<Anhang>> AnhaengeSpeichernAsync(List<IFormFile> dateien)
+    {
+        var anhaenge = await ablage.SpeichernAsync(dateien);
+        _neueAnhaenge.AddRange(anhaenge);
+        return anhaenge;
+    }
 
     public Task<IActionResult> OnPostAbschliessenAsync(int id, int version, string? text) =>
         AusfuehrenAsync(id, version, "Der Auftrag wurde abgeschlossen.",
@@ -127,10 +139,12 @@ public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
         }
         catch (AuftragException ex)
         {
+            ablage.Verwerfen(_neueAnhaenge);
             TempData["Fehler"] = ex.Message;
         }
         catch (DbUpdateConcurrencyException)
         {
+            ablage.Verwerfen(_neueAnhaenge);
             TempData["Fehler"] = veraltet;
         }
 

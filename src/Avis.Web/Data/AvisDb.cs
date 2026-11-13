@@ -20,6 +20,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     public DbSet<Standort> Standorte => Set<Standort>();
     public DbSet<Benachrichtigung> Benachrichtigungen => Set<Benachrichtigung>();
     public DbSet<Inventargeraet> Geraete => Set<Inventargeraet>();
+    public DbSet<Anhang> Anhaenge => Set<Anhang>();
 
     /// <summary>
     /// Ob zu neuen Verlaufseinträgen Mails vorgemerkt werden. Beim Anlegen
@@ -156,7 +157,19 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.HasIndex(a => new { a.BearbeiterId, a.AbgeschlossenAm });
         });
 
-        model.Entity<Verlaufseintrag>(e => e.ToTable("Verlauf"));
+        model.Entity<Verlaufseintrag>(e =>
+        {
+            e.ToTable("Verlauf");
+            e.HasMany(v => v.Anhaenge).WithOne(a => a.Verlaufseintrag).HasForeignKey(a => a.VerlaufseintragId);
+        });
+
+        model.Entity<Anhang>(e =>
+        {
+            e.ToTable("Anhaenge");
+            e.Property(a => a.Dateiname).HasMaxLength(255);
+            e.Property(a => a.Inhaltstyp).HasMaxLength(200);
+            e.Property(a => a.Ablagename).HasMaxLength(100);
+        });
 
         model.Entity<Inventargeraet>(e =>
         {

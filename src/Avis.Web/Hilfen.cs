@@ -34,6 +34,13 @@ public class Ortszeit(IConfiguration konfiguration)
 
 public static class Anzeige
 {
+    public static string Dateigroesse(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes} Byte",
+        < 1024 * 1024 => $"{bytes / 1024.0:0} KB",
+        _ => $"{bytes / (1024.0 * 1024.0):0.0} MB",
+    };
+
     public static string Text(this AuftragStatus status) => status switch
     {
         AuftragStatus.Offen => "offen",

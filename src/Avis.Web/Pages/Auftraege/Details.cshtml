@@ -76,6 +76,7 @@
                     </div>
                     @if (v.Beschreibung is not null) { <p class="text">@v.Beschreibung</p> }
                     @if (v.Text is not null) { <p class="text">@v.Text</p> }
+                    <partial name="_Anhaenge" model="v.Anhaenge" />
                 </li>
             }
         </ol>
@@ -126,11 +127,12 @@
                 <button type="submit">Weiterleiten</button>
             </form>
 
-            <form method="post" asp-page-handler="NachrichtAnKunden">
+            <form method="post" asp-page-handler="NachrichtAnKunden" enctype="multipart/form-data">
                 <input type="hidden" name="version" value="@a.Version" />
                 <h3>Nachricht an den Kunden</h3>
-                <label for="kunde-text">Der Kunde sieht diesen Text.</label>
-                <textarea id="kunde-text" name="text" rows="3" required></textarea>
+                <label for="kunde-text">Der Kunde sieht diesen Text und die Anhänge.</label>
+                <textarea id="kunde-text" name="text" rows="3"></textarea>
+                <partial name="_Dateifeld" model='"kunde-dateien"' />
                 <button type="submit">An den Kunden senden</button>
             </form>
 
@@ -146,11 +148,12 @@
             }
         }
 
-        <form method="post" asp-page-handler="InternerKommentar" class="intern">
+        <form method="post" asp-page-handler="InternerKommentar" class="intern" enctype="multipart/form-data">
             <input type="hidden" name="version" value="@a.Version" />
             <h3>Interner Kommentar</h3>
-            <label for="intern-text">Der Kunde sieht diesen Text nicht.</label>
-            <textarea id="intern-text" name="text" rows="3" required></textarea>
+            <label for="intern-text">Der Kunde sieht weder diesen Text noch die Anhänge.</label>
+            <textarea id="intern-text" name="text" rows="3"></textarea>
+            <partial name="_Dateifeld" model='"intern-dateien"' />
             <button type="submit">Intern speichern</button>
         </form>
     </section>

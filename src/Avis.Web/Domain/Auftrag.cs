@@ -129,7 +129,8 @@ public class Auftrag
         Benutzer erfasstVon,
         Gruppe gruppe,
         Eingang eingang,
-        DateTime jetzt)
+        DateTime jetzt,
+        IReadOnlyList<Anhang>? anhaenge = null)
     {
         var auftrag = new Auftrag
         {
@@ -144,7 +145,7 @@ public class Auftrag
             GeaendertAm = jetzt,
         };
         auftrag.Setzen(Bereinigt(angaben));
-        auftrag.Eintragen(VerlaufArt.Erfasst, erfasstVon, jetzt, $"Erfasst in Gruppe {gruppe.Name}");
+        auftrag.Eintragen(VerlaufArt.Erfasst, erfasstVon, jetzt, $"Erfasst in Gruppe {gruppe.Name}", anhaenge: anhaenge);
         return auftrag;
     }
 
@@ -241,21 +242,26 @@ public class Auftrag
     }
 
     /// <summary>Für den Kunden unsichtbar.</summary>
-    public void InternKommentieren(Benutzer durch, string text, DateTime jetzt) =>
-        Eintragen(VerlaufArt.InternerKommentar, durch, jetzt, null, text, aendertDenStand: false);
+    public void InternKommentieren(Benutzer durch, string? text, DateTime jetzt, IReadOnlyList<Anhang>? anhaenge = null)
+    {
+        TextOderAnhang(text, anhaenge);
+        Eintragen(VerlaufArt.InternerKommentar, durch, jetzt, null, text, aendertDenStand: false, anhaenge);
+    }
 
     /// <summary>Für den Kunden sichtbar.</summary>
-    public void NachrichtAnKunden(Benutzer durch, string text, DateTime jetzt)
+    public void NachrichtAnKunden(Benutzer durch, string? text, DateTime jetzt, IReadOnlyList<Anhang>? anhaenge = null)
     {
         NichtAbgeschlossen();
-        Eintragen(VerlaufArt.NachrichtAnKunden, durch, jetzt, null, text, aendertDenStand: false);
+        TextOderAnhang(text, anhaenge);
+        Eintragen(VerlaufArt.NachrichtAnKunden, durch, jetzt, null, text, aendertDenStand: false, anhaenge);
     }
 
     /// <summary>Der Kunde antwortet, zum Beispiel auf eine Rückfrage.</summary>
-    public void KundeAntwortet(Benutzer durch, string text, DateTime jetzt)
+    public void KundeAntwortet(Benutzer durch, string? text, DateTime jetzt, IReadOnlyList<Anhang>? anhaenge = null)
     {
         NichtAbgeschlossen();
-        Eintragen(VerlaufArt.AntwortDesKunden, durch, jetzt, null, text, aendertDenStand: false);
+        TextOderAnhang(text, anhaenge);
+        Eintragen(VerlaufArt.AntwortDesKunden, durch, jetzt, null, text, aendertDenStand: false, anhaenge);
     }
 
     /// <summary>Nur der zuständige Bearbeiter schließt ab.</summary>
@@ -279,6 +285,13 @@ public class Auftrag
         Bearbeiter = null;
         BearbeiterId = null;
         Eintragen(VerlaufArt.WiederGeoeffnet, durch, jetzt, $"Wieder geöffnet in Gruppe {Gruppe.Name}", text);
+    }
+
+    /// <summary>Ein Kommentar oder eine Nachricht braucht Text, eine Datei oder beides.</summary>
+    private static void TextOderAnhang(string? text, IReadOnlyList<Anhang>? anhaenge)
+    {
+        if (string.IsNullOrWhiteSpace(text) && anhaenge is not { Count: > 0 })
+            throw new AuftragException("Bitte einen Text eingeben oder eine Datei anhängen.");
     }
 
     private void NichtAbgeschlossen()
@@ -337,9 +350,10 @@ public class Auftrag
         DateTime jetzt,
         string? beschreibung,
         string? text = null,
-        bool aendertDenStand = true)
+        bool aendertDenStand = true,
+        IReadOnlyList<Anhang>? anhaenge = null)
     {
-        _verlauf.Add(new Verlaufseintrag(this, art, durch, jetzt, beschreibung, string.IsNullOrWhiteSpace(text) ? null : text.Trim()));
+        _verlauf.Add(new Verlaufseintrag(this, art, durch, jetzt, beschreibung, string.IsNullOrWhiteSpace(text) ? null : text.Trim(), anhaenge));
         GeaendertAm = jetzt;
         if (aendertDenStand)
             Version++;

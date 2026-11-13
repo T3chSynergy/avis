@@ -30,6 +30,7 @@ public class Benachrichtigungsversand(
             .OrderBy(b => b.Id)
             .Take(20)
             .Include(b => b.Verlaufseintrag.Benutzer)
+            .Include(b => b.Verlaufseintrag.Anhaenge)
             .Include(b => b.Verlaufseintrag.Auftrag.Kunde)
             .Include(b => b.Verlaufseintrag.Auftrag.Gruppe)
             .Include(b => b.Verlaufseintrag.Auftrag.Bearbeiter)

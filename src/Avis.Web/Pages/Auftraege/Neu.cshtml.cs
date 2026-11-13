@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Avis.Web.Anhaenge;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -10,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Auftraege;
 
-public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
+public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageModel
 {
     public class Formular
     {
@@ -40,6 +41,9 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
 
     [BindProperty]
     public string? Suche { get; set; }
+
+    [BindProperty]
+    public List<IFormFile> Dateien { get; set; } = [];
 
     public List<SelectListItem> Gruppen { get; private set; } = [];
     public AuftragAuswahl Auswahl { get; private set; } = null!;
@@ -101,16 +105,36 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
             return Page();
         }
 
+        List<Anhang> anhaenge;
+        try
+        {
+            anhaenge = await ablage.SpeichernAsync(Dateien);
+        }
+        catch (AuftragException ex)
+        {
+            ModelState.AddModelError(nameof(Dateien), ex.Message);
+            await ListenLadenAsync();
+            return Page();
+        }
+
         var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
         var jetzt = uhr.GetUtcNow().UtcDateTime;
         kunde ??= await KundeFindenOderAnlegenAsync();
 
-        var auftrag = Auftrag.Erfassen(angaben, kunde, ich, gruppe, Eingabe.Eingang, jetzt);
+        var auftrag = Auftrag.Erfassen(angaben, kunde, ich, gruppe, Eingabe.Eingang, jetzt, anhaenge);
         if (Eingabe.SofortUebernehmen)
             auftrag.Uebernehmen(ich, jetzt);
 
         db.Auftraege.Add(auftrag);
-        await db.SaveChangesAsync();
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch
+        {
+            ablage.Verwerfen(anhaenge);
+            throw;
+        }
 
         TempData["Meldung"] = $"Auftrag {auftrag.Id} wurde erfasst.";
         return RedirectToPage("Details", new { id = auftrag.Id });
