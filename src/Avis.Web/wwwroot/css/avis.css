@@ -209,3 +209,10 @@ a.knopf {
 }
 a.knopf.haupt { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
 a.knopf.haupt:hover { background: #184c87; }
+
+/* Suche */
+.schnellsuche { margin: 0; }
+.schnellsuche input { width: 200px; padding: 4px 8px; border: 0; }
+.suchzeile .feld { flex: 0 1 190px; }
+.suchzeile .feld.breit { flex: 1 1 300px; max-width: 520px; }
+.suchzeile > a { padding-bottom: 7px; }

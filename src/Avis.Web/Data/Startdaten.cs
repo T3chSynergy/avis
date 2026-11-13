@@ -28,6 +28,15 @@ public static class Startdaten
             await db.SaveChangesAsync();
         }
 
+        // Aufträge aus der Zeit vor der Suche bekommen ihren Suchtext.
+        var auftraegeOhneSuchtext = await db.Auftraege.Where(a => a.Suchtext == "").Include(a => a.Verlauf).ToListAsync();
+        if (auftraegeOhneSuchtext.Count > 0)
+        {
+            foreach (var auftrag in auftraegeOhneSuchtext)
+                auftrag.SuchtextAktualisieren();
+            await db.SaveChangesAsync();
+        }
+
         if (app.Configuration.GetValue<bool>("Testdaten:Anlegen"))
         {
             if (!app.Environment.IsDevelopment())

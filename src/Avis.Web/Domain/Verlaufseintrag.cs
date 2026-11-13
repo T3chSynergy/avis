@@ -30,6 +30,7 @@ public class Verlaufseintrag
         Zeitpunkt = zeitpunkt;
         Beschreibung = beschreibung;
         Text = text;
+        SuchtextAktualisieren();
     }
 
     public int Id { get; private set; }
@@ -52,6 +53,11 @@ public class Verlaufseintrag
 
     /// <summary>Vom Benutzer geschriebener Text.</summary>
     public string? Text { get; private set; }
+
+    /// <summary>Der Text in Kleinbuchstaben, für die Suche.</summary>
+    public string? Suchtext { get; private set; }
+
+    internal void SuchtextAktualisieren() => Suchtext = Text?.ToLowerInvariant();
 
     /// <summary>
     /// Ob der Kunde den Eintrag sieht. Interne Kommentare und

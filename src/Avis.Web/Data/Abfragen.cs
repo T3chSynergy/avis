@@ -46,6 +46,29 @@ public static class Abfragen
         return kunden;
     }
 
+    /// <summary>
+    /// Aufträge, bei denen jedes Wort der Suche in Betreff, Beschreibung,
+    /// Gerät, beim Kunden oder in einem Text des Verlaufs vorkommt. Eine Zahl
+    /// trifft auch die Auftragsnummer.
+    /// </summary>
+    public static IQueryable<Auftrag> Suchen(this IQueryable<Auftrag> auftraege, string? suche)
+    {
+        foreach (var wort in Suchworte(suche))
+        {
+            var nummer = Auftragsnummer(wort) ?? -1;
+            auftraege = auftraege.Where(a =>
+                a.Id == nummer
+                || a.Suchtext.Contains(wort)
+                || a.Kunde.Suchtext.Contains(wort)
+                || a.Verlauf.Any(v => v.Suchtext != null && v.Suchtext.Contains(wort)));
+        }
+        return auftraege;
+    }
+
+    /// <summary>Liest "123" oder "#123" als Auftragsnummer.</summary>
+    public static int? Auftragsnummer(string? text) =>
+        int.TryParse(text?.Trim().TrimStart('#'), out var nummer) && nummer > 0 ? nummer : null;
+
     public static string[] Suchworte(string? suche) =>
         (suche ?? "").ToLowerInvariant().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 

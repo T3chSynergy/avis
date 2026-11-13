@@ -72,6 +72,10 @@ namespace Avis.Web.Data.Migrations
                     b.Property<int?>("StandortId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Suchtext")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateOnly?>("Termin")
                         .HasColumnType("TEXT");
 
@@ -322,6 +326,9 @@ namespace Avis.Web.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Beschreibung")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Suchtext")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Text")

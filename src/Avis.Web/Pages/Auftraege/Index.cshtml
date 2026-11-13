@@ -5,15 +5,39 @@
 }
 <h1>Alle Aufträge</h1>
 
-<nav class="filter" aria-label="Status">
-    <a asp-page="Index" asp-route-status="aktiv" aria-current="@(Model.Status == "aktiv" ? "page" : null)">Offen und in Bearbeitung</a>
-    <a asp-page="Index" asp-route-status="offen" aria-current="@(Model.Status == "offen" ? "page" : null)">Offen</a>
-    <a asp-page="Index" asp-route-status="bearbeitung" aria-current="@(Model.Status == "bearbeitung" ? "page" : null)">In Bearbeitung</a>
-    <a asp-page="Index" asp-route-status="abgeschlossen" aria-current="@(Model.Status == "abgeschlossen" ? "page" : null)">Abgeschlossen</a>
-</nav>
+<form method="get" class="suchzeile" role="search">
+    <div class="feld breit">
+        <label for="q">Suche in Betreff, Beschreibung, Gerät, Kunde und Verlauf</label>
+        <input id="q" name="q" value="@Model.Q" type="search" autocomplete="off" />
+    </div>
+    <div class="feld">
+        <label for="status">Status</label>
+        <select id="status" name="status" asp-for="Status">
+            <option value="aktiv">Offen und in Bearbeitung</option>
+            <option value="offen">Offen</option>
+            <option value="bearbeitung">In Bearbeitung</option>
+            <option value="abgeschlossen">Abgeschlossen</option>
+            <option value="alle">Alle</option>
+        </select>
+    </div>
+    <div class="feld">
+        <label for="gruppe">Gruppe</label>
+        <select id="gruppe" name="gruppe" asp-for="Gruppe" asp-items="Model.Gruppen">
+            <option value="">Alle</option>
+        </select>
+    </div>
+    <div class="feld">
+        <label for="bearbeiter">Bearbeiter</label>
+        <select id="bearbeiter" name="bearbeiter" asp-for="Bearbeiter" asp-items="Model.Bearbeiterliste">
+            <option value="">Alle</option>
+        </select>
+    </div>
+    <button type="submit" class="haupt">Suchen</button>
+    <a asp-page="Index">Zurücksetzen</a>
+</form>
 
 <partial name="_Auftragsliste" model="Model.Auftraege" />
 @if (Model.Gekuerzt)
 {
-    <p class="erklaerung">Es werden die ersten @IndexModel.Hoechstzahl Aufträge angezeigt.</p>
+    <p class="erklaerung">Es werden die ersten @IndexModel.Hoechstzahl Aufträge angezeigt. Grenze die Suche ein, um weitere zu finden.</p>
 }

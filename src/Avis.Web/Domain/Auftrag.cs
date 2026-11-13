@@ -100,6 +100,13 @@ public class Auftrag
     /// </summary>
     public int Version { get; private set; }
 
+    /// <summary>
+    /// Betreff, Beschreibung und Gerät in Kleinbuchstaben. Die Suche
+    /// vergleicht nur mit diesem Feld und verhält sich dadurch in jeder
+    /// Datenbank gleich, auch bei Umlauten.
+    /// </summary>
+    public string Suchtext { get; private set; } = "";
+
     public IReadOnlyList<Verlaufseintrag> Verlauf => _verlauf;
 
     public AuftragStatus Status =>
@@ -285,6 +292,15 @@ public class Auftrag
         Dringlichkeit = angaben.Dringlichkeit;
         Wichtigkeit = angaben.Wichtigkeit;
         Termin = angaben.Termin;
+        SuchtextAktualisieren();
+    }
+
+    /// <summary>Setzt den Suchtext neu, auch für die geladenen Verlaufseinträge.</summary>
+    public void SuchtextAktualisieren()
+    {
+        Suchtext = string.Join(' ', new[] { Betreff, Beschreibung, Geraet }.Where(t => !string.IsNullOrWhiteSpace(t))).ToLowerInvariant();
+        foreach (var eintrag in _verlauf)
+            eintrag.SuchtextAktualisieren();
     }
 
     /// <summary>
