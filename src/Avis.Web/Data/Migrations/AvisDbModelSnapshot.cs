@@ -270,7 +270,6 @@ namespace Avis.Web.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Beschreibung")
-                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Text")

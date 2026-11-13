@@ -21,14 +21,31 @@ public enum AuftragStatus
     Abgeschlossen,
 }
 
+/// <summary>
+/// Die Angaben eines Auftrags, die beim Erfassen gesetzt und später geändert
+/// werden können.
+/// </summary>
+public record AuftragAngaben(string Betreff, string Beschreibung)
+{
+    public Kategorie? Kategorie { get; init; }
+    public Standort? Standort { get; init; }
+
+    /// <summary>Freitext, z. B. eine Inventarnummer.</summary>
+    public string? Geraet { get; init; }
+
+    public Stufe Dringlichkeit { get; init; } = Stufe.Mittel;
+    public Stufe Wichtigkeit { get; init; } = Stufe.Mittel;
+    public DateOnly? Termin { get; init; }
+}
+
 /// <summary>Eine Aktion ist im aktuellen Zustand des Auftrags nicht erlaubt.</summary>
 public class AuftragException(string message) : Exception(message);
 
 /// <summary>
 /// Ein Auftrag gehört immer zu genau einer Gruppe und hat höchstens einen
 /// Bearbeiter. Der Status ergibt sich daraus und wird nicht gespeichert.
-/// Gruppe, Bearbeiter und Abschluss ändern sich nur über die Methoden dieser
-/// Klasse, und jede davon schreibt einen Verlaufseintrag.
+/// Alles an einem Auftrag ändert sich nur über die Methoden dieser Klasse,
+/// und jede davon schreibt einen Verlaufseintrag.
 /// </summary>
 public class Auftrag
 {
@@ -39,8 +56,8 @@ public class Auftrag
     /// <summary>Die Auftragsnummer.</summary>
     public int Id { get; private set; }
 
-    public string Betreff { get; set; } = "";
-    public string Beschreibung { get; set; } = "";
+    public string Betreff { get; private set; } = "";
+    public string Beschreibung { get; private set; } = "";
 
     public int KundeId { get; private set; }
     public Kunde Kunde { get; private set; } = null!;
@@ -50,18 +67,18 @@ public class Auftrag
 
     public Eingang Eingang { get; private set; }
 
-    public int? KategorieId { get; set; }
-    public Kategorie? Kategorie { get; set; }
+    public int? KategorieId { get; private set; }
+    public Kategorie? Kategorie { get; private set; }
 
-    public int? StandortId { get; set; }
-    public Standort? Standort { get; set; }
+    public int? StandortId { get; private set; }
+    public Standort? Standort { get; private set; }
 
     /// <summary>Freitext, z. B. eine Inventarnummer.</summary>
-    public string? Geraet { get; set; }
+    public string? Geraet { get; private set; }
 
-    public Stufe Dringlichkeit { get; set; } = Stufe.Mittel;
-    public Stufe Wichtigkeit { get; set; } = Stufe.Mittel;
-    public DateOnly? Termin { get; set; }
+    public Stufe Dringlichkeit { get; private set; } = Stufe.Mittel;
+    public Stufe Wichtigkeit { get; private set; } = Stufe.Mittel;
+    public DateOnly? Termin { get; private set; }
 
     public int GruppeId { get; private set; }
     public Gruppe Gruppe { get; private set; } = null!;
@@ -77,8 +94,9 @@ public class Auftrag
     public DateTime? AbgeschlossenAm { get; private set; }
 
     /// <summary>
-    /// Zählt bei jeder Aktion hoch. Damit fällt auf, wenn jemand auf einem
-    /// veralteten Stand der Seite eine Aktion auslöst.
+    /// Zählt hoch, wenn sich Gruppe, Bearbeiter, Abschluss oder Angaben
+    /// ändern. Damit fällt auf, wenn jemand auf einem veralteten Stand der
+    /// Seite eine Aktion auslöst. Kommentare zählen nicht.
     /// </summary>
     public int Version { get; private set; }
 
@@ -93,8 +111,7 @@ public class Auftrag
     public int Prioritaet => 5 - (int)Dringlichkeit - (int)Wichtigkeit;
 
     public static Auftrag Erfassen(
-        string betreff,
-        string beschreibung,
+        AuftragAngaben angaben,
         Kunde kunde,
         Benutzer erfasstVon,
         Gruppe gruppe,
@@ -103,8 +120,6 @@ public class Auftrag
     {
         var auftrag = new Auftrag
         {
-            Betreff = betreff,
-            Beschreibung = beschreibung,
             Kunde = kunde,
             KundeId = kunde.Id,
             ErfasstVon = erfasstVon,
@@ -115,8 +130,49 @@ public class Auftrag
             ErstelltAm = jetzt,
             GeaendertAm = jetzt,
         };
+        auftrag.Setzen(Bereinigt(angaben));
         auftrag.Eintragen(VerlaufArt.Erfasst, erfasstVon, jetzt, $"Erfasst in Gruppe {gruppe.Name}");
         return auftrag;
+    }
+
+    /// <summary>
+    /// Ändert die Angaben und hält im Verlauf fest, was vorher galt.
+    /// Gibt false zurück, wenn sich nichts geändert hat.
+    /// </summary>
+    public bool Aendern(AuftragAngaben angaben, Benutzer durch, DateTime jetzt)
+    {
+        NichtAbgeschlossen();
+        var neu = Bereinigt(angaben);
+
+        var aenderungen = new List<string>();
+        void Vergleichen(string feld, string? alt, string? wert, bool geaendert)
+        {
+            if (geaendert)
+                aenderungen.Add($"{feld}: {alt ?? "–"} → {wert ?? "–"}");
+        }
+
+        Vergleichen("Betreff", Betreff, neu.Betreff, Betreff != neu.Betreff);
+        Vergleichen("Kategorie", Kategorie?.Name, neu.Kategorie?.Name, KategorieId != neu.Kategorie?.Id);
+        Vergleichen("Standort", Standort?.Name, neu.Standort?.Name, StandortId != neu.Standort?.Id);
+        Vergleichen("Gerät", Geraet, neu.Geraet, Geraet != neu.Geraet);
+        Vergleichen("Dringlichkeit", Dringlichkeit.Text(), neu.Dringlichkeit.Text(), Dringlichkeit != neu.Dringlichkeit);
+        Vergleichen("Wichtigkeit", Wichtigkeit.Text(), neu.Wichtigkeit.Text(), Wichtigkeit != neu.Wichtigkeit);
+        Vergleichen("Termin", Termin?.ToString("dd.MM.yyyy"), neu.Termin?.ToString("dd.MM.yyyy"), Termin != neu.Termin);
+
+        // Der alte Text der Beschreibung bleibt im Verlauf erhalten.
+        string? bisherigeBeschreibung = null;
+        if (Beschreibung != neu.Beschreibung)
+        {
+            aenderungen.Add("Beschreibung geändert. Bisheriger Text:");
+            bisherigeBeschreibung = Beschreibung;
+        }
+
+        if (aenderungen.Count == 0)
+            return false;
+
+        Setzen(neu);
+        Eintragen(VerlaufArt.Geaendert, durch, jetzt, string.Join("\n", aenderungen), bisherigeBeschreibung);
+        return true;
     }
 
     /// <summary>Jeder Bearbeiter darf übernehmen, auch von einem anderen Bearbeiter.</summary>
@@ -159,13 +215,13 @@ public class Auftrag
 
     /// <summary>Für den Kunden unsichtbar.</summary>
     public void InternKommentieren(Benutzer durch, string text, DateTime jetzt) =>
-        Eintragen(VerlaufArt.InternerKommentar, durch, jetzt, null, text);
+        Eintragen(VerlaufArt.InternerKommentar, durch, jetzt, null, text, aendertDenStand: false);
 
     /// <summary>Für den Kunden sichtbar.</summary>
     public void NachrichtAnKunden(Benutzer durch, string text, DateTime jetzt)
     {
         NichtAbgeschlossen();
-        Eintragen(VerlaufArt.NachrichtAnKunden, durch, jetzt, null, text);
+        Eintragen(VerlaufArt.NachrichtAnKunden, durch, jetzt, null, text, aendertDenStand: false);
     }
 
     /// <summary>Nur der zuständige Bearbeiter schließt ab.</summary>
@@ -197,10 +253,50 @@ public class Auftrag
             throw new AuftragException("Der Auftrag ist abgeschlossen.");
     }
 
-    private void Eintragen(VerlaufArt art, Benutzer durch, DateTime jetzt, string? beschreibung, string? text = null)
+    private void Setzen(AuftragAngaben angaben)
+    {
+        Betreff = angaben.Betreff;
+        Beschreibung = angaben.Beschreibung;
+        Kategorie = angaben.Kategorie;
+        KategorieId = angaben.Kategorie?.Id;
+        Standort = angaben.Standort;
+        StandortId = angaben.Standort?.Id;
+        Geraet = angaben.Geraet;
+        Dringlichkeit = angaben.Dringlichkeit;
+        Wichtigkeit = angaben.Wichtigkeit;
+        Termin = angaben.Termin;
+    }
+
+    /// <summary>
+    /// Entfernt Leerraum am Rand und vereinheitlicht Zeilenenden, damit ein
+    /// unverändert abgeschicktes Formular nicht als Änderung gilt.
+    /// </summary>
+    private static AuftragAngaben Bereinigt(AuftragAngaben angaben)
+    {
+        var betreff = angaben.Betreff?.Trim() ?? "";
+        var beschreibung = angaben.Beschreibung?.ReplaceLineEndings("\n").Trim() ?? "";
+        if (betreff.Length == 0 || beschreibung.Length == 0)
+            throw new AuftragException("Betreff und Beschreibung dürfen nicht leer sein.");
+
+        return angaben with
+        {
+            Betreff = betreff,
+            Beschreibung = beschreibung,
+            Geraet = string.IsNullOrWhiteSpace(angaben.Geraet) ? null : angaben.Geraet.Trim(),
+        };
+    }
+
+    private void Eintragen(
+        VerlaufArt art,
+        Benutzer durch,
+        DateTime jetzt,
+        string? beschreibung,
+        string? text = null,
+        bool aendertDenStand = true)
     {
         _verlauf.Add(new Verlaufseintrag(this, art, durch, jetzt, beschreibung, string.IsNullOrWhiteSpace(text) ? null : text.Trim()));
         GeaendertAm = jetzt;
-        Version++;
+        if (aendertDenStand)
+            Version++;
     }
 }

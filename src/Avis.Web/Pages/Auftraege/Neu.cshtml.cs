@@ -24,23 +24,9 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
         [StringLength(50)]
         public string? KundeTelefon { get; set; }
 
-        [Required(ErrorMessage = "Bitte einen Betreff angeben.")]
-        [StringLength(200, ErrorMessage = "Der Betreff darf höchstens 200 Zeichen lang sein.")]
-        public string? Betreff { get; set; }
-
-        [Required(ErrorMessage = "Bitte eine Beschreibung angeben.")]
-        public string? Beschreibung { get; set; }
+        public AuftragFelder Felder { get; set; } = new();
 
         public Eingang Eingang { get; set; } = Eingang.Telefon;
-        public int? KategorieId { get; set; }
-        public int? StandortId { get; set; }
-
-        [StringLength(200)]
-        public string? Geraet { get; set; }
-
-        public Stufe Dringlichkeit { get; set; } = Stufe.Mittel;
-        public Stufe Wichtigkeit { get; set; } = Stufe.Mittel;
-        public DateOnly? Termin { get; set; }
         public int GruppeId { get; set; }
         public bool SofortUebernehmen { get; set; }
     }
@@ -49,8 +35,7 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
     public Formular Eingabe { get; set; } = new();
 
     public List<SelectListItem> Gruppen { get; private set; } = [];
-    public List<SelectListItem> Kategorien { get; private set; } = [];
-    public List<SelectListItem> Standorte { get; private set; } = [];
+    public AuftragAuswahl Auswahl { get; private set; } = null!;
 
     public async Task OnGetAsync()
     {
@@ -67,7 +52,8 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
         if (gruppe is null)
             ModelState.AddModelError("Eingabe.GruppeId", "Bitte eine Gruppe wählen.");
 
-        if (!ModelState.IsValid || gruppe is null)
+        var angaben = await Eingabe.Felder.AlsAngabenAsync(db, ModelState, "Eingabe.Felder");
+        if (angaben is null || gruppe is null)
         {
             await ListenLadenAsync();
             return Page();
@@ -77,21 +63,7 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
         var jetzt = uhr.GetUtcNow().UtcDateTime;
         var kunde = await KundeFindenOderAnlegenAsync();
 
-        var auftrag = Auftrag.Erfassen(
-            Eingabe.Betreff!.Trim(),
-            Eingabe.Beschreibung!.Trim(),
-            kunde,
-            ich,
-            gruppe,
-            Eingabe.Eingang,
-            jetzt);
-        auftrag.KategorieId = Eingabe.KategorieId;
-        auftrag.StandortId = Eingabe.StandortId;
-        auftrag.Geraet = string.IsNullOrWhiteSpace(Eingabe.Geraet) ? null : Eingabe.Geraet.Trim();
-        auftrag.Dringlichkeit = Eingabe.Dringlichkeit;
-        auftrag.Wichtigkeit = Eingabe.Wichtigkeit;
-        auftrag.Termin = Eingabe.Termin;
-
+        var auftrag = Auftrag.Erfassen(angaben, kunde, ich, gruppe, Eingabe.Eingang, jetzt);
         if (Eingabe.SofortUebernehmen)
             auftrag.Uebernehmen(ich, jetzt);
 
@@ -126,15 +98,6 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
             .OrderByDescending(g => g.IstEingangsgruppe).ThenBy(g => g.Name)
             .Select(g => new SelectListItem(g.Name, g.Id.ToString()))
             .ToListAsync();
-        Kategorien = await db.Kategorien.AsNoTracking()
-            .Where(k => k.Aktiv)
-            .OrderBy(k => k.Name)
-            .Select(k => new SelectListItem(k.Name, k.Id.ToString()))
-            .ToListAsync();
-        Standorte = await db.Standorte.AsNoTracking()
-            .Where(s => s.Aktiv)
-            .OrderBy(s => s.Name)
-            .Select(s => new SelectListItem(s.Name, s.Id.ToString()))
-            .ToListAsync();
+        Auswahl = await AuftragAuswahl.LadenAsync(db);
     }
 }

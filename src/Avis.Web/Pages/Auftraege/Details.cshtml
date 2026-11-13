@@ -22,7 +22,13 @@
 
 <div class="spalten">
     <section aria-labelledby="h-auftrag">
-        <h2 id="h-auftrag">Auftrag</h2>
+        <h2 id="h-auftrag">
+            Auftrag
+            @if (a.Status != AuftragStatus.Abgeschlossen)
+            {
+                <a class="nebenaktion" asp-page="Bearbeiten" asp-route-id="@a.Id">Bearbeiten</a>
+            }
+        </h2>
         <p class="text">@a.Beschreibung</p>
         <dl class="angaben">
             <dt>Kunde</dt>
@@ -57,7 +63,7 @@
                         <span>@v.Benutzer.Name · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
                         @if (!v.FuerKundenSichtbar) { <span class="hinweis">intern</span> }
                     </div>
-                    @if (v.Beschreibung is not null) { <p>@v.Beschreibung</p> }
+                    @if (v.Beschreibung is not null) { <p class="text">@v.Beschreibung</p> }
                     @if (v.Text is not null) { <p class="text">@v.Text</p> }
                 </li>
             }

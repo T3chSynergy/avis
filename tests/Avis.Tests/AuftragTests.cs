@@ -12,8 +12,10 @@ public class AuftragTests
     private readonly Benutzer _bernd = new() { Id = 2, Anmeldename = "bernd", Name = "Bernd Muster", IstBearbeiter = true };
     private readonly Kunde _kunde = new() { Id = 1, Name = "Dieter Kunde" };
 
-    private Auftrag Neu() =>
-        Auftrag.Erfassen("Drucker defekt", "Druckt nicht.", _kunde, _anna, _hotline, Eingang.Telefon, Jetzt);
+    private static readonly AuftragAngaben Angaben = new("Drucker defekt", "Druckt nicht.");
+
+    private Auftrag Neu(AuftragAngaben? angaben = null) =>
+        Auftrag.Erfassen(angaben ?? Angaben, _kunde, _anna, _hotline, Eingang.Telefon, Jetzt);
 
     [Fact]
     public void Neuer_Auftrag_liegt_offen_in_der_Gruppe()
@@ -164,14 +166,106 @@ public class AuftragTests
     }
 
     [Fact]
-    public void Jede_Aktion_erhoeht_die_Version()
+    public void Aktionen_erhoehen_die_Version_Kommentare_nicht()
     {
         var auftrag = Neu();
         var vorher = auftrag.Version;
 
-        auftrag.Uebernehmen(_anna, Jetzt);
+        auftrag.InternKommentieren(_anna, "Notiz.", Jetzt);
+        auftrag.NachrichtAnKunden(_anna, "Hallo.", Jetzt);
+        Assert.Equal(vorher, auftrag.Version);
 
+        auftrag.Uebernehmen(_anna, Jetzt);
         Assert.Equal(vorher + 1, auftrag.Version);
+
+        auftrag.Aendern(Angaben with { Dringlichkeit = Stufe.Hoch }, _anna, Jetzt);
+        Assert.Equal(vorher + 2, auftrag.Version);
+    }
+
+    [Fact]
+    public void Aendern_haelt_alte_und_neue_Werte_im_Verlauf_fest()
+    {
+        var stoerung = new Kategorie { Id = 1, Name = "Störung" };
+        var anfrage = new Kategorie { Id = 2, Name = "Anfrage" };
+        var haupthaus = new Standort { Id = 1, Name = "Haupthaus" };
+        var auftrag = Neu(Angaben with { Kategorie = stoerung, Geraet = "PC-0815" });
+
+        var geaendert = auftrag.Aendern(
+            new("Drucker im Flur defekt", "Druckt nicht.")
+            {
+                Kategorie = anfrage,
+                Standort = haupthaus,
+                Dringlichkeit = Stufe.Hoch,
+                Termin = new DateOnly(2026, 11, 20),
+            },
+            _bernd, Jetzt);
+
+        Assert.True(geaendert);
+        Assert.Equal("Drucker im Flur defekt", auftrag.Betreff);
+        Assert.Same(anfrage, auftrag.Kategorie);
+        Assert.Null(auftrag.Geraet);
+        Assert.Equal(2, auftrag.Prioritaet);
+
+        var eintrag = auftrag.Verlauf[^1];
+        Assert.Equal(VerlaufArt.Geaendert, eintrag.Art);
+        Assert.Same(_bernd, eintrag.Benutzer);
+        Assert.False(eintrag.FuerKundenSichtbar);
+        Assert.Equal(
+            [
+                "Betreff: Drucker defekt → Drucker im Flur defekt",
+                "Kategorie: Störung → Anfrage",
+                "Standort: – → Haupthaus",
+                "Gerät: PC-0815 → –",
+                "Dringlichkeit: mittel → hoch",
+                "Termin: – → 20.11.2026",
+            ],
+            eintrag.Beschreibung!.Split('\n'));
+        Assert.Null(eintrag.Text);
+    }
+
+    [Fact]
+    public void Der_bisherige_Text_der_Beschreibung_bleibt_im_Verlauf()
+    {
+        var auftrag = Neu();
+
+        auftrag.Aendern(Angaben with { Beschreibung = "Druckt nur leere Seiten." }, _anna, Jetzt);
+
+        Assert.Equal("Druckt nur leere Seiten.", auftrag.Beschreibung);
+        Assert.Equal("Beschreibung geändert. Bisheriger Text:", auftrag.Verlauf[^1].Beschreibung);
+        Assert.Equal("Druckt nicht.", auftrag.Verlauf[^1].Text);
+    }
+
+    [Fact]
+    public void Aendern_ohne_Unterschied_schreibt_nichts_in_den_Verlauf()
+    {
+        var auftrag = Neu(new("Drucker defekt", "Zeile eins\nZeile zwei") { Geraet = "PC-0815" });
+        var eintraege = auftrag.Verlauf.Count;
+
+        // So kommt ein unverändertes Formular aus dem Browser zurück.
+        var geaendert = auftrag.Aendern(
+            new(" Drucker defekt ", "Zeile eins\r\nZeile zwei\r\n") { Geraet = "PC-0815 " }, _anna, Jetzt);
+
+        Assert.False(geaendert);
+        Assert.Equal(eintraege, auftrag.Verlauf.Count);
+    }
+
+    [Fact]
+    public void Betreff_und_Beschreibung_duerfen_nicht_leer_werden()
+    {
+        var auftrag = Neu();
+
+        Assert.Throws<AuftragException>(() => auftrag.Aendern(Angaben with { Betreff = "  " }, _anna, Jetzt));
+        Assert.Throws<AuftragException>(() => auftrag.Aendern(Angaben with { Beschreibung = "" }, _anna, Jetzt));
+    }
+
+    [Fact]
+    public void Ein_abgeschlossener_Auftrag_laesst_sich_nicht_aendern()
+    {
+        var auftrag = Neu();
+        auftrag.Uebernehmen(_anna, Jetzt);
+        auftrag.Abschliessen(_anna, "Erledigt.", Jetzt);
+
+        Assert.Throws<AuftragException>(() => auftrag.Aendern(Angaben with { Dringlichkeit = Stufe.Hoch }, _anna, Jetzt));
     }
 
     [Theory]
@@ -186,9 +280,7 @@ public class AuftragTests
     [InlineData(Stufe.Niedrig, Stufe.Niedrig, 5)]
     public void Prioritaet_ergibt_sich_aus_Dringlichkeit_und_Wichtigkeit(Stufe dringlichkeit, Stufe wichtigkeit, int erwartet)
     {
-        var auftrag = Neu();
-        auftrag.Dringlichkeit = dringlichkeit;
-        auftrag.Wichtigkeit = wichtigkeit;
+        var auftrag = Neu(Angaben with { Dringlichkeit = dringlichkeit, Wichtigkeit = wichtigkeit });
 
         Assert.Equal(erwartet, auftrag.Prioritaet);
     }

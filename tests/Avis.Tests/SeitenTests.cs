@@ -80,6 +80,7 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     [InlineData("/Auftraege?status=abgeschlossen")]
     [InlineData("/Auftraege/Neu")]
     [InlineData("/Auftraege/1")]
+    [InlineData("/Auftraege/1/Bearbeiten")]
     public async Task Seiten_fuer_Bearbeiter_antworten(string pfad)
     {
         var client = await app.AnmeldenAlsAsync("anna");
@@ -122,12 +123,12 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         {
             ["Eingabe.KundeName"] = "Frieda Neu",
             ["Eingabe.KundeEmail"] = "Frieda.Neu@example.org",
-            ["Eingabe.Betreff"] = "Kein Netz am Arbeitsplatz",
-            ["Eingabe.Beschreibung"] = "Die Netzwerkdose in Raum 2.11 ist tot.",
+            ["Eingabe.Felder.Betreff"] = "Kein Netz am Arbeitsplatz",
+            ["Eingabe.Felder.Beschreibung"] = "Die Netzwerkdose in Raum 2.11 ist tot.",
             ["Eingabe.Eingang"] = "Telefon",
-            ["Eingabe.Dringlichkeit"] = "Hoch",
-            ["Eingabe.Wichtigkeit"] = "Mittel",
-            ["Eingabe.Termin"] = "2026-11-20",
+            ["Eingabe.Felder.Dringlichkeit"] = "Hoch",
+            ["Eingabe.Felder.Wichtigkeit"] = "Mittel",
+            ["Eingabe.Felder.Termin"] = "2026-11-20",
             ["Eingabe.GruppeId"] = hotline.Id.ToString(),
         });
         var seite = erfasst.RequestMessage!.RequestUri!.AbsolutePath;
@@ -188,8 +189,8 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var erfasst = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
         {
             ["Eingabe.KundeName"] = "Gustav Alt",
-            ["Eingabe.Betreff"] = "Bildschirm flackert",
-            ["Eingabe.Beschreibung"] = "Seit gestern.",
+            ["Eingabe.Felder.Betreff"] = "Bildschirm flackert",
+            ["Eingabe.Felder.Beschreibung"] = "Seit gestern.",
             ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.FirstAsync(g => g.IstEingangsgruppe))).Id.ToString(),
         });
         var seite = erfasst.RequestMessage!.RequestUri!.AbsolutePath;
@@ -201,6 +202,197 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
         Assert.Contains("inzwischen von jemand anderem geändert", await antwort.Content.ReadAsStringAsync());
         Assert.Equal("Anna Beispiel", (await LadenAsync(id)).Bearbeiter!.Name);
+    }
+
+    [Fact]
+    public async Task Angaben_eines_Auftrags_lassen_sich_aendern_und_stehen_im_Verlauf()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var id = await ErfassenAsync(anna, "Maus defekt");
+        var seite = $"/Auftraege/{id}/Bearbeiten";
+        var formular = await anna.GetStringAsync(seite);
+        Assert.Contains("Maus defekt", formular);
+
+        var antwort = await anna.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = (await LadenAsync(id)).Version.ToString(),
+            ["Felder.Betreff"] = "Maus und Tastatur defekt",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.Dringlichkeit"] = "Hoch",
+            ["Felder.Wichtigkeit"] = "Hoch",
+            ["Felder.Geraet"] = "PC-4711",
+        });
+
+        var text = await antwort.Content.ReadAsStringAsync();
+        Assert.Contains("Die Änderungen wurden gespeichert.", text);
+        Assert.Contains("Betreff: Maus defekt → Maus und Tastatur defekt", text);
+
+        var auftrag = await LadenAsync(id);
+        Assert.Equal("Maus und Tastatur defekt", auftrag.Betreff);
+        Assert.Equal("PC-4711", auftrag.Geraet);
+        Assert.Equal(1, auftrag.Prioritaet);
+        Assert.Equal(VerlaufArt.Geaendert, auftrag.Verlauf.OrderBy(v => v.Id).Last().Art);
+    }
+
+    [Fact]
+    public async Task Ein_unveraendert_gespeichertes_Formular_aendert_nichts()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var id = await ErfassenAsync(anna, "Zeile eins");
+        var seite = $"/Auftraege/{id}/Bearbeiten";
+        var vorher = await LadenAsync(id);
+
+        var antwort = await anna.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = vorher.Version.ToString(),
+            ["Felder.Betreff"] = vorher.Betreff,
+            ["Felder.Beschreibung"] = vorher.Beschreibung,
+            ["Felder.Dringlichkeit"] = vorher.Dringlichkeit.ToString(),
+            ["Felder.Wichtigkeit"] = vorher.Wichtigkeit.ToString(),
+        });
+
+        Assert.Contains("Es wurde nichts geändert.", await antwort.Content.ReadAsStringAsync());
+        var danach = await LadenAsync(id);
+        Assert.Equal(vorher.Version, danach.Version);
+        Assert.Equal(vorher.Verlauf.Count, danach.Verlauf.Count);
+    }
+
+    [Fact]
+    public async Task Aendern_auf_veraltetem_Stand_ueberschreibt_nichts_und_behaelt_die_Eingaben()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var bernd = await app.AnmeldenAlsAsync("bernd");
+        var id = await ErfassenAsync(anna, "Lüfter laut");
+        var seite = $"/Auftraege/{id}/Bearbeiten";
+        var alteVersion = (await LadenAsync(id)).Version;
+
+        // Bernd ändert die Dringlichkeit, während Anna ihr Formular noch offen hat.
+        await bernd.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = alteVersion.ToString(),
+            ["Felder.Betreff"] = "Lüfter laut",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.Dringlichkeit"] = "Hoch",
+            ["Felder.Wichtigkeit"] = "Mittel",
+        });
+        var antwort = await anna.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = alteVersion.ToString(),
+            ["Felder.Betreff"] = "Lüfter sehr laut",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.Dringlichkeit"] = "Mittel",
+            ["Felder.Wichtigkeit"] = "Mittel",
+        });
+
+        var text = await antwort.Content.ReadAsStringAsync();
+        Assert.Contains("inzwischen von jemand anderem geändert", text);
+        Assert.Contains("Lüfter sehr laut", text);
+        var auftrag = await LadenAsync(id);
+        Assert.Equal("Lüfter laut", auftrag.Betreff);
+        Assert.Equal(Stufe.Hoch, auftrag.Dringlichkeit);
+        Assert.Contains($"name=\"Version\" value=\"{auftrag.Version}\"", text);
+    }
+
+    [Fact]
+    public async Task Ein_Kommentar_macht_ein_offenes_Bearbeiten_Formular_nicht_ungueltig()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var id = await ErfassenAsync(anna, "Headset rauscht");
+        var seite = $"/Auftraege/{id}/Bearbeiten";
+        var version = (await LadenAsync(id)).Version;
+
+        await AktionAsync(anna, $"/Auftraege/{id}", "InternerKommentar", version, new() { ["text"] = "Ersatz liegt im Lager." });
+        var antwort = await anna.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = version.ToString(),
+            ["Felder.Betreff"] = "Headset rauscht stark",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+        });
+
+        Assert.Contains("Die Änderungen wurden gespeichert.", await antwort.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Ein_abgeschlossener_Auftrag_laesst_sich_nicht_bearbeiten()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var id = await ErfassenAsync(anna, "Kabel fehlt");
+        var auftragsseite = $"/Auftraege/{id}";
+        await AktionAsync(anna, auftragsseite, "Uebernehmen", (await LadenAsync(id)).Version);
+        await AktionAsync(anna, auftragsseite, "Abschliessen", (await LadenAsync(id)).Version, new() { ["text"] = "Kabel geliefert." });
+
+        var formular = await anna.GetStringAsync($"{auftragsseite}/Bearbeiten");
+        var gespeichert = await anna.PostFormularAsync("/Auftraege/Neu", $"{auftragsseite}/Bearbeiten", new()
+        {
+            ["Version"] = (await LadenAsync(id)).Version.ToString(),
+            ["Felder.Betreff"] = "Kabel fehlt immer noch",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+        });
+
+        Assert.Contains("lässt sich nicht bearbeiten", formular);
+        Assert.Contains("Der Auftrag ist abgeschlossen.", await gespeichert.Content.ReadAsStringAsync());
+        Assert.Equal("Kabel fehlt", (await LadenAsync(id)).Betreff);
+    }
+
+    [Fact]
+    public async Task Eine_deaktivierte_Kategorie_bleibt_beim_Bearbeiten_erhalten_steht_aber_sonst_nicht_zur_Auswahl()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var (alt, andere) = await app.DatenbankAsync(async db =>
+        {
+            var a = new Kategorie { Name = "Altverfahren" };
+            var b = new Kategorie { Name = "Stillgelegt", Aktiv = false };
+            db.Kategorien.AddRange(a, b);
+            await db.SaveChangesAsync();
+            return (a.Id, b.Id);
+        });
+        var erfasst = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        {
+            ["Eingabe.KundeName"] = "Test Kunde",
+            ["Eingabe.Felder.Betreff"] = "Altes Verfahren hakt",
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.Felder.KategorieId"] = alt.ToString(),
+            ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.FirstAsync(g => g.IstEingangsgruppe))).Id.ToString(),
+        });
+        var id = int.Parse(erfasst.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
+        await app.DatenbankAsync(db => db.Kategorien.Where(k => k.Id == alt).ExecuteUpdateAsync(k => k.SetProperty(x => x.Aktiv, false)));
+        var seite = $"/Auftraege/{id}/Bearbeiten";
+
+        // Die eigene, inzwischen deaktivierte Kategorie steht noch zur Auswahl und bleibt.
+        Assert.Contains("Altverfahren", await anna.GetStringAsync(seite));
+        await anna.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = (await LadenAsync(id)).Version.ToString(),
+            ["Felder.Betreff"] = "Altes Verfahren hakt wieder",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.KategorieId"] = alt.ToString(),
+        });
+        var auftrag = await LadenAsync(id);
+        Assert.Equal("Altes Verfahren hakt wieder", auftrag.Betreff);
+        Assert.Equal(alt, auftrag.KategorieId);
+
+        // Eine andere deaktivierte Kategorie lässt sich nicht wählen.
+        var antwort = await anna.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = auftrag.Version.ToString(),
+            ["Felder.Betreff"] = "Altes Verfahren hakt wieder",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.KategorieId"] = andere.ToString(),
+        });
+        Assert.Contains("Diese Kategorie steht nicht zur Auswahl.", await antwort.Content.ReadAsStringAsync());
+        Assert.Equal(alt, (await LadenAsync(id)).KategorieId);
+    }
+
+    private async Task<int> ErfassenAsync(HttpClient client, string betreff)
+    {
+        var antwort = await client.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        {
+            ["Eingabe.KundeName"] = "Test Kunde",
+            ["Eingabe.Felder.Betreff"] = betreff,
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.FirstAsync(g => g.IstEingangsgruppe))).Id.ToString(),
+        });
+        return int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
     }
 
     [Fact]

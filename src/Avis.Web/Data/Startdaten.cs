@@ -68,20 +68,32 @@ public static class Startdaten
 
         await db.SaveChangesAsync();
 
-        var drucker = Auftrag.Erfassen("Drucker im Flur druckt nicht", "Seit heute Morgen bleibt jeder Druckauftrag in der Warteschlange hängen.", kunde1, anna, hotline, Eingang.Telefon, jetzt.AddHours(-5));
-        drucker.Geraet = "Drucker 2. OG Flur";
-        drucker.Standort = haupthaus;
+        var drucker = Auftrag.Erfassen(
+            new("Drucker im Flur druckt nicht", "Seit heute Morgen bleibt jeder Druckauftrag in der Warteschlange hängen.")
+            {
+                Geraet = "Drucker 2. OG Flur",
+                Standort = haupthaus,
+            },
+            kunde1, anna, hotline, Eingang.Telefon, jetzt.AddHours(-5));
 
-        var wlan = Auftrag.Erfassen("WLAN im Besprechungsraum fällt aus", "Die Verbindung bricht alle paar Minuten ab.", kunde2, anna, hotline, Eingang.Telefon, jetzt.AddHours(-3));
-        wlan.Dringlichkeit = Stufe.Hoch;
-        wlan.Wichtigkeit = Stufe.Hoch;
-        wlan.Standort = nebenstelle;
+        var wlan = Auftrag.Erfassen(
+            new("WLAN im Besprechungsraum fällt aus", "Die Verbindung bricht alle paar Minuten ab.")
+            {
+                Dringlichkeit = Stufe.Hoch,
+                Wichtigkeit = Stufe.Hoch,
+                Standort = nebenstelle,
+            },
+            kunde2, anna, hotline, Eingang.Telefon, jetzt.AddHours(-3));
         wlan.Uebernehmen(anna, jetzt.AddHours(-3).AddMinutes(5));
         wlan.Weiterleiten(netzwerk, anna, jetzt.AddHours(-3).AddMinutes(10), bernd, "Access Point im Raum 1.12 prüfen.");
 
-        var monitor = Auftrag.Erfassen("Zweiter Monitor für neuen Arbeitsplatz", "Für den Arbeitsplatz in Raum 3.04 wird ein zweiter Monitor benötigt.", kunde1, anna, beschaffung, Eingang.Web, jetzt.AddDays(-1));
-        monitor.Dringlichkeit = Stufe.Niedrig;
-        monitor.Termin = DateOnly.FromDateTime(jetzt.AddDays(14));
+        var monitor = Auftrag.Erfassen(
+            new("Zweiter Monitor für neuen Arbeitsplatz", "Für den Arbeitsplatz in Raum 3.04 wird ein zweiter Monitor benötigt.")
+            {
+                Dringlichkeit = Stufe.Niedrig,
+                Termin = DateOnly.FromDateTime(jetzt.AddDays(14)),
+            },
+            kunde1, anna, beschaffung, Eingang.Web, jetzt.AddDays(-1));
         monitor.Uebernehmen(clara, jetzt.AddHours(-20));
 
         db.Auftraege.AddRange(drucker, wlan, monitor);

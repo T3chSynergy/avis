@@ -182,3 +182,7 @@ table.liste tr.inaktiv td, table.liste tr.inaktiv a { color: var(--gedaempft); }
 select:disabled, input:disabled { background: #eef1f5; color: var(--gedaempft); }
 .kasten dl.angaben { grid-template-columns: 200px minmax(0, 1fr); }
 table.liste.schmal td { vertical-align: middle; }
+
+/* Auftrag bearbeiten */
+.nebenaktion { margin-left: 10px; font-size: 14px; font-weight: 400; }
+ol.verlauf p.text { margin: 4px 0 0; }

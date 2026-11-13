@@ -31,16 +31,11 @@
 
     <fieldset>
         <legend>Auftrag</legend>
-        <div class="feld">
-            <label asp-for="Eingabe.Betreff">Betreff</label>
-            <input asp-for="Eingabe.Betreff" />
-            <span asp-validation-for="Eingabe.Betreff" class="feldfehler"></span>
-        </div>
-        <div class="feld">
-            <label asp-for="Eingabe.Beschreibung">Beschreibung</label>
-            <textarea asp-for="Eingabe.Beschreibung" rows="6"></textarea>
-            <span asp-validation-for="Eingabe.Beschreibung" class="feldfehler"></span>
-        </div>
+        <partial name="_Auftragsfelder" for="Eingabe.Felder" view-data='new ViewDataDictionary(ViewData) { ["Auswahl"] = Model.Auswahl }' />
+    </fieldset>
+
+    <fieldset>
+        <legend>Zuordnung</legend>
         <div class="reihe">
             <div class="feld">
                 <label asp-for="Eingabe.Eingang">Eingang</label>
@@ -50,50 +45,6 @@
                     <option value="@Eingang.Web">Web</option>
                 </select>
             </div>
-            <div class="feld">
-                <label asp-for="Eingabe.KategorieId">Kategorie</label>
-                <select asp-for="Eingabe.KategorieId" asp-items="Model.Kategorien">
-                    <option value="">–</option>
-                </select>
-            </div>
-            <div class="feld">
-                <label asp-for="Eingabe.StandortId">Standort</label>
-                <select asp-for="Eingabe.StandortId" asp-items="Model.Standorte">
-                    <option value="">–</option>
-                </select>
-            </div>
-            <div class="feld">
-                <label asp-for="Eingabe.Geraet">Gerät</label>
-                <input asp-for="Eingabe.Geraet" />
-            </div>
-        </div>
-        <div class="reihe">
-            <div class="feld">
-                <label asp-for="Eingabe.Dringlichkeit">Dringlichkeit</label>
-                <select asp-for="Eingabe.Dringlichkeit">
-                    <option value="@Stufe.Niedrig">niedrig</option>
-                    <option value="@Stufe.Mittel">mittel</option>
-                    <option value="@Stufe.Hoch">hoch</option>
-                </select>
-            </div>
-            <div class="feld">
-                <label asp-for="Eingabe.Wichtigkeit">Wichtigkeit</label>
-                <select asp-for="Eingabe.Wichtigkeit">
-                    <option value="@Stufe.Niedrig">niedrig</option>
-                    <option value="@Stufe.Mittel">mittel</option>
-                    <option value="@Stufe.Hoch">hoch</option>
-                </select>
-            </div>
-            <div class="feld">
-                <label asp-for="Eingabe.Termin">Termin</label>
-                <input asp-for="Eingabe.Termin" type="date" />
-            </div>
-        </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>Zuordnung</legend>
-        <div class="reihe">
             <div class="feld">
                 <label asp-for="Eingabe.GruppeId">Gruppe</label>
                 <select asp-for="Eingabe.GruppeId" asp-items="Model.Gruppen"></select>

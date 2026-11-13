@@ -240,8 +240,8 @@ public class VerwaltungTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var antwort = await client.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
         {
             ["Eingabe.KundeName"] = "Test Kunde",
-            ["Eingabe.Betreff"] = betreff,
-            ["Eingabe.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.Felder.Betreff"] = betreff,
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
             ["Eingabe.GruppeId"] = gruppeId.ToString(),
         });
         return int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);

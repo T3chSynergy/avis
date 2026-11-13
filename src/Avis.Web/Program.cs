@@ -14,9 +14,10 @@ var verbindung = Datenbankdatei.Vorbereiten(
     builder.Environment.ContentRootPath);
 
 builder.Services.AddDbContext<AvisDb>(o => o.UseSqlite(verbindung));
-// Umlaute im HTML als Zeichen ausgeben statt als Zeichencodes.
+// Umlaute und Sonderzeichen im HTML als Zeichen ausgeben statt als
+// Zeichencodes. Zeichen mit Bedeutung in HTML werden weiterhin maskiert.
 builder.Services.Configure<WebEncoderOptions>(o =>
-    o.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Latin1Supplement, UnicodeRanges.GeneralPunctuation));
+    o.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<Ortszeit>();
 builder.AddAvisAnmeldung();

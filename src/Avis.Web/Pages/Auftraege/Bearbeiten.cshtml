@@ -1,0 +1,24 @@
+@page "/Auftraege/{id:int}/Bearbeiten"
+@model Avis.Web.Pages.Auftraege.BearbeitenModel
+@{
+    ViewData["Title"] = $"Auftrag {Model.Id} bearbeiten";
+}
+<p class="pfad"><a asp-page="Details" asp-route-id="@Model.Id">Auftrag @Model.Id</a></p>
+<h1>Auftrag bearbeiten</h1>
+
+<form method="post" class="formular">
+    <div asp-validation-summary="ModelOnly" class="meldung fehler"></div>
+    <input type="hidden" asp-for="Version" />
+
+    <fieldset>
+        <legend>Auftrag</legend>
+        <partial name="_Auftragsfelder" for="Felder" view-data='new ViewDataDictionary(ViewData) { ["Auswahl"] = Model.Auswahl }' />
+    </fieldset>
+
+    <p class="erklaerung">Jede Änderung steht mit dem bisherigen Wert im Verlauf. Der Kunde sieht diese Einträge nicht.</p>
+
+    <div class="knoepfe">
+        <button type="submit" class="haupt">Speichern</button>
+        <a asp-page="Details" asp-route-id="@Model.Id">Abbrechen</a>
+    </div>
+</form>

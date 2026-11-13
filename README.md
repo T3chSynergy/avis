@@ -12,6 +12,8 @@ Ausbaustufe 1 ist begonnen. Vorhanden sind:
   Standorten
 - Aufträge erfassen, übernehmen, weiterleiten, intern kommentieren, Nachricht
   an den Kunden, abschließen und wieder öffnen
+- Angaben eines Auftrags nachträglich ändern, mit den bisherigen Werten im
+  Verlauf
 - Listen: Meine Aufträge, offene Aufträge meiner Gruppen, alle Aufträge
 - Meine Gruppen: selbst beitreten und austreten
 - Verwaltung für Administratoren: Gruppen mit Mitgliedern, Benutzer und Rollen,
@@ -21,7 +23,6 @@ Ausbaustufe 1 ist begonnen. Vorhanden sind:
 Noch offen in Ausbaustufe 1:
 
 - Kunden suchen beim Erfassen (bisher Zuordnung über die E-Mail-Adresse)
-- Felder eines Auftrags nachträglich ändern
 
 ## Voraussetzungen
 

@@ -85,11 +85,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.HasIndex(a => new { a.BearbeiterId, a.AbgeschlossenAm });
         });
 
-        model.Entity<Verlaufseintrag>(e =>
-        {
-            e.ToTable("Verlauf");
-            e.Property(v => v.Beschreibung).HasMaxLength(500);
-        });
+        model.Entity<Verlaufseintrag>(e => e.ToTable("Verlauf"));
 
         // Nichts wird mitgelöscht. Aufträge und ihr Verlauf bleiben erhalten,
         // Stammdaten werden deaktiviert statt gelöscht.
