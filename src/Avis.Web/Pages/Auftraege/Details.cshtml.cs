@@ -16,7 +16,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
-        var auftrag = await db.Auftraege
+        var auftrag = await db.AuftraegeFuer(User.BenutzerId())
             .AsNoTracking()
             .AsSplitQuery()
             .Include(a => a.Kunde)
@@ -35,7 +35,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
         Gruppen = await db.Gruppen.AsNoTracking()
             .Where(g => g.Aktiv)
             .OrderBy(g => g.Name)
-            .Select(g => new SelectListItem(g.Name, g.Id.ToString()))
+            .Select(g => new SelectListItem(g.Gesperrt ? g.Name + " (gesperrt)" : g.Name, g.Id.ToString()))
             .ToListAsync();
         Bearbeiter = await db.Benutzer.AsNoTracking()
             .Where(b => b.Aktiv && b.IstBearbeiter)
@@ -58,6 +58,9 @@ public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
                 ? null
                 : await db.Benutzer.FirstOrDefaultAsync(b => b.Id == bevorzugtId && b.Aktiv && b.IstBearbeiter)
                     ?? throw new AuftragException("Der bevorzugte Bearbeiter wurde nicht gefunden.");
+            if (bevorzugt is not null && ziel.Gesperrt
+                && !await db.Gruppen.AnyAsync(g => g.Id == ziel.Id && g.Mitglieder.Any(m => m.Id == bevorzugt.Id)))
+                throw new AuftragException($"{bevorzugt.Name} ist kein Mitglied der gesperrten Gruppe {ziel.Name}.");
             auftrag.Weiterleiten(ziel, ich, jetzt, bevorzugt, text);
         });
 
@@ -103,7 +106,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
         Func<Auftrag, Benutzer, DateTime, Task> aktion,
         bool versionPruefen = true)
     {
-        var auftrag = await db.Auftraege
+        var auftrag = await db.AuftraegeFuer(User.BenutzerId())
             .Include(a => a.Gruppe)
             .Include(a => a.Bearbeiter)
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -128,6 +131,13 @@ public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
         catch (DbUpdateConcurrencyException)
         {
             TempData["Fehler"] = veraltet;
+        }
+
+        // Nach dem Weiterleiten an eine gesperrte Gruppe kann der Auftrag außer Sicht sein.
+        if (!await db.AuftraegeFuer(User.BenutzerId()).AnyAsync(a => a.Id == id))
+        {
+            TempData["Meldung"] = $"{TempData["Meldung"]} Der Auftrag {id} liegt jetzt in einer gesperrten Gruppe und ist für dich nicht mehr sichtbar.";
+            return RedirectToPage("/Index");
         }
 
         return RedirectToPage(new { id });

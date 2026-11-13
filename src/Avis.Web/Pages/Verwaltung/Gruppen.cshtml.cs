@@ -8,7 +8,7 @@ namespace Avis.Web.Pages.Verwaltung;
 
 public class GruppenModel(AvisDb db) : PageModel
 {
-    public record Zeile(int Id, string Name, string? Beschreibung, bool Aktiv, bool IstEingangsgruppe, int Mitglieder, int Laufend);
+    public record Zeile(int Id, string Name, string? Beschreibung, bool Aktiv, bool IstEingangsgruppe, bool Gesperrt, int Mitglieder, int Laufend);
 
     public IReadOnlyList<Zeile> Gruppen { get; private set; } = [];
 
@@ -21,6 +21,7 @@ public class GruppenModel(AvisDb db) : PageModel
                 g.Beschreibung,
                 g.Aktiv,
                 g.IstEingangsgruppe,
+                g.Gesperrt,
                 g.Mitglieder.Count(m => m.Aktiv),
                 db.Auftraege.Count(a => a.GruppeId == g.Id && a.AbgeschlossenAm == null)))
             .ToListAsync();

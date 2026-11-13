@@ -1,3 +1,4 @@
+using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -24,12 +25,12 @@ public class DetailsModel(AvisDb db) : PageModel
             return NotFound();
 
         Kunde = kunde;
-        Laufend = await db.Auftraege.FuerListe()
+        Laufend = await db.AuftraegeFuer(User.BenutzerId()).FuerListe()
             .Where(a => a.KundeId == id && a.AbgeschlossenAm == null)
             .NachPrioritaet()
             .ToListAsync();
 
-        var abgeschlossen = await db.Auftraege.FuerListe()
+        var abgeschlossen = await db.AuftraegeFuer(User.BenutzerId()).FuerListe()
             .Where(a => a.KundeId == id && a.AbgeschlossenAm != null)
             .OrderByDescending(a => a.AbgeschlossenAm)
             .Take(Hoechstzahl + 1)

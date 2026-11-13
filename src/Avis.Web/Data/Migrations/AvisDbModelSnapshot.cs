@@ -196,6 +196,9 @@ namespace Avis.Web.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("Gesperrt")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IstEingangsgruppe")
                         .HasColumnType("INTEGER");
 

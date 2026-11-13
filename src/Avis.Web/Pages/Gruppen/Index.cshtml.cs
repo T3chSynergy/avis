@@ -21,7 +21,7 @@ public class IndexModel(AvisDb db) : PageModel
             .ToListAsync();
 
         var ids = Gruppen.Select(g => g.Id).ToList();
-        var auftraege = await db.Auftraege.FuerListe()
+        var auftraege = await db.AuftraegeFuer(ich).FuerListe()
             .Offen()
             .Where(a => ids.Contains(a.GruppeId))
             .NachPrioritaet()

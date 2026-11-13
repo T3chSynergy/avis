@@ -80,5 +80,5 @@ public class KundeAendernModel(AvisDb db, TimeProvider uhr) : PageModel
     }
 
     private Task<Auftrag?> LadenAsync(int id) =>
-        db.Auftraege.Include(a => a.Kunde).FirstOrDefaultAsync(a => a.Id == id);
+        db.AuftraegeFuer(User.BenutzerId()).Include(a => a.Kunde).FirstOrDefaultAsync(a => a.Id == id);
 }

@@ -33,7 +33,7 @@ public class GruppeBearbeitenModel(AvisDb db) : PageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostSpeichernAsync(int id, string? name, string? beschreibung, bool aktiv, bool eingangsgruppe)
+    public async Task<IActionResult> OnPostSpeichernAsync(int id, string? name, string? beschreibung, bool aktiv, bool eingangsgruppe, bool gesperrt)
     {
         var gruppe = await db.Gruppen.FirstOrDefaultAsync(g => g.Id == id);
         if (gruppe is null)
@@ -43,6 +43,8 @@ public class GruppeBearbeitenModel(AvisDb db) : PageModel
         var wirdEingangsgruppe = gruppe.IstEingangsgruppe || eingangsgruppe;
 
         var fehler = await GruppeRegeln.NamePruefenAsync(db, name, ausser: id);
+        if (fehler is null && gesperrt && wirdEingangsgruppe)
+            fehler = "Die Eingangsgruppe kann nicht gesperrt sein, weil dort alle neuen Aufträge landen.";
         if (fehler is null && !aktiv)
         {
             if (wirdEingangsgruppe)
@@ -60,6 +62,7 @@ public class GruppeBearbeitenModel(AvisDb db) : PageModel
         gruppe.Name = name!.Trim();
         gruppe.Beschreibung = GruppeRegeln.Bereinigen(beschreibung);
         gruppe.Aktiv = aktiv;
+        gruppe.Gesperrt = gesperrt;
 
         if (wirdEingangsgruppe && !gruppe.IstEingangsgruppe)
         {

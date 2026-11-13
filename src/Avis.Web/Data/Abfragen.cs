@@ -5,6 +5,19 @@ namespace Avis.Web.Data;
 
 public static class Abfragen
 {
+    /// <summary>
+    /// Die Aufträge, die ein Bearbeiter sehen darf: alle außer denen in
+    /// gesperrten Gruppen, in denen er nicht Mitglied ist. Was er selbst
+    /// erfasst hat oder gerade bearbeitet, sieht er immer.
+    /// Jede Seite für Bearbeiter fragt Aufträge hierüber ab.
+    /// </summary>
+    public static IQueryable<Auftrag> AuftraegeFuer(this AvisDb db, int benutzerId) =>
+        db.Auftraege.Where(a =>
+            !a.Gruppe.Gesperrt
+            || a.Gruppe.Mitglieder.Any(m => m.Id == benutzerId)
+            || a.ErfasstVonId == benutzerId
+            || a.BearbeiterId == benutzerId);
+
     /// <summary>Lädt alles, was die Auftragsliste anzeigt.</summary>
     public static IQueryable<Auftrag> FuerListe(this IQueryable<Auftrag> auftraege) =>
         auftraege

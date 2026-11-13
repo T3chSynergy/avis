@@ -32,7 +32,7 @@ else
                         }
                     </td>
                     <td>@a.Kunde.Name</td>
-                    <td>@a.Gruppe.Name</td>
+                    <td>@a.Gruppe.Name @if (a.Gruppe.Gesperrt) { <span class="hinweis">gesperrt</span> }</td>
                     <td>
                         @if (a.Status == AuftragStatus.Abgeschlossen)
                         {

@@ -20,13 +20,13 @@ public class IndexModel(AvisDb db) : PageModel
 
         var ich = User.BenutzerId();
 
-        InBearbeitung = await db.Auftraege.FuerListe()
+        InBearbeitung = await db.AuftraegeFuer(ich).FuerListe()
             .InBearbeitung()
             .Where(a => a.BearbeiterId == ich)
             .NachPrioritaet()
             .ToListAsync();
 
-        FuerMich = await db.Auftraege.FuerListe()
+        FuerMich = await db.AuftraegeFuer(ich).FuerListe()
             .Offen()
             .Where(a => a.BevorzugterBearbeiterId == ich)
             .NachPrioritaet()

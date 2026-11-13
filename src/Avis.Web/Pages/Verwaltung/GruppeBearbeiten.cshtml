@@ -26,6 +26,11 @@
         }
 
         <div class="ankreuz">
+            <input type="checkbox" id="gesperrt" name="gesperrt" value="true" checked="@g.Gesperrt" />
+            <label for="gesperrt">Gesperrt: Nur Mitglieder sehen die Aufträge, und nur der Administrator ordnet Mitglieder zu</label>
+        </div>
+
+        <div class="ankreuz">
             <input type="checkbox" id="aktiv" name="aktiv" value="true" checked="@g.Aktiv" />
             <label for="aktiv">Aktiv</label>
         </div>
@@ -42,7 +47,7 @@
 
     <section aria-labelledby="h-mitglieder">
         <h3 id="h-mitglieder">Mitglieder</h3>
-        <p class="erklaerung">Bearbeiter tragen sich selbst ein und aus. Hier kannst du nachhelfen.</p>
+        <p class="erklaerung">@(g.Gesperrt ? "Die Gruppe ist gesperrt. Mitglieder werden nur hier zugeordnet." : "Bearbeiter tragen sich selbst ein und aus. Hier kannst du nachhelfen.")</p>
         @if (g.Mitglieder.Count == 0)
         {
             <p class="leer">Keine Mitglieder.</p>

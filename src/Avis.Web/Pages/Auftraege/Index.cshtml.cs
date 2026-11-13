@@ -1,3 +1,4 @@
+using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,7 @@ public class IndexModel(AvisDb db) : PageModel
 
     public async Task OnGetAsync()
     {
-        var auftraege = db.Auftraege.FuerListe();
+        var auftraege = db.AuftraegeFuer(User.BenutzerId()).FuerListe();
         IQueryable<Auftrag> sortiert;
 
         switch (Status)

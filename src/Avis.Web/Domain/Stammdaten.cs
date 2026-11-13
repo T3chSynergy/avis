@@ -27,6 +27,12 @@ public class Gruppe
     /// <summary>In dieser Gruppe landen neue Aufträge, wenn nichts anderes gewählt wird.</summary>
     public bool IstEingangsgruppe { get; set; }
 
+    /// <summary>
+    /// Nur der Administrator ordnet Mitglieder zu, und die Aufträge der
+    /// Gruppe sehen nur ihre Mitglieder, der Erfasser, der Bearbeiter und der Kunde.
+    /// </summary>
+    public bool Gesperrt { get; set; }
+
     public bool Aktiv { get; set; } = true;
 
     public List<Benutzer> Mitglieder { get; } = [];

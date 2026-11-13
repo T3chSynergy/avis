@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,7 @@ public class IndexModel(AvisDb db) : PageModel
 
     public async Task OnGetAsync()
     {
+        var sichtbar = db.AuftraegeFuer(User.BenutzerId());
         var kunden = await db.Kunden.AsNoTracking()
             .Suchen(Q)
             .OrderBy(k => k.Name)
@@ -32,7 +34,7 @@ public class IndexModel(AvisDb db) : PageModel
                 k.Telefon,
                 k.Organisationseinheit,
                 k.Standort!.Name,
-                db.Auftraege.Count(a => a.KundeId == k.Id && a.AbgeschlossenAm == null)))
+                sichtbar.Count(a => a.KundeId == k.Id && a.AbgeschlossenAm == null)))
             .ToListAsync();
 
         Gekuerzt = kunden.Count > Hoechstzahl;

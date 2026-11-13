@@ -24,6 +24,7 @@
                 <td>
                     <a asp-page="GruppeBearbeiten" asp-route-id="@g.Id">@g.Name</a>
                     @if (g.IstEingangsgruppe) { <span class="hinweis mich">Eingangsgruppe</span> }
+                    @if (g.Gesperrt) { <span class="hinweis">gesperrt</span> }
                 </td>
                 <td>@g.Beschreibung</td>
                 <td>@g.Mitglieder</td>

@@ -8,7 +8,7 @@ namespace Avis.Web.Pages.Gruppen;
 
 public class MeineModel(AvisDb db) : PageModel
 {
-    public record Zeile(int Id, string Name, bool IstMitglied, string Mitglieder);
+    public record Zeile(int Id, string Name, bool IstMitglied, bool Gesperrt, string Mitglieder);
 
     public IReadOnlyList<Zeile> Gruppen { get; private set; } = [];
 
@@ -26,6 +26,7 @@ public class MeineModel(AvisDb db) : PageModel
                 g.Id,
                 g.Name,
                 g.Mitglieder.Any(m => m.Id == ich),
+                g.Gesperrt,
                 string.Join(", ", g.Mitglieder.Where(m => m.Aktiv).OrderBy(m => m.Name).Select(m => m.Name))))
             .ToList();
     }
@@ -40,6 +41,11 @@ public class MeineModel(AvisDb db) : PageModel
         var gruppe = await db.Gruppen.Include(g => g.Mitglieder).FirstOrDefaultAsync(g => g.Id == id && g.Aktiv);
         if (gruppe is null)
             return NotFound();
+        if (gruppe.Gesperrt)
+        {
+            TempData["Fehler"] = $"Die Gruppe {gruppe.Name} ist gesperrt. Mitglieder ordnet der Administrator zu.";
+            return RedirectToPage();
+        }
 
         var mitglied = gruppe.Mitglieder.FirstOrDefault(m => m.Id == ich);
         if (beitreten && mitglied is null)

@@ -13,7 +13,7 @@
     <span class="prio prio-@a.Prioritaet">P@(a.Prioritaet)</span>
     <span class="status status-@a.Status">@a.Status.Text()</span>
     <span>
-        Gruppe <strong>@a.Gruppe.Name</strong>@if (a.Status == AuftragStatus.InBearbeitung)
+        Gruppe <strong>@a.Gruppe.Name</strong>@if (a.Gruppe.Gesperrt) {<text> <span class="hinweis">gesperrt</span></text>}@if (a.Status == AuftragStatus.InBearbeitung)
         {<text>, bei <strong>@a.Bearbeiter!.Name</strong></text>}
         @if (a.Status == AuftragStatus.Offen && a.BevorzugterBearbeiter is not null)
         {<text>, bevorzugt an <strong>@a.BevorzugterBearbeiter.Name</strong></text>}
@@ -112,6 +112,10 @@
                 </select>
                 <label for="weiter-text">Hinweis an die Gruppe (intern, optional)</label>
                 <textarea id="weiter-text" name="text" rows="2"></textarea>
+                @if (a.Gruppe.Gesperrt)
+                {
+                    <p class="erklaerung">Außerhalb der gesperrten Gruppe @a.Gruppe.Name sehen alle Bearbeiter den Auftrag mit seinem ganzen Verlauf.</p>
+                }
                 <button type="submit">Weiterleiten</button>
             </form>
 
