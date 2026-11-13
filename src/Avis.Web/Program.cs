@@ -23,6 +23,7 @@ builder.Services.Configure<WebEncoderOptions>(o =>
     o.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All));
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<Ortszeit>();
+builder.Services.AddScoped<Navigationszahlen>();
 builder.AddAvisAnmeldung();
 builder.AddAvisVerzeichnis();
 builder.AddAvisMail();

@@ -8,51 +8,78 @@
 </head>
 <body>
     <a class="sprung" href="#inhalt">Zum Inhalt</a>
+    @{
+        var seite = ViewContext.RouteData.Values["page"] as string ?? "";
+        string? Aktuell(params string[] seiten) => seiten.Any(s => seite == s || (s.EndsWith('/') && seite.StartsWith(s))) ? "page" : null;
+        var testanmeldung = ViewData["Testanmeldung"] as bool? == true;
+        var zahlen = User.IstBearbeiter() ? await Zahlen.LadenAsync(User.BenutzerId()) : null;
+    }
     <header class="kopf">
-        <a class="marke" asp-page="/Index">AVIS</a>
-        @if (User.IstBearbeiter())
+        <div class="kopf-oben">
+            <a class="marke" asp-page="/Index">AVIS</a>
+            @if (User.IstBearbeiter())
+            {
+                <form method="get" asp-page="/Auftraege/Index" class="schnellsuche" role="search">
+                    <label class="unsichtbar" for="schnellsuche">Aufträge suchen</label>
+                    <input id="schnellsuche" name="q" type="search" placeholder="Auftragsnummer oder Suchbegriff" autocomplete="off" />
+                </form>
+            }
+            <div class="kopf-rechts">
+                @if (User.IstBearbeiter())
+                {
+                    <a class="neu" asp-page="/Auftraege/Neu" aria-current="@Aktuell("/Auftraege/Neu")"><span aria-hidden="true">+</span> Auftrag erfassen</a>
+                }
+                else if (User.IstAngemeldet())
+                {
+                    <a class="neu" asp-page="/Meine/Neu" aria-current="@Aktuell("/Meine/Neu")"><span aria-hidden="true">+</span> Neuer Auftrag</a>
+                }
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    @if (User.IstBearbeiter() || testanmeldung)
+                    {
+                        <details class="konto">
+                            <summary>@User.Anzeigename()</summary>
+                            <div class="menue">
+                                @if (User.IstBearbeiter())
+                                {
+                                    <a asp-page="/Gruppen/Meine" aria-current="@Aktuell("/Gruppen/Meine")">Meine Gruppen</a>
+                                    <a asp-page="/Meine/Index" aria-current="@Aktuell("/Meine/")">Eigene Aufträge als Kunde</a>
+                                }
+                                @if (testanmeldung)
+                                {
+                                    <a asp-page="/Anmeldung">Benutzer wechseln</a>
+                                }
+                            </div>
+                        </details>
+                    }
+                    else
+                    {
+                        <span class="konto">@User.Anzeigename()</span>
+                    }
+                }
+            </div>
+        </div>
+        @if (zahlen is not null)
         {
-            <nav aria-label="Hauptnavigation">
-                <a asp-page="/Index">Meine Aufträge</a>
-                <a asp-page="/Gruppen/Index">Gruppen</a>
-                <a asp-page="/Auftraege/Index">Alle Aufträge</a>
-                <a asp-page="/Auftraege/Neu">Auftrag erfassen</a>
-                <a asp-page="/Kunden/Index">Kunden</a>
-                <a asp-page="/Geraete/Index">Geräte</a>
+            <nav class="bereiche" aria-label="Hauptnavigation">
+                <a asp-page="/Index" aria-current="@Aktuell("/Index")">Meine Aufträge <span class="zahl @(zahlen.Meine > 0 ? "voll" : "")">@zahlen.Meine</span></a>
+                <a asp-page="/Gruppen/Index" aria-current="@Aktuell("/Gruppen/Index")">Gruppen <span class="zahl @(zahlen.Gruppen > 0 ? "voll" : "")">@zahlen.Gruppen</span></a>
+                <a asp-page="/Auftraege/Index" aria-current="@Aktuell("/Auftraege/Index")">Alle Aufträge</a>
+                <span class="trenner" aria-hidden="true"></span>
+                <a asp-page="/Kunden/Index" aria-current="@Aktuell("/Kunden/")">Kunden</a>
+                <a asp-page="/Geraete/Index" aria-current="@Aktuell("/Geraete/")">Geräte</a>
                 @if (User.IstAdministrator())
                 {
-                    <a asp-page="/Verwaltung/Gruppen">Verwaltung</a>
+                    <span class="trenner" aria-hidden="true"></span>
+                    <a asp-page="/Verwaltung/Gruppen" aria-current="@Aktuell("/Verwaltung/")">Verwaltung</a>
                 }
             </nav>
-        }
-        @if (User.IstBearbeiter())
-        {
-            <form method="get" asp-page="/Auftraege/Index" class="schnellsuche" role="search">
-                <label class="unsichtbar" for="schnellsuche">Aufträge suchen</label>
-                <input id="schnellsuche" name="q" type="search" placeholder="Nr. oder Suchbegriff" autocomplete="off" />
-            </form>
         }
         else if (User.IstAngemeldet())
         {
-            <nav aria-label="Hauptnavigation">
-                <a asp-page="/Meine/Index">Meine Aufträge</a>
-                <a asp-page="/Meine/Neu">Neuer Auftrag</a>
+            <nav class="bereiche" aria-label="Hauptnavigation">
+                <a asp-page="/Meine/Index" aria-current="@Aktuell("/Meine/Index", "/Meine/Details")">Meine Aufträge</a>
             </nav>
-        }
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            <div class="konto">
-                <span>@User.Anzeigename()</span>
-                @if (User.IstBearbeiter())
-                {
-                    <a asp-page="/Gruppen/Meine">Meine Gruppen</a>
-                    <a asp-page="/Meine/Index">Eigene Aufträge</a>
-                }
-                @if (ViewData["Testanmeldung"] as bool? == true)
-                {
-                    <a asp-page="/Anmeldung">Benutzer wechseln</a>
-                }
-            </div>
         }
     </header>
     <main id="inhalt">
@@ -66,6 +93,7 @@
         }
         @RenderBody()
     </main>
+    <script src="~/js/menue.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

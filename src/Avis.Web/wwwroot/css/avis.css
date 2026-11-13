@@ -33,22 +33,59 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .sprung:focus { left: 8px; top: 8px; background: var(--flaeche); padding: 6px 10px; z-index: 10; }
 .unsichtbar { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
-.kopf {
+/* Kopf: oben Name, Suche, die wichtigste Aktion und das Konto, darunter die Bereiche. */
+.kopf { background: var(--flaeche); border-bottom: 1px solid var(--linie); }
+.kopf-oben {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px 24px;
+    gap: 8px 20px;
     padding: 10px 24px;
     background: var(--akzent);
     color: var(--akzent-text);
 }
-.kopf a { color: var(--akzent-text); text-decoration: none; }
-.kopf a:hover { text-decoration: underline; }
-.kopf .marke { font-weight: 700; font-size: 18px; letter-spacing: 1px; }
-/* Erste Zeile: Name, Suche, Konto. Zweite Zeile: die Navigation. */
-.kopf nav { display: flex; flex-wrap: wrap; gap: 4px 18px; order: 3; flex-basis: 100%; }
-.kopf .konto { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; margin-left: auto; }
-.kopf .konto span { font-weight: 600; }
+.kopf .marke { color: var(--akzent-text); text-decoration: none; font-weight: 700; font-size: 20px; letter-spacing: 1px; }
+.kopf-rechts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin-left: auto; }
+
+.schnellsuche { margin: 0; flex: 0 1 380px; }
+.schnellsuche input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) { padding: 6px 10px; border: 0; }
+
+/* Die wichtigste Aktion der Seite. */
+.kopf a.neu {
+    display: inline-block; padding: 6px 14px; border-radius: 4px;
+    background: #fff; color: var(--akzent); font-weight: 700; text-decoration: none; white-space: nowrap;
+}
+.kopf a.neu:hover { background: #e8f0fa; }
+.kopf a.neu[aria-current="page"] { background: #d9e8fa; }
+.kopf a.neu span { font-size: 18px; line-height: 1; margin-right: 2px; }
+
+/* Konto mit Menü. Öffnet und schließt ohne Skript, das Skript schließt es zusätzlich bei Klick daneben. */
+.konto { position: relative; font-weight: 600; }
+details.konto summary { cursor: pointer; list-style: none; padding: 6px 2px; white-space: nowrap; }
+details.konto summary::-webkit-details-marker { display: none; }
+details.konto summary::after { content: "▾"; margin-left: 6px; font-size: 12px; }
+details.konto .menue {
+    position: absolute; right: 0; top: 100%; z-index: 5; min-width: 230px;
+    background: var(--flaeche); border: 1px solid var(--linie); border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 4px 0; font-weight: 400;
+}
+details.konto .menue a { display: block; padding: 7px 14px; color: var(--text); text-decoration: none; white-space: nowrap; }
+details.konto .menue a:hover, details.konto .menue a[aria-current="page"] { background: #eef1f5; }
+
+/* Die Bereiche als Reiter, der aktuelle ist unterstrichen. */
+.bereiche { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 4px; padding: 0 16px; }
+.bereiche a {
+    display: flex; align-items: center; gap: 6px; padding: 10px 10px 8px;
+    color: var(--text); text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap;
+}
+.bereiche a:hover { background: #eef1f5; }
+.bereiche a[aria-current="page"] { border-bottom-color: var(--akzent); color: var(--akzent); font-weight: 600; }
+.bereiche .trenner { width: 1px; margin: 10px 8px; background: var(--linie); }
+.bereiche .zahl {
+    min-width: 22px; padding: 0 6px; border-radius: 11px; background: #e3e8ee; color: var(--gedaempft);
+    font-size: 12px; font-weight: 600; text-align: center; line-height: 20px;
+}
+.bereiche .zahl.voll { background: var(--akzent); color: var(--akzent-text); }
 
 main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
 
@@ -212,8 +249,6 @@ a.knopf.haupt { background: var(--akzent); border-color: var(--akzent); color: v
 a.knopf.haupt:hover { background: #184c87; }
 
 /* Suche */
-.schnellsuche { margin: 0; }
-.schnellsuche input { width: 240px; padding: 4px 8px; border: 0; }
 .suchzeile .feld { flex: 0 1 190px; }
 .suchzeile .feld.breit { flex: 1 1 300px; max-width: 520px; }
 .suchzeile > a { padding-bottom: 7px; }

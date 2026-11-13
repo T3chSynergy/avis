@@ -189,6 +189,38 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Der_Kopf_zeigt_die_wichtigste_Aktion_den_aktuellen_Bereich_und_was_ansteht()
+    {
+        var clara = await app.AnmeldenAlsAsync("clara");
+
+        var gruppen = await clara.GetStringAsync("/Gruppen");
+
+        Assert.Contains("class=\"neu\" href=\"/Auftraege/Neu\"", gruppen);
+        Assert.Contains("<a aria-current=\"page\" href=\"/Gruppen\">Gruppen", gruppen);
+        Assert.DoesNotContain("<a aria-current=\"page\" href=\"/\">Meine Aufträge", gruppen);
+        // Clara bearbeitet aus den Testdaten den Auftrag zum Monitor.
+        Assert.Matches("Meine Aufträge <span class=\"zahl voll\">[1-9]\\d*</span>", gruppen);
+        // Die Verwaltung sieht nur, wer Administrator ist.
+        Assert.DoesNotContain("/Verwaltung/", gruppen);
+        var anna = await app.AnmeldenAlsAsync("anna");
+        Assert.Contains("href=\"/Verwaltung/Gruppen\">Verwaltung</a>", await anna.GetStringAsync("/Gruppen"));
+    }
+
+    [Fact]
+    public async Task Kunden_sehen_im_Kopf_nur_ihre_Auftraege_und_die_Aktion_fuer_einen_neuen()
+    {
+        var dieter = await app.AnmeldenAlsAsync("dieter");
+
+        var seite = await dieter.GetStringAsync("/Meine");
+
+        Assert.Contains("class=\"neu\" href=\"/Meine/Neu\"", seite);
+        Assert.Contains("<a aria-current=\"page\" href=\"/Meine\">Meine Aufträge</a>", seite);
+        Assert.DoesNotContain("schnellsuche", seite);
+        Assert.DoesNotContain("href=\"/Gruppen\"", seite);
+        Assert.DoesNotContain("href=\"/Kunden\"", seite);
+    }
+
+    [Fact]
     public async Task Ein_Kunde_kommt_nicht_auf_die_Seiten_der_Bearbeiter()
     {
         var client = await app.AnmeldenAlsAsync("dieter");
