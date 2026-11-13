@@ -14,11 +14,12 @@ Ausbaustufe 1 ist begonnen. Vorhanden sind:
   an den Kunden, abschließen und wieder öffnen
 - Listen: Meine Aufträge, offene Aufträge meiner Gruppen, alle Aufträge
 - Meine Gruppen: selbst beitreten und austreten
+- Verwaltung für Administratoren: Gruppen mit Mitgliedern, Benutzer und Rollen,
+  Kategorien, Standorte
 - Testanmeldung für die Entwicklung, Windows-Anmeldung für den Betrieb
 
 Noch offen in Ausbaustufe 1:
 
-- Verwaltungsseiten für Gruppen, Kategorien, Standorte und Rollen
 - Kunden suchen beim Erfassen (bisher Zuordnung über die E-Mail-Adresse)
 - Felder eines Auftrags nachträglich ändern
 

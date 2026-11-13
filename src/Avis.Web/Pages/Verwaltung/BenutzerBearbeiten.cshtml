@@ -1,0 +1,55 @@
+@page "/Verwaltung/Benutzer/{id:int}"
+@model BenutzerBearbeitenModel
+@{
+    var b = Model.Benutzer;
+    var rolle = b.Rolle();
+    ViewData["Title"] = b.Name;
+}
+<h1>Verwaltung</h1>
+<partial name="_Bereiche" />
+<h2>@b.Name</h2>
+
+<form method="post" class="kasten schmal">
+    <dl class="angaben">
+        <dt>Anmeldename</dt>
+        <dd>@b.Anmeldename</dd>
+        <dt>Gruppen</dt>
+        <dd>@(b.Gruppen.Count == 0 ? "–" : string.Join(", ", b.Gruppen.OrderBy(g => g.Name).Select(g => g.Name)))</dd>
+        <dt>Aufträge in Bearbeitung</dt>
+        <dd>@Model.InBearbeitung</dd>
+    </dl>
+
+    <label for="name">Name</label>
+    <input id="name" name="name" value="@b.Name" maxlength="200" required autocomplete="off" />
+    <label for="email">E-Mail (optional)</label>
+    <input id="email" name="email" type="email" value="@b.Email" maxlength="320" autocomplete="off" />
+
+    <label for="rolle">Rolle</label>
+    <select id="rolle" name="rolle" disabled="@Model.IstEigenesKonto">
+        <option value="@Rolle.Keine" selected="@(rolle == Rolle.Keine)">keine</option>
+        <option value="@Rolle.Bearbeiter" selected="@(rolle == Rolle.Bearbeiter)">Bearbeiter</option>
+        <option value="@Rolle.Administrator" selected="@(rolle == Rolle.Administrator)">Administrator</option>
+    </select>
+
+    <div class="ankreuz">
+        <input type="checkbox" id="aktiv" name="aktiv" value="true" checked="@b.Aktiv" disabled="@Model.IstEigenesKonto" />
+        <label for="aktiv">Aktiv</label>
+    </div>
+
+    @if (Model.IstEigenesKonto)
+    {
+        <p class="erklaerung">Das ist dein eigenes Konto. Rolle und Status kann nur ein anderer Administrator ändern.</p>
+    }
+    else
+    {
+        <p class="erklaerung">
+            Verliert jemand die Rolle Bearbeiter oder wird deaktiviert, gehen seine Aufträge in Bearbeitung zurück in ihre Gruppen,
+            und er wird aus allen Gruppen ausgetragen.
+        </p>
+    }
+
+    <div class="knoepfe">
+        <button type="submit" class="haupt">Speichern</button>
+        <a asp-page="Benutzer">Zurück zur Liste</a>
+    </div>
+</form>

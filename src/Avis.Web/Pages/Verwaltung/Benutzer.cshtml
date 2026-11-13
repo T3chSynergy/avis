@@ -1,0 +1,49 @@
+@page
+@model BenutzerModel
+@{
+    ViewData["Title"] = "Benutzer";
+}
+<h1>Verwaltung</h1>
+<partial name="_Bereiche" />
+<h2>Benutzer</h2>
+<p class="erklaerung">Wer sich zum ersten Mal anmeldet, erscheint hier ohne Rolle. Bearbeiter lassen sich auch vorab anlegen.</p>
+
+<table class="liste">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Anmeldename</th>
+            <th scope="col">Rolle</th>
+            <th scope="col">Gruppen</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var b in Model.Benutzer)
+        {
+            <tr class="@(b.Aktiv ? "" : "inaktiv")">
+                <td><a asp-page="BenutzerBearbeiten" asp-route-id="@b.Id">@b.Name</a></td>
+                <td>@b.Anmeldename</td>
+                <td>@b.Rolle.Text()</td>
+                <td>@b.Gruppen</td>
+                <td>@(b.Aktiv ? "aktiv" : "deaktiviert")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<form method="post" class="kasten">
+    <h3>Benutzer anlegen</h3>
+    <label for="neu-anmeldename">Anmeldename</label>
+    <input id="neu-anmeldename" name="anmeldename" maxlength="200" required aria-describedby="neu-anmeldename-hinweis" autocomplete="off" />
+    <p class="erklaerung" id="neu-anmeldename-hinweis">So wie Windows ihn meldet, mit Domäne: domäne\name</p>
+    <label for="neu-name">Name</label>
+    <input id="neu-name" name="name" maxlength="200" required autocomplete="off" />
+    <label for="neu-rolle">Rolle</label>
+    <select id="neu-rolle" name="rolle">
+        <option value="@Rolle.Bearbeiter">Bearbeiter</option>
+        <option value="@Rolle.Administrator">Administrator</option>
+        <option value="@Rolle.Keine">keine</option>
+    </select>
+    <button type="submit" class="haupt">Anlegen</button>
+</form>

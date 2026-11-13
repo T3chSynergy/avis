@@ -1,0 +1,44 @@
+@page
+@model GruppenModel
+@{
+    ViewData["Title"] = "Gruppen";
+}
+<h1>Verwaltung</h1>
+<partial name="_Bereiche" />
+<h2>Gruppen</h2>
+
+<table class="liste">
+    <thead>
+        <tr>
+            <th scope="col">Gruppe</th>
+            <th scope="col">Beschreibung</th>
+            <th scope="col">Mitglieder</th>
+            <th scope="col">Laufende Aufträge</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var g in Model.Gruppen)
+        {
+            <tr class="@(g.Aktiv ? "" : "inaktiv")">
+                <td>
+                    <a asp-page="GruppeBearbeiten" asp-route-id="@g.Id">@g.Name</a>
+                    @if (g.IstEingangsgruppe) { <span class="hinweis mich">Eingangsgruppe</span> }
+                </td>
+                <td>@g.Beschreibung</td>
+                <td>@g.Mitglieder</td>
+                <td>@g.Laufend</td>
+                <td>@(g.Aktiv ? "aktiv" : "deaktiviert")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<form method="post" class="kasten">
+    <h3>Gruppe anlegen</h3>
+    <label for="neu-name">Name</label>
+    <input id="neu-name" name="name" maxlength="100" required />
+    <label for="neu-beschreibung">Beschreibung (optional)</label>
+    <input id="neu-beschreibung" name="beschreibung" maxlength="500" />
+    <button type="submit" class="haupt">Anlegen</button>
+</form>

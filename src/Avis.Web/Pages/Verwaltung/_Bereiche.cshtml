@@ -1,0 +1,10 @@
+@{
+    var seite = ViewContext.RouteData.Values["page"] as string ?? "";
+    string? Aktuell(string name) => seite.StartsWith("/Verwaltung/" + name) ? "page" : null;
+}
+<nav class="filter" aria-label="Bereiche der Verwaltung">
+    <a asp-page="/Verwaltung/Gruppen" aria-current="@Aktuell("Gruppe")">Gruppen</a>
+    <a asp-page="/Verwaltung/Benutzer" aria-current="@Aktuell("Benutzer")">Benutzer</a>
+    <a asp-page="/Verwaltung/Kategorien" aria-current="@Aktuell("Kategorien")">Kategorien</a>
+    <a asp-page="/Verwaltung/Standorte" aria-current="@Aktuell("Standorte")">Standorte</a>
+</nav>

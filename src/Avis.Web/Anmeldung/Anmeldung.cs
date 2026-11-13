@@ -83,6 +83,8 @@ public static class AnmeldungExtensions
 
     public static bool IstBearbeiter(this ClaimsPrincipal user) => user.IsInRole(Rollen.Bearbeiter);
 
+    public static bool IstAdministrator(this ClaimsPrincipal user) => user.IsInRole(Rollen.Administrator);
+
     internal static ClaimsIdentity AlsIdentity(Benutzer benutzer)
     {
         var identity = new ClaimsIdentity("Avis");

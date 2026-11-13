@@ -17,6 +17,10 @@
                 <a asp-page="/Gruppen/Index">Gruppen</a>
                 <a asp-page="/Auftraege/Index">Alle Aufträge</a>
                 <a asp-page="/Auftraege/Neu">Auftrag erfassen</a>
+                @if (User.IstAdministrator())
+                {
+                    <a asp-page="/Verwaltung/Gruppen">Verwaltung</a>
+                }
             </nav>
         }
         @if (User.Identity?.IsAuthenticated == true)

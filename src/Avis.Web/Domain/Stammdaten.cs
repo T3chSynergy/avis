@@ -52,14 +52,22 @@ public class Kunde
     public string? Quelle { get; set; }
 }
 
-public class Kategorie
+/// <summary>Eintrag einer Auswahlliste, die der Administrator pflegt.</summary>
+public interface IStammwert
+{
+    int Id { get; }
+    string Name { get; set; }
+    bool Aktiv { get; set; }
+}
+
+public class Kategorie : IStammwert
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";
     public bool Aktiv { get; set; } = true;
 }
 
-public class Standort
+public class Standort : IStammwert
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";

@@ -163,3 +163,22 @@ form.formular legend { font-weight: 700; padding: 0 6px; }
 .feldfehler { color: #a3261a; font-size: 13px; }
 .knoepfe { display: flex; align-items: center; gap: 16px; }
 .knoepfe button { margin-top: 0; }
+
+/* Verwaltung */
+.kasten {
+    background: var(--flaeche); border: 1px solid var(--linie); padding: 12px 14px; margin: 16px 0 0; max-width: 560px;
+}
+.kasten.schmal { margin-top: 0; }
+.kasten dl.angaben { margin-bottom: 8px; }
+.ankreuz { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.ankreuz label { margin: 0; font-weight: 400; }
+.kasten .erklaerung { margin: 4px 0 0; }
+.kasten .knoepfe { margin-top: 12px; }
+table.liste tr.inaktiv td, table.liste tr.inaktiv a { color: var(--gedaempft); }
+.spalten.gleich { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.spalten.gleich .kasten { margin-top: 0; max-width: none; }
+.spalten.gleich section .kasten { margin-top: 12px; }
+@media (max-width: 900px) { .spalten.gleich { grid-template-columns: minmax(0, 1fr); } }
+select:disabled, input:disabled { background: #eef1f5; color: var(--gedaempft); }
+.kasten dl.angaben { grid-template-columns: 200px minmax(0, 1fr); }
+table.liste.schmal td { vertical-align: middle; }
