@@ -1,0 +1,62 @@
+name: Fehler oder Wunsch melden
+description: Etwas funktioniert nicht, fehlt oder könnte besser sein.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für die Meldung. Bitte beachte zwei Dinge:
+
+        - **Keine echten Daten.** Meldungen hier sind nicht vertraulich. Namen, Mailadressen, Auftragstexte, Servernamen und Bildschirmfotos mit solchen Angaben gehören nicht hierher – ersetze sie durch erfundene.
+        - **Sicherheitslücken nicht hier melden**, sondern vertraulich über den Reiter „Security“ → „Report a vulnerability“.
+  - type: dropdown
+    id: art
+    attributes:
+      label: Art
+      options:
+        - Fehler
+        - Wunsch oder Verbesserung
+        - Frage
+    validations:
+      required: true
+  - type: dropdown
+    id: bereich
+    attributes:
+      label: Bereich
+      description: Wenn du es nicht weißt, lass das Feld leer.
+      options:
+        - Aufträge (erfassen, bearbeiten, Verlauf)
+        - Listen und Suche
+        - Kunden
+        - Geräte
+        - Seiten für Kunden
+        - Mailversand
+        - E-Mail-Eingang
+        - Texte, Bilder und Anhänge
+        - Verwaltung
+        - Anmeldung und Rechte
+        - Einrichtung und Betrieb
+        - Sonstiges
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Beschreibung
+      description: |
+        Bei einem Fehler: Was ist passiert, und was hättest du erwartet?
+        Bei einem Wunsch: Was möchtest du tun können, und wobei hilft es?
+    validations:
+      required: true
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Schritte zum Nachstellen
+      description: Nur bei Fehlern. Je genauer, desto schneller ist der Fehler gefunden.
+      placeholder: |
+        1. Als Bearbeiter einen Auftrag öffnen
+        2. Auf „Weiterleiten“ klicken
+        3. …
+  - type: input
+    id: umgebung
+    attributes:
+      label: Umgebung
+      description: Nur bei Fehlern. Stand von AVIS (Datum oder Commit), Browser, Datenbank.
+      placeholder: "Stand vom 13.11.2026, Firefox 145, SQLite"

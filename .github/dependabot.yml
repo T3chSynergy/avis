@@ -1,0 +1,51 @@
+# Dependabot schlägt Aktualisierungen der NuGet-Pakete, des Werkzeugs
+# dotnet-ef und des .NET-SDK vor: montags früh, zusammengehörige Pakete in
+# einem gemeinsamen Pull Request.
+#
+# AVIS bleibt auf .NET 10 (LTS). Den Sprung auf die nächste Hauptversion von
+# .NET und der Pakete, die an sie gebunden sind, schlägt Dependabot deshalb
+# nicht vor; der Umstieg ist eine eigene Entscheidung. Wer ihn macht, nimmt
+# die Einträge unter "ignore" heraus.
+version: 2
+
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    groups:
+      dotnet:
+        patterns:
+          - "Microsoft.AspNetCore.*"
+          - "Microsoft.EntityFrameworkCore.*"
+          - "System.DirectoryServices.*"
+          - "dotnet-ef"
+      tests:
+        patterns:
+          - "xunit*"
+          - "coverlet.*"
+          - "Microsoft.NET.Test.Sdk"
+    ignore:
+      - dependency-name: "Microsoft.AspNetCore.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.EntityFrameworkCore.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "System.DirectoryServices.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "dotnet-ef"
+        update-types: ["version-update:semver-major"]
+
+  # Die SDK-Version in global.json.
+  - package-ecosystem: "dotnet-sdk"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
