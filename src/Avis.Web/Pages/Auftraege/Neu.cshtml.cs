@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using Avis.Web.Anhaenge;
 using Avis.Web.Anmeldung;
@@ -162,7 +163,7 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         Gruppen = await db.Gruppen.AsNoTracking()
             .Where(g => g.Aktiv)
             .OrderByDescending(g => g.IstEingangsgruppe).ThenBy(g => g.Name)
-            .Select(g => new SelectListItem(g.Name, g.Id.ToString()))
+            .Select(g => new SelectListItem(g.Name, g.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         Auswahl = await AuftragAuswahl.LadenAsync(db);
         Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "neu");

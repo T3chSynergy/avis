@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using Avis.Web.Anhaenge;
 using Avis.Web.Anmeldung;
@@ -115,7 +116,7 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
         Standorte = await db.Standorte.AsNoTracking()
             .Where(s => s.Aktiv)
             .OrderBy(s => s.Name)
-            .Select(s => new SelectListItem(s.Name, s.Id.ToString()))
+            .Select(s => new SelectListItem(s.Name, s.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
     }
 }

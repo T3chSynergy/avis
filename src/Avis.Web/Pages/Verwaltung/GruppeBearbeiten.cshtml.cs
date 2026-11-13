@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ public class GruppeBearbeitenModel(AvisDb db) : PageModel
         Kandidaten = await db.Benutzer.AsNoTracking()
             .Where(b => b.Aktiv && b.IstBearbeiter && !mitglieder.Contains(b.Id))
             .OrderBy(b => b.Name)
-            .Select(b => new SelectListItem(b.Name, b.Id.ToString()))
+            .Select(b => new SelectListItem(b.Name, b.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         return Page();
     }

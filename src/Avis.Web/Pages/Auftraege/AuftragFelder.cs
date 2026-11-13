@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -112,12 +113,12 @@ public record AuftragAuswahl(List<SelectListItem> Kategorien, List<SelectListIte
         var kategorien = await db.Kategorien.AsNoTracking()
             .Where(k => k.Aktiv || k.Id == kategorieId)
             .OrderBy(k => k.Name)
-            .Select(k => new SelectListItem(k.Name, k.Id.ToString()))
+            .Select(k => new SelectListItem(k.Name, k.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         var standorte = await db.Standorte.AsNoTracking()
             .Where(s => s.Aktiv || s.Id == standortId)
             .OrderBy(s => s.Name)
-            .Select(s => new SelectListItem(s.Name, s.Id.ToString()))
+            .Select(s => new SelectListItem(s.Name, s.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         return new(kategorien, standorte);
     }

@@ -67,7 +67,10 @@ public abstract class StammlisteModel<T>(AvisDb db) : PageModel, IStammliste
             TempData["Fehler"] = "Bitte einen Namen angeben.";
         else if (bereinigt.Length > Hoechstlaenge)
             TempData["Fehler"] = $"Der Name darf höchstens {Hoechstlaenge} Zeichen lang sein.";
+        // Der Vergleich läuft in der Datenbank; ToLower() wird dort zu lower().
+#pragma warning disable CA1304, CA1311, CA1862
         else if (await db.Set<T>().AnyAsync(e => e.Id != ausser && e.Name.ToLower() == bereinigt.ToLower()))
+#pragma warning restore CA1304, CA1311, CA1862
             TempData["Fehler"] = $"{Einzahl} {bereinigt} gibt es schon.";
         else
             return bereinigt;

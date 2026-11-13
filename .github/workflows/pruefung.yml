@@ -1,6 +1,6 @@
-# Baut AVIS und lässt die Tests laufen: bei jedem Pull Request und nach jedem
-# Stand auf main. Unter Windows, weil AVIS dort betrieben wird, und unter
-# Linux, weil dort auch entwickelt wird.
+# Baut AVIS, prüft den Code und lässt die Tests laufen: bei jedem Pull
+# Request und nach jedem Stand auf main. Unter Windows, weil AVIS dort
+# betrieben wird, und unter Linux, weil dort auch entwickelt wird.
 name: Prüfung
 
 on:
@@ -44,8 +44,13 @@ jobs:
       - name: Pakete laden
         run: dotnet restore
 
+      # Der Build prüft den Code mit der Codeanalyse; jede Meldung lässt ihn scheitern.
       - name: Bauen
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --no-restore --configuration Release -warnaserror
+
+      - name: Formatierung prüfen
+        if: matrix.name == 'Linux'
+        run: dotnet format --verify-no-changes --no-restore
 
       - name: Testen
         run: dotnet test --no-build --configuration Release

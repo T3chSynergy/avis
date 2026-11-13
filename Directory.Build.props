@@ -1,0 +1,11 @@
+<Project>
+
+  <!-- Gilt für alle Projekte: Der Build prüft den Code mit den empfohlenen
+       Regeln der .NET-Codeanalyse. Welche Regeln abgeschaltet sind, steht in
+       .editorconfig. -->
+  <PropertyGroup>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+</Project>

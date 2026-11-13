@@ -429,17 +429,17 @@ public class MailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             while (await leser.ReadLineAsync() is { } zeile)
             {
                 var befehl = zeile.ToUpperInvariant();
-                if (befehl.StartsWith("EHLO") || befehl.StartsWith("HELO"))
+                if (befehl.StartsWith("EHLO", StringComparison.Ordinal) || befehl.StartsWith("HELO", StringComparison.Ordinal))
                 {
                     await schreiber.WriteLineAsync("250-attrappe");
                     await schreiber.WriteLineAsync("250 8BITMIME");
                 }
-                else if (befehl.StartsWith("MAIL FROM:"))
+                else if (befehl.StartsWith("MAIL FROM:", StringComparison.Ordinal))
                 {
                     von = zeile[10..].Split(' ')[0];
                     await schreiber.WriteLineAsync("250 OK");
                 }
-                else if (befehl.StartsWith("RCPT TO:"))
+                else if (befehl.StartsWith("RCPT TO:", StringComparison.Ordinal))
                 {
                     an = zeile[8..].Split(' ')[0];
                     await schreiber.WriteLineAsync("250 OK");
@@ -448,7 +448,7 @@ public class MailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
                 {
                     await schreiber.WriteLineAsync("354 Bitte senden");
                     while (await leser.ReadLineAsync() is { } inhalt && inhalt != ".")
-                        daten.Append(inhalt.StartsWith("..") ? inhalt[1..] : inhalt).Append("\r\n");
+                        daten.Append(inhalt.StartsWith("..", StringComparison.Ordinal) ? inhalt[1..] : inhalt).Append("\r\n");
                     await schreiber.WriteLineAsync("250 OK");
                 }
                 else if (befehl == "QUIT")

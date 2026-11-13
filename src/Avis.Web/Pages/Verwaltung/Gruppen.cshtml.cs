@@ -56,7 +56,10 @@ internal static class GruppeRegeln
             return "Bitte einen Namen angeben.";
         if (bereinigt.Length > 100)
             return "Der Name darf höchstens 100 Zeichen lang sein.";
+        // Der Vergleich läuft in der Datenbank; ToLower() wird dort zu lower().
+#pragma warning disable CA1304, CA1311, CA1862
         if (await db.Gruppen.AnyAsync(g => g.Id != ausser && g.Name.ToLower() == bereinigt.ToLower()))
+#pragma warning restore CA1304, CA1311, CA1862
             return $"Die Gruppe {bereinigt} gibt es schon.";
         return null;
     }

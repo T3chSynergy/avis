@@ -284,7 +284,7 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var kunde = await app.DatenbankAsync(db => db.Kunden.Where(k => k.Name == "Dieter Kunde").Select(k => k.Id).FirstAsync());
 
         static string[] Spalten(string seite) => System.Text.RegularExpressions.Regex
-            .Matches(seite[..seite.IndexOf("</thead>")], "<th scope=\"col\">([^<]+)</th>").Select(m => m.Groups[1].Value).ToArray();
+            .Matches(seite[..seite.IndexOf("</thead>", StringComparison.Ordinal)], "<th scope=\"col\">([^<]+)</th>").Select(m => m.Groups[1].Value).ToArray();
 
         Assert.Equal(["Nr.", "Prio", "Betreff", "Kunde", "Gruppe", "Bearbeiter", "Termin", "Alter"], Spalten(await anna.GetStringAsync("/Auftraege")));
         Assert.Equal(["Nr.", "Prio", "Betreff", "Kunde", "Termin", "Alter"], Spalten(await anna.GetStringAsync("/Gruppen")));

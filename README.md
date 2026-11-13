@@ -95,6 +95,30 @@ Die Tests prüfen die Regeln des Auftrags (`tests/Avis.Tests/AuftragTests.cs`)
 und die Seiten gegen eine laufende Anwendung mit eigener Datenbank
 (`tests/Avis.Tests/SeitenTests.cs`).
 
+## Code prüfen
+
+Der Build prüft den Code mit der Codeanalyse von .NET und zeigt, was sie
+findet, als Warnung. `dotnet format` bringt die Formatierung in Ordnung:
+
+```bash
+dotnet format
+```
+
+Bei jedem Pull Request laufen Build, Formatprüfung und Tests auf GitHub,
+unter Windows und Linux (`.github/workflows/pruefung.yml`). Dort lässt jede
+Warnung den Build scheitern. Vor dem Hochladen prüft man dasselbe so:
+
+```bash
+dotnet build -warnaserror
+```
+
+```bash
+dotnet format --verify-no-changes
+```
+
+Die Regeln stehen in `.editorconfig`, zusammen mit den Regeln, die
+abgeschaltet sind, und dem Grund dafür.
+
 ## Aufbau
 
 | Ort | Inhalt |

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -125,7 +126,7 @@ public class BearbeitenModel(AvisDb db) : PageModel
         Standorte = await db.Standorte.AsNoTracking()
             .Where(s => s.Aktiv || s.Id == bisherigerStandort)
             .OrderBy(s => s.Name)
-            .Select(s => new SelectListItem(s.Name, s.Id.ToString()))
+            .Select(s => new SelectListItem(s.Name, s.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "kein");
         return Page();
