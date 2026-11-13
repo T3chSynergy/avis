@@ -17,7 +17,7 @@
         </div>
         <div class="feld">
             <label asp-for="Eingabe.Beschreibung">Beschreibung</label>
-            <textarea asp-for="Eingabe.Beschreibung" rows="8"></textarea>
+            <textarea asp-for="Eingabe.Beschreibung" rows="8" data-markdown></textarea>
             <span asp-validation-for="Eingabe.Beschreibung" class="feldfehler"></span>
         </div>
         <div class="reihe">
@@ -54,3 +54,7 @@
         <a asp-page="Index">Abbrechen</a>
     </div>
 </form>
+
+@section Scripts {
+    <script src="~/js/editor.js" asp-append-version="true"></script>
+}

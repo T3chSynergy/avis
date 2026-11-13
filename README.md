@@ -58,6 +58,22 @@ Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
 - Alt+S springt in das Suchfeld im Kopf.
 - Strg+Eingabe sendet auf der Auftragsseite das Formular ab, in dem man gerade
   schreibt.
+- Strg+V fügt ein Bild aus der Zwischenablage als Anhang ein. Dateien lassen
+  sich auch auf das Textfeld ziehen.
+- Strg+B und Strg+I setzen fett und kursiv.
+
+## Texte mit Markdown
+
+Beschreibung, Kommentare, Nachrichten und Antworten verstehen Markdown: fett,
+kursiv, Listen, Zitate, Code und Links. Über jedem dieser Textfelder steht eine
+Leiste mit den Formatierungen. Gespeichert wird der reine Text, erst die
+Anzeige formatiert ihn. Suche und Mails arbeiten deshalb mit dem reinen Text,
+in Mails stehen die Markdown-Zeichen so, wie sie getippt wurden.
+
+Eingegebenes HTML wird als Text gezeigt. Links führen nur zu `http`, `https`
+und `mailto`. Bilder von fremden Adressen werden nicht geladen, Bilder gehören
+als Anhang an den Eintrag. Die Umsetzung steht in
+`src/Avis.Web/Markdowntext.cs`.
 
 Die Tastenkürzel brauchen JavaScript. Ohne funktioniert alles andere genauso.
 
@@ -86,7 +102,7 @@ und die Seiten gegen eine laufende Anwendung mit eigener Datenbank
 | `src/Avis.Web/Anhaenge` | Ablage hochgeladener Dateien |
 | `src/Avis.Web/Pages` | Seiten |
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
-| `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen; ohne sie funktioniert alles |
+| `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen (Suche beim Tippen, Formatierleiste, Bilder einfügen, Tastenkürzel); ohne sie funktioniert alles |
 | `tests/Avis.Tests` | Tests |
 
 Bezeichner im Code sind deutsch und folgen den Begriffen des Konzepts, Umlaute
@@ -193,7 +209,10 @@ und Monat und mit einem von AVIS vergebenen Namen. In der Datenbank stehen
 Dateiname, Größe und Ablageort. Zur Datensicherung gehören deshalb die
 Datenbank und dieser Ordner.
 
-Anhänge werden immer als Download ausgeliefert und nie im Browser angezeigt.
+Bilder (PNG, JPEG, GIF, WebP) erscheinen im Verlauf als Vorschau und lassen
+sich in voller Größe öffnen. Ob eine Datei ein Bild ist, erkennt AVIS am
+Inhalt, nicht am Namen. Alle anderen Anhänge werden nur als Download
+ausgeliefert und nie im Browser angezeigt, auch SVG nicht.
 Wer einen Anhang bekommt, entscheidet der Verlaufseintrag, an dem er hängt.
 
 Ein Upload darf insgesamt höchstens so groß sein, wie der Webserver zulässt.

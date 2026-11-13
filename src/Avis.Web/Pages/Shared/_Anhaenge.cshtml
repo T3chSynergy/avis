@@ -1,8 +1,26 @@
 @model IReadOnlyList<Anhang>
-@if (Model.Count > 0)
+@{
+    var bilder = Model.Where(a => a.Bildtyp is not null).OrderBy(a => a.Id).ToList();
+    var dateien = Model.Where(a => a.Bildtyp is null).OrderBy(a => a.Id).ToList();
+}
+@if (bilder.Count > 0)
+{
+    <ul class="bilder">
+        @foreach (var a in bilder)
+        {
+            <li>
+                <a asp-page="/Anhaenge/Index" asp-route-id="@a.Id" asp-route-bild="true" target="_blank" rel="noopener" title="@a.Dateiname in voller Größe öffnen">
+                    <img src="@Url.Page("/Anhaenge/Index", new { id = a.Id, bild = "true" })" alt="@a.Dateiname" loading="lazy" />
+                </a>
+                <span><a asp-page="/Anhaenge/Index" asp-route-id="@a.Id" title="Herunterladen">@a.Dateiname</a> (@Anzeige.Dateigroesse(a.Groesse))</span>
+            </li>
+        }
+    </ul>
+}
+@if (dateien.Count > 0)
 {
     <ul class="anhaenge">
-        @foreach (var a in Model.OrderBy(a => a.Id))
+        @foreach (var a in dateien)
         {
             <li><a asp-page="/Anhaenge/Index" asp-route-id="@a.Id">@a.Dateiname</a> <span>(@Anzeige.Dateigroesse(a.Groesse))</span></li>
         }

@@ -56,7 +56,13 @@ public class Anhangablage(IOptions<AnhangOptionen> optionen, IWebHostEnvironment
                 var pfad = Path.Combine(Wurzel, ablagename);
                 Directory.CreateDirectory(Path.GetDirectoryName(pfad)!);
 
-                var anhang = new Anhang(Bereinigt(datei.FileName), Gekuerzt(datei.ContentType, 200), datei.Length, ablagename);
+                string? bildtyp;
+                await using (var quelle = datei.OpenReadStream())
+                {
+                    bildtyp = await BildtypAsync(quelle, abbruch);
+                }
+
+                var anhang = new Anhang(Bereinigt(datei.FileName), Gekuerzt(datei.ContentType, 200), datei.Length, ablagename, bildtyp);
                 anhaenge.Add(anhang);
                 await using var ziel = new FileStream(pfad, FileMode.CreateNew, FileAccess.Write);
                 await datei.CopyToAsync(ziel, abbruch);
@@ -80,9 +86,33 @@ public class Anhangablage(IOptions<AnhangOptionen> optionen, IWebHostEnvironment
         var pfad = Path.Combine(Wurzel, ablagename);
         Directory.CreateDirectory(Path.GetDirectoryName(pfad)!);
 
+        var bildtyp = await BildtypAsync(inhalt, abbruch);
+        inhalt.Position = 0;
+
         await using var ziel = new FileStream(pfad, FileMode.CreateNew, FileAccess.Write);
         await inhalt.CopyToAsync(ziel, abbruch);
-        return new Anhang(Bereinigt(dateiname), Gekuerzt(inhaltstyp, 200), ziel.Length, ablagename);
+        return new Anhang(Bereinigt(dateiname), Gekuerzt(inhaltstyp, 200), ziel.Length, ablagename, bildtyp);
+    }
+
+    /// <summary>
+    /// Erkennt an den ersten Bytes, ob die Datei ein PNG, JPEG, GIF oder WebP
+    /// ist. SVG gehört bewusst nicht dazu, weil es Skripte enthalten kann.
+    /// </summary>
+    public static async Task<string?> BildtypAsync(Stream inhalt, CancellationToken abbruch = default)
+    {
+        var kopf = new byte[12];
+        var gelesen = await inhalt.ReadAtLeastAsync(kopf, kopf.Length, throwOnEndOfStream: false, abbruch);
+        var b = kopf.AsSpan(0, gelesen);
+
+        if (b.StartsWith<byte>([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]))
+            return "image/png";
+        if (b.StartsWith<byte>([0xFF, 0xD8, 0xFF]))
+            return "image/jpeg";
+        if (b.StartsWith("GIF87a"u8) || b.StartsWith("GIF89a"u8))
+            return "image/gif";
+        if (b.Length >= 12 && b[..4].SequenceEqual("RIFF"u8) && b[8..12].SequenceEqual("WEBP"u8))
+            return "image/webp";
+        return null;
     }
 
     /// <summary>Löscht die Dateien wieder, wenn der Auftrag danach nicht gespeichert werden konnte.</summary>

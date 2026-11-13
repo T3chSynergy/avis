@@ -28,6 +28,10 @@ namespace Avis.Web.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Bildtyp")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Dateiname")
                         .IsRequired()
                         .HasMaxLength(255)

@@ -32,7 +32,7 @@
     <div>
         <section aria-labelledby="h-beschreibung">
             <h2 id="h-beschreibung">Beschreibung</h2>
-            <p class="text">@a.Beschreibung</p>
+            @Markdowntext.AlsHtml(a.Beschreibung)
         </section>
 
         @* Die Schaltflächen wählen, welches Formular darunter aufgeht. Das geht ohne Skript. *@
@@ -75,7 +75,7 @@
                     <form method="post" asp-page-handler="WiederOeffnen">
                         <input type="hidden" name="version" value="@a.Version" />
                         <label for="oeffnen-text">Grund (intern, optional)</label>
-                        <textarea id="oeffnen-text" name="text" rows="3">@Entwurf("oeffnen")</textarea>
+                        <textarea id="oeffnen-text" name="text" rows="3" data-markdown>@Entwurf("oeffnen")</textarea>
                         <button type="submit" class="haupt">Wieder öffnen</button>
                     </form>
                 </div>
@@ -92,7 +92,7 @@
                         <form method="post" asp-page-handler="Abschliessen">
                             <input type="hidden" name="version" value="@a.Version" />
                             <label for="abschluss-text">Abschlusstext. Der Kunde bekommt ihn per Mail.</label>
-                            <textarea id="abschluss-text" name="text" rows="6" required>@Entwurf("abschliessen")</textarea>
+                            <textarea id="abschluss-text" name="text" rows="6" required data-markdown>@Entwurf("abschliessen")</textarea>
                             <button type="submit" class="haupt">Auftrag abschließen</button>
                         </form>
                     </div>
@@ -106,7 +106,7 @@
                     <form method="post" asp-page-handler="NachrichtAnKunden" enctype="multipart/form-data">
                         <input type="hidden" name="version" value="@a.Version" />
                         <label for="kunde-text">@a.Kunde.Name sieht diesen Text und die Anhänge und bekommt eine Mail.</label>
-                        <textarea id="kunde-text" name="text" rows="8">@Entwurf("nachricht")</textarea>
+                        <textarea id="kunde-text" name="text" rows="8" data-markdown>@Entwurf("nachricht")</textarea>
                         <partial name="_Dateifeld" model='"kunde-dateien"' />
                         <button type="submit" class="haupt">An den Kunden senden</button>
                     </form>
@@ -134,7 +134,7 @@
                             </div>
                         </div>
                         <label for="weiter-text">Hinweis an die Gruppe (intern, optional)</label>
-                        <textarea id="weiter-text" name="text" rows="4">@Entwurf("weiterleiten")</textarea>
+                        <textarea id="weiter-text" name="text" rows="4" data-markdown>@Entwurf("weiterleiten")</textarea>
                         @if (a.Gruppe.Gesperrt)
                         {
                             <p class="erklaerung">Außerhalb der gesperrten Gruppe @a.Gruppe.Name sehen alle Bearbeiter den Auftrag mit seinem ganzen Verlauf.</p>
@@ -152,7 +152,7 @@
                 <form method="post" asp-page-handler="InternerKommentar" enctype="multipart/form-data">
                     <input type="hidden" name="version" value="@a.Version" />
                     <label for="intern-text">Der Kunde sieht weder diesen Text noch die Anhänge.</label>
-                    <textarea id="intern-text" name="text" rows="8">@Entwurf("intern")</textarea>
+                    <textarea id="intern-text" name="text" rows="8" data-markdown>@Entwurf("intern")</textarea>
                     <partial name="_Dateifeld" model='"intern-dateien"' />
                     <button type="submit" class="haupt">Intern speichern</button>
                 </form>
@@ -171,7 +171,7 @@
                             @if (!v.FuerKundenSichtbar) { <span class="hinweis">intern</span> }
                         </div>
                         @if (v.Beschreibung is not null) { <p class="text">@v.Beschreibung</p> }
-                        @if (v.Text is not null) { <p class="text">@v.Text</p> }
+                        @Markdowntext.AlsHtml(v.Text)
                         <partial name="_Anhaenge" model="v.Anhaenge" />
                     </li>
                 }
@@ -226,5 +226,6 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/editor.js" asp-append-version="true"></script>
     <script src="~/js/auftrag.js" asp-append-version="true"></script>
 }

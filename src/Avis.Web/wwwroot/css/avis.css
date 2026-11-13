@@ -317,3 +317,38 @@ h2 .nebenaktion { color: var(--gedaempft); }
 /* Selten gebrauchte Felder beim Erfassen. */
 details.weitere { margin-top: 10px; }
 details.weitere summary { cursor: pointer; font-weight: 600; color: var(--akzent); padding: 4px 0; }
+
+/* Mit Markdown formatierter Text. */
+.md { overflow-wrap: anywhere; margin: 0 0 12px; }
+ol.verlauf .md { margin: 4px 0 0; }
+.md > :first-child { margin-top: 0; }
+.md > :last-child { margin-bottom: 0; }
+.md p, .md ul, .md ol, .md blockquote, .md pre { margin: 0 0 8px; }
+.md ul, .md ol { padding-left: 24px; }
+.md h1, .md h2, .md h3, .md h4, .md h5, .md h6 { font-size: 1.05em; margin: 10px 0 6px; }
+.md code { font-family: Consolas, "Cascadia Mono", Menlo, monospace; font-size: 0.92em; background: #eef1f5; padding: 1px 4px; border-radius: 3px; }
+.md pre { background: #eef1f5; padding: 8px 10px; border-radius: 4px; overflow-x: auto; }
+.md pre code { background: none; padding: 0; white-space: pre; }
+.md blockquote { border-left: 3px solid #9aa7b6; padding-left: 10px; color: var(--gedaempft); }
+.md hr { border: 0; border-top: 1px solid var(--linie); margin: 10px 0; }
+li.intern .md code, li.intern .md pre { background: #f3e6b8; }
+
+/* Formatierleiste über einem Textfeld. */
+.editorleiste { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 4px; }
+.editorleiste button { margin: 0; padding: 2px 9px; font-size: 13px; font-weight: 600; box-shadow: none; border-radius: 4px; }
+textarea.ablegen { outline: 3px dashed var(--akzent); outline-offset: 2px; }
+
+/* Bilder im Verlauf und Vorschau vor dem Absenden. */
+ul.bilder { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 0; padding: 0; }
+ul.bilder li { display: flex; flex-direction: column; gap: 3px; max-width: 260px; }
+ul.bilder img { display: block; max-width: 260px; max-height: 180px; border: 1px solid var(--linie); border-radius: 4px; background: #fff; }
+ul.bilder span { color: var(--gedaempft); font-size: 13px; overflow-wrap: anywhere; }
+ul.dateivorschau { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 0; padding: 0; }
+ul.dateivorschau:empty { display: none; }
+ul.dateivorschau li {
+    display: flex; flex-direction: column; gap: 4px; align-items: flex-start; max-width: 200px;
+    padding: 6px; background: var(--flaeche); border: 1px solid var(--linie); border-radius: 4px; font-size: 13px;
+}
+ul.dateivorschau img { max-width: 186px; max-height: 120px; border-radius: 3px; }
+ul.dateivorschau span { overflow-wrap: anywhere; }
+ul.dateivorschau button { margin: 0; padding: 1px 8px; font-size: 13px; box-shadow: none; }

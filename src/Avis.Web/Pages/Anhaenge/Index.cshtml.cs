@@ -8,13 +8,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Avis.Web.Pages.Anhaenge;
 
 /// <summary>
-/// Liefert einen Anhang zum Herunterladen. Ein Bearbeiter bekommt ihn, wenn er
+/// Liefert einen Anhang zum Herunterladen, ein Bild auf Wunsch auch zur Anzeige. Ein Bearbeiter bekommt ihn, wenn er
 /// den Auftrag sehen darf. Ein Kunde bekommt ihn, wenn es sein Auftrag ist und
 /// der Verlaufseintrag für Kunden sichtbar ist.
 /// </summary>
 public class IndexModel(AvisDb db, Anhangablage ablage, Kundenzuordnung zuordnung, ILogger<IndexModel> log) : PageModel
 {
-    public async Task<IActionResult> OnGetAsync(int id)
+    public async Task<IActionResult> OnGetAsync(int id, bool bild)
     {
         var anhang = await db.Anhaenge.AsNoTracking()
             .Include(a => a.Verlaufseintrag)
@@ -41,9 +41,20 @@ public class IndexModel(AvisDb db, Anhangablage ablage, Kundenzuordnung zuordnun
             return NotFound();
         }
 
-        // Immer als Download, nie zur Anzeige im Browser: Eine hochgeladene
-        // Datei soll im Namen von AVIS nichts ausführen können.
+        // Eine hochgeladene Datei soll im Namen von AVIS nichts ausführen
+        // können. Der Browser darf den Typ nicht selbst erraten, und die
+        // Antwort darf weder Skripte noch anderes nachladen.
         Response.Headers.XContentTypeOptions = "nosniff";
+        Response.Headers.ContentSecurityPolicy = "default-src 'none'; sandbox";
+
+        // Zur Anzeige nur, was am Inhalt als Bild erkannt wurde, mit genau diesem Typ.
+        if (bild && anhang.Bildtyp is not null)
+        {
+            Response.Headers.CacheControl = "private, max-age=3600";
+            return PhysicalFile(pfad, anhang.Bildtyp);
+        }
+
+        // Alles andere immer als Download, nie zur Anzeige im Browser.
         return PhysicalFile(pfad, "application/octet-stream", anhang.Dateiname);
     }
 }

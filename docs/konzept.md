@@ -110,7 +110,7 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 |---|---|---|
 | Nummer | automatisch | fortlaufend |
 | Betreff | Text | Pflicht |
-| Beschreibung | Text | Pflicht |
+| Beschreibung | Text | Pflicht. Wie alle längeren Texte mit Markdown formatierbar |
 | Kunde | Verweis auf Kundentabelle | nicht zwingend der Erfasser |
 | Erfasst von | Person | automatisch |
 | Eingang | Web, E-Mail, Telefon | automatisch bzw. Vorgabe |
@@ -124,7 +124,7 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 | Gruppe | Gruppe | aktuelle Zuordnung |
 | Bearbeiter | Person | leer, solange der Auftrag offen ist |
 | Bevorzugter Bearbeiter | Person | optional, wird beim Weiterleiten gesetzt |
-| Anhänge | Dateien | am Auftrag, an Kommentaren, Nachrichten und Antworten. Anhänge an internen Kommentaren sieht der Kunde nicht |
+| Anhänge | Dateien | am Auftrag, an Kommentaren, Nachrichten und Antworten. Anhänge an internen Kommentaren sieht der Kunde nicht. Bilder erscheinen als Vorschau und lassen sich mit Strg+V einfügen |
 | Verlauf | Einträge | automatisch |
 
 Das Kundenformular zeigt nur Betreff, Beschreibung, Standort, Gerät und
@@ -248,8 +248,9 @@ Grundsätze:
   Ohne sie funktioniert alles.
 - AVIS bringt keine fremden Oberflächenbibliotheken mit, das Stylesheet ist
   selbst geschrieben.
-- Anhänge liegen im Dateisystem, nicht in der Datenbank. Sie werden nur als
-  Download ausgeliefert.
+- Anhänge liegen im Dateisystem, nicht in der Datenbank. Bilder werden
+  angezeigt, alles andere wird nur als Download ausgeliefert.
+- Texte werden als reiner Text gespeichert. Markdown formatiert nur die Anzeige.
 - Die Rollen (Bearbeiter, Administrator) stehen in der Benutzertabelle von
   AVIS. Active Directory liefert nur, wer angemeldet ist.
 

@@ -180,6 +180,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.Property(a => a.Dateiname).HasMaxLength(255);
             e.Property(a => a.Inhaltstyp).HasMaxLength(200);
             e.Property(a => a.Ablagename).HasMaxLength(100);
+            e.Property(a => a.Bildtyp).HasMaxLength(50);
         });
 
         model.Entity<Inventargeraet>(e =>

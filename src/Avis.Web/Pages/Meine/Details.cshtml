@@ -21,7 +21,7 @@
 
 <section aria-labelledby="h-auftrag">
     <h2 id="h-auftrag">Auftrag</h2>
-    <p class="text">@a.Beschreibung</p>
+    @Markdowntext.AlsHtml(a.Beschreibung)
     <dl class="angaben">
         <dt>Erstellt</dt>
         <dd>@Ortszeit.Anzeigen(a.ErstelltAm)</dd>
@@ -47,9 +47,9 @@
                     <strong>@DetailsModel.Titel(v.Art)</strong>
                     <span>@(!DetailsModel.VomKunden(v.Art) ? "IT" : v.Benutzer.Anmeldename == Avis.Web.Posteingang.Mailannahme.Systemkonto ? "per E-Mail" : v.Benutzer.Name) · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
                 </div>
-                @if (DetailsModel.ZeigtText(v.Art) && v.Text is not null)
+                @if (DetailsModel.ZeigtText(v.Art))
                 {
-                    <p class="text">@v.Text</p>
+                    @Markdowntext.AlsHtml(v.Text)
                 }
                 <partial name="_Anhaenge" model="v.Anhaenge" />
             </li>
@@ -64,7 +64,7 @@
         <form method="post" enctype="multipart/form-data">
             <p class="erklaerung">Der Auftrag ist abgeschlossen. Besteht das Problem weiter, lässt er sich hier wieder öffnen.</p>
             <label for="text">Was ist noch offen?</label>
-            <textarea id="text" name="text" rows="6">@Model.Entwurf</textarea>
+            <textarea id="text" name="text" rows="6" data-markdown>@Model.Entwurf</textarea>
             <partial name="_Dateifeld" model='"dateien"' />
             <button type="submit" class="haupt">Auftrag wieder öffnen</button>
         </form>
@@ -74,9 +74,13 @@
         <h2 id="h-antwort">Antworten</h2>
         <form method="post" enctype="multipart/form-data">
             <label for="text">Nachricht an die IT</label>
-            <textarea id="text" name="text" rows="6">@Model.Entwurf</textarea>
+            <textarea id="text" name="text" rows="6" data-markdown>@Model.Entwurf</textarea>
             <partial name="_Dateifeld" model='"dateien"' />
             <button type="submit" class="haupt">Absenden</button>
         </form>
     }
 </section>
+
+@section Scripts {
+    <script src="~/js/editor.js" asp-append-version="true"></script>
+}
