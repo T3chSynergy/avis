@@ -44,7 +44,7 @@
                 <li>
                     <div class="kopfzeile">
                         <strong>@DetailsModel.Titel(v.Art)</strong>
-                        <span>@(v.Art == VerlaufArt.AntwortDesKunden ? v.Benutzer.Name : "IT") · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
+                        <span>@(DetailsModel.VomKunden(v.Art) ? v.Benutzer.Name : "IT") · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
                     </div>
                     @if (DetailsModel.ZeigtText(v.Art) && v.Text is not null)
                     {
@@ -57,13 +57,20 @@
     </section>
 
     <section class="aktionen" aria-labelledby="h-antwort">
-        <h2 id="h-antwort">Antworten</h2>
         @if (a.Status == AuftragStatus.Abgeschlossen)
         {
-            <p class="erklaerung">Der Auftrag ist abgeschlossen. Besteht das Problem weiter, bitte die IT-Hotline anrufen oder einen neuen Auftrag stellen.</p>
+            <h2 id="h-antwort">Wieder öffnen</h2>
+            <form method="post" enctype="multipart/form-data">
+                <p class="erklaerung">Der Auftrag ist abgeschlossen. Besteht das Problem weiter, lässt er sich hier wieder öffnen.</p>
+                <label for="text">Was ist noch offen?</label>
+                <textarea id="text" name="text" rows="5"></textarea>
+                <partial name="_Dateifeld" model='"dateien"' />
+                <button type="submit" class="haupt">Auftrag wieder öffnen</button>
+            </form>
         }
         else
         {
+            <h2 id="h-antwort">Antworten</h2>
             <form method="post" enctype="multipart/form-data">
                 <label for="text">Nachricht an die IT</label>
                 <textarea id="text" name="text" rows="5"></textarea>

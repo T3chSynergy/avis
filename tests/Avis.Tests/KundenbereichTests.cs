@@ -100,26 +100,57 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
     }
 
     [Fact]
-    public async Task Der_Kunde_antwortet_bis_der_Auftrag_abgeschlossen_ist()
+    public async Task Der_Kunde_antwortet_auf_einen_laufenden_Auftrag()
     {
         var dieter = await app.AnmeldenAlsAsync("dieter");
         var anna = await app.AnmeldenAlsAsync("anna");
         var id = await StellenAsync(dieter, "Tastatur klemmt");
 
         var antwort = await dieter.PostFormularAsync($"/Meine/{id}", $"/Meine/{id}", new() { ["text"] = "Die Leertaste ist betroffen." });
+
         Assert.Contains("Die Nachricht wurde an die IT gesendet.", await antwort.Content.ReadAsStringAsync());
         Assert.Contains("Die Leertaste ist betroffen.", await anna.GetStringAsync($"/Auftraege/{id}"));
-        Assert.Equal(VerlaufArt.AntwortDesKunden, (await LadenAsync(id)).Verlauf.OrderBy(v => v.Id).Last().Art);
+        var auftrag = await LadenAsync(id);
+        Assert.Equal(VerlaufArt.AntwortDesKunden, auftrag.Verlauf.OrderBy(v => v.Id).Last().Art);
+        Assert.Equal(AuftragStatus.Offen, auftrag.Status);
+    }
 
+    [Fact]
+    public async Task Der_Kunde_oeffnet_einen_abgeschlossenen_Auftrag_wieder()
+    {
+        var dieter = await app.AnmeldenAlsAsync("dieter");
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var id = await StellenAsync(dieter, "Maus springt");
         await AktionAsync(anna, $"/Auftraege/{id}", "Uebernehmen");
-        await AktionAsync(anna, $"/Auftraege/{id}", "Abschliessen", new() { ["text"] = "Tastatur getauscht." });
+        await AktionAsync(anna, $"/Auftraege/{id}", "Abschliessen", new() { ["text"] = "Maus getauscht." });
+        Assert.Contains("Auftrag wieder öffnen", await dieter.GetStringAsync($"/Meine/{id}"));
 
-        var sicht = await dieter.GetStringAsync($"/Meine/{id}");
-        Assert.Contains("Tastatur getauscht.", sicht);
-        Assert.DoesNotContain("<textarea", sicht);
-        var danach = await dieter.PostFormularAsync("/Meine/Neu", $"/Meine/{id}", new() { ["text"] = "Geht doch nicht." });
-        Assert.Contains("Der Auftrag ist abgeschlossen.", await danach.Content.ReadAsStringAsync());
-        Assert.Equal(VerlaufArt.Abgeschlossen, (await LadenAsync(id)).Verlauf.OrderBy(v => v.Id).Last().Art);
+        // Ohne Begründung bleibt er abgeschlossen.
+        var leer = await dieter.PostFormularAsync($"/Meine/{id}", $"/Meine/{id}", new() { ["text"] = " " });
+        Assert.Contains("Bitte einen Text eingeben oder eine Datei anhängen.", await leer.Content.ReadAsStringAsync());
+        Assert.Equal(AuftragStatus.Abgeschlossen, (await LadenAsync(id)).Status);
+
+        var antwort = await dieter.PostFormularAsync($"/Meine/{id}", $"/Meine/{id}", new() { ["text"] = "Die neue Maus springt auch." });
+
+        var sicht = await antwort.Content.ReadAsStringAsync();
+        Assert.Contains("Der Auftrag ist wieder geöffnet und liegt bei der IT.", sicht);
+        Assert.Contains("Die neue Maus springt auch.", sicht);
+        var auftrag = await app.DatenbankAsync(db => db.Auftraege.AsNoTracking()
+            .Include(a => a.Gruppe).Include(a => a.BevorzugterBearbeiter).Include(a => a.Verlauf)
+            .FirstAsync(a => a.Id == id));
+        Assert.Equal(AuftragStatus.Offen, auftrag.Status);
+        Assert.True(auftrag.Gruppe.IstEingangsgruppe);
+        Assert.Null(auftrag.BearbeiterId);
+        // Wer ihn zuletzt bearbeitet hat, ist als bevorzugter Bearbeiter genannt.
+        Assert.Equal("Anna Beispiel", auftrag.BevorzugterBearbeiter!.Name);
+        var eintrag = auftrag.Verlauf.OrderBy(v => v.Id).Last();
+        Assert.Equal(VerlaufArt.VomKundenWiederGeoeffnet, eintrag.Art);
+        Assert.Equal("Vom Kunden wieder geöffnet in Gruppe IT-Hotline, bevorzugt an Anna Beispiel", eintrag.Beschreibung);
+
+        // Die IT sieht ihn wieder in der Gruppe und Anna auf ihrer Startseite.
+        Assert.Contains("Maus springt", await anna.GetStringAsync("/Gruppen"));
+        Assert.Contains("Für mich vorgemerkt", await anna.GetStringAsync("/"));
+        Assert.Contains("Die neue Maus springt auch.", await anna.GetStringAsync($"/Auftraege/{id}"));
     }
 
     [Fact]

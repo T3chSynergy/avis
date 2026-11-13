@@ -66,6 +66,16 @@ public static class Mailtexte
                     eintrag.Text,
                     fuerBearbeiter);
 
+            case VerlaufArt.VomKundenWiederGeoeffnet:
+                if (auftrag.Status != AuftragStatus.Offen || auftrag.BevorzugterBearbeiter is null)
+                    return (null, "Der Auftrag hat keinen bisherigen Bearbeiter oder wurde inzwischen übernommen. Er liegt offen in seiner Gruppe.");
+                return AnBearbeiter(auftrag.BevorzugterBearbeiter, auftrag, "Wieder geöffnet",
+                    $"{kunde.Name} hat den abgeschlossenen Auftrag {auftrag.Id} „{auftrag.Betreff}“ wieder geöffnet:",
+                    eintrag.Text,
+                    anhaenge,
+                    $"Er liegt in der Gruppe {auftrag.Gruppe.Name} und nennt dich als bevorzugten Bearbeiter.",
+                    fuerBearbeiter);
+
             default:
                 return (null, "Zu dieser Art von Eintrag wird keine Mail gesendet.");
         }

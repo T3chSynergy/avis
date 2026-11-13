@@ -11,6 +11,7 @@ public enum VerlaufArt
     Geaendert = 6,
     Abgeschlossen = 7,
     WiederGeoeffnet = 8,
+    VomKundenWiederGeoeffnet = 9,
 }
 
 /// <summary>
@@ -81,5 +82,6 @@ public class Verlaufseintrag
         VerlaufArt.NachrichtAnKunden or
         VerlaufArt.AntwortDesKunden or
         VerlaufArt.Abgeschlossen or
-        VerlaufArt.WiederGeoeffnet;
+        VerlaufArt.WiederGeoeffnet or
+        VerlaufArt.VomKundenWiederGeoeffnet;
 }

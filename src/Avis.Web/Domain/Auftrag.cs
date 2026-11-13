@@ -287,6 +287,30 @@ public class Auftrag
         Eintragen(VerlaufArt.WiederGeoeffnet, durch, jetzt, $"Wieder geöffnet in Gruppe {Gruppe.Name}", text);
     }
 
+    /// <summary>
+    /// Der Kunde meldet sich zu einem abgeschlossenen Auftrag. Der Auftrag
+    /// liegt danach wieder offen in seiner letzten Gruppe. Wer ihn zuletzt
+    /// bearbeitet hat, wird als bevorzugter Bearbeiter genannt.
+    /// </summary>
+    public void KundeOeffnetWieder(Benutzer durch, string? text, DateTime jetzt, IReadOnlyList<Anhang>? anhaenge = null)
+    {
+        if (AbgeschlossenAm is null)
+            throw new AuftragException("Der Auftrag ist nicht abgeschlossen.");
+        TextOderAnhang(text, anhaenge);
+
+        var bisher = Bearbeiter is { Aktiv: true, IstBearbeiter: true } ? Bearbeiter : null;
+        var beschreibung = $"Vom Kunden wieder geöffnet in Gruppe {Gruppe.Name}";
+        if (bisher is not null)
+            beschreibung += $", bevorzugt an {bisher.Name}";
+
+        AbgeschlossenAm = null;
+        Bearbeiter = null;
+        BearbeiterId = null;
+        BevorzugterBearbeiter = bisher;
+        BevorzugterBearbeiterId = bisher?.Id;
+        Eintragen(VerlaufArt.VomKundenWiederGeoeffnet, durch, jetzt, beschreibung, text, anhaenge: anhaenge);
+    }
+
     /// <summary>Ein Kommentar oder eine Nachricht braucht Text, eine Datei oder beides.</summary>
     private static void TextOderAnhang(string? text, IReadOnlyList<Anhang>? anhaenge)
     {

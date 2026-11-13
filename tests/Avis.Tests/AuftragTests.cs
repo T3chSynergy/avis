@@ -147,6 +147,40 @@ public class AuftragTests
     }
 
     [Fact]
+    public void Der_Kunde_oeffnet_wieder_und_der_bisherige_Bearbeiter_wird_bevorzugt()
+    {
+        var auftrag = Neu();
+        auftrag.Weiterleiten(_netzwerk, _anna, Jetzt);
+        auftrag.Uebernehmen(_bernd, Jetzt);
+        auftrag.Abschliessen(_bernd, "Erledigt.", Jetzt);
+        var version = auftrag.Version;
+
+        auftrag.KundeOeffnetWieder(_anna, "Geht wieder nicht.", Jetzt);
+
+        Assert.Equal(AuftragStatus.Offen, auftrag.Status);
+        Assert.Same(_netzwerk, auftrag.Gruppe);
+        Assert.Null(auftrag.Bearbeiter);
+        Assert.Same(_bernd, auftrag.BevorzugterBearbeiter);
+        Assert.Equal(version + 1, auftrag.Version);
+        Assert.True(auftrag.Verlauf[^1].FuerKundenSichtbar);
+        Assert.Throws<AuftragException>(() => auftrag.KundeOeffnetWieder(_anna, "Nochmal.", Jetzt));
+    }
+
+    [Fact]
+    public void Ein_ausgeschiedener_Bearbeiter_wird_nicht_bevorzugt()
+    {
+        var auftrag = Neu();
+        auftrag.Uebernehmen(_bernd, Jetzt);
+        auftrag.Abschliessen(_bernd, "Erledigt.", Jetzt);
+        _bernd.Aktiv = false;
+
+        auftrag.KundeOeffnetWieder(_anna, "Geht wieder nicht.", Jetzt);
+
+        Assert.Null(auftrag.BevorzugterBearbeiter);
+        Assert.Equal("Vom Kunden wieder geöffnet in Gruppe IT-Hotline", auftrag.Verlauf[^1].Beschreibung);
+    }
+
+    [Fact]
     public void Wieder_oeffnen_geht_nur_bei_abgeschlossenen_Auftraegen()
     {
         Assert.Throws<AuftragException>(() => Neu().WiederOeffnen(_anna, Jetzt));

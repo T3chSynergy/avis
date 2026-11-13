@@ -113,6 +113,31 @@ public class MailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Oeffnet_der_Kunde_wieder_erfaehrt_es_der_bisherige_Bearbeiter()
+    {
+        var anna = await AnfangAsync();
+        var dieter = await app.AnmeldenAlsAsync("dieter");
+        var gestellt = await dieter.PostFormularAsync("/Meine/Neu", "/Meine/Neu", new()
+        {
+            ["Eingabe.Betreff"] = "Lautsprecher knackt",
+            ["Eingabe.Beschreibung"] = "Für einen Test.",
+        });
+        var id = int.Parse(gestellt.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
+        await AktionAsync(anna, $"/Auftraege/{id}", "Uebernehmen");
+        await AktionAsync(anna, $"/Auftraege/{id}", "Abschliessen", new() { ["text"] = "Kabel getauscht." });
+        await app.MailsVersendenAsync();
+
+        await dieter.PostFormularAsync($"/Meine/{id}", $"/Meine/{id}", new() { ["text"] = "Es knackt immer noch." });
+
+        var mail = Assert.Single(await app.MailsVersendenAsync());
+        Assert.Equal("anna.beispiel@example.org", mail.To.Mailboxes.Single().Address);
+        Assert.Equal($"[AVIS-{id}] Wieder geöffnet: Lautsprecher knackt", mail.Subject);
+        Assert.Contains("Dieter Kunde hat den abgeschlossenen Auftrag", mail.TextBody);
+        Assert.Contains("Es knackt immer noch.", mail.TextBody);
+        Assert.Contains("liegt in der Gruppe IT-Hotline", mail.TextBody);
+    }
+
+    [Fact]
     public async Task Der_bevorzugte_Bearbeiter_bekommt_einen_Hinweis()
     {
         var anna = await AnfangAsync();

@@ -24,13 +24,18 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
         VerlaufArt.NachrichtAnKunden => "Nachricht der IT",
         VerlaufArt.AntwortDesKunden => "Antwort",
         VerlaufArt.Abgeschlossen => "Abgeschlossen",
-        VerlaufArt.WiederGeoeffnet => "Wieder geöffnet",
+        VerlaufArt.WiederGeoeffnet or VerlaufArt.VomKundenWiederGeoeffnet => "Wieder geöffnet",
         _ => "",
     };
 
-    /// <summary>Der Grund einer Wiedereröffnung ist für die IT geschrieben und bleibt intern.</summary>
+    /// <summary>Öffnet ein Bearbeiter wieder, ist sein Grund für die IT geschrieben und bleibt intern.</summary>
     public static bool ZeigtText(VerlaufArt art) =>
-        art is VerlaufArt.NachrichtAnKunden or VerlaufArt.AntwortDesKunden or VerlaufArt.Abgeschlossen;
+        art is VerlaufArt.NachrichtAnKunden or VerlaufArt.AntwortDesKunden or VerlaufArt.Abgeschlossen
+            or VerlaufArt.VomKundenWiederGeoeffnet;
+
+    /// <summary>Ob der Eintrag vom Kunden stammt.</summary>
+    public static bool VomKunden(VerlaufArt art) =>
+        art is VerlaufArt.AntwortDesKunden or VerlaufArt.VomKundenWiederGeoeffnet;
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -59,7 +64,10 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
     public async Task<IActionResult> OnPostAsync(int id, string? text, List<IFormFile> dateien)
     {
         var kunde = await zuordnung.FuerBenutzerAsync(User.BenutzerId());
-        var auftrag = await db.Auftraege.FirstOrDefaultAsync(a => a.Id == id && a.KundeId == kunde.Id);
+        var auftrag = await db.Auftraege
+            .Include(a => a.Gruppe)
+            .Include(a => a.Bearbeiter)
+            .FirstOrDefaultAsync(a => a.Id == id && a.KundeId == kunde.Id);
         if (auftrag is null)
             return NotFound();
 
@@ -68,13 +76,23 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
         {
             anhaenge = await ablage.SpeichernAsync(dateien);
             var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
-            auftrag.KundeAntwortet(ich, text, uhr.GetUtcNow().UtcDateTime, anhaenge);
+            var jetzt = uhr.GetUtcNow().UtcDateTime;
+            if (auftrag.Status == AuftragStatus.Abgeschlossen)
+            {
+                auftrag.KundeOeffnetWieder(ich, text, jetzt, anhaenge);
+                TempData["Meldung"] = "Der Auftrag ist wieder geöffnet und liegt bei der IT.";
+            }
+            else
+            {
+                auftrag.KundeAntwortet(ich, text, jetzt, anhaenge);
+                TempData["Meldung"] = "Die Nachricht wurde an die IT gesendet.";
+            }
             await db.SaveChangesAsync();
-            TempData["Meldung"] = "Die Nachricht wurde an die IT gesendet.";
         }
         catch (AuftragException ex)
         {
             ablage.Verwerfen(anhaenge);
+            TempData.Remove("Meldung");
             TempData["Fehler"] = ex.Message;
         }
 

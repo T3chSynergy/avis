@@ -76,6 +76,7 @@ public static class Anzeige
         VerlaufArt.Geaendert => "Geändert",
         VerlaufArt.Abgeschlossen => "Abgeschlossen",
         VerlaufArt.WiederGeoeffnet => "Wieder geöffnet",
+        VerlaufArt.VomKundenWiederGeoeffnet => "Vom Kunden wieder geöffnet",
         _ => art.ToString(),
     };
 }

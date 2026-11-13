@@ -64,6 +64,7 @@ Aufträge gesperrter Gruppen auch während der Bearbeitung geschützt bleiben.
 | Ändern | Bearbeiter | Felder anpassen, Änderung steht im Verlauf |
 | Abschließen | zuständiger Bearbeiter | Auftrag ist erledigt, mit Abschlusstext für den Kunden |
 | Wieder öffnen | Bearbeiter | Auftrag liegt wieder offen in seiner letzten Gruppe |
+| Wieder öffnen | Kunde | wie oben, mit Begründung. Wer den Auftrag zuletzt bearbeitet hat, wird als bevorzugter Bearbeiter genannt und erhält eine Mail |
 
 Aufträge aus dem Kundenformular und aus dem E-Mail-Eingang gehen immer an die
 IT-Hotline und werden dort zuerst bearbeitet. Ein Bearbeiter, den ein Kunde
@@ -274,5 +275,3 @@ Ein Wechsel ist möglich und vorbereitet:
 - Die Abfrage des Active Directory für Name, E-Mail, Telefon und Abteilung
   neuer Konten ist eingebaut, aber noch nicht an einem echten Verzeichnis
   erprobt.
-- Darf ein Kunde auf einen abgeschlossenen Auftrag antworten und ihn damit
-  wieder öffnen? Bisher kann er das nicht.

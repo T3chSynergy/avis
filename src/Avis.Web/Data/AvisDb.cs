@@ -59,7 +59,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             .Where(v => v.Art switch
             {
                 VerlaufArt.Erfasst or VerlaufArt.NachrichtAnKunden or VerlaufArt.Abgeschlossen => true,
-                VerlaufArt.AntwortDesKunden => true,
+                VerlaufArt.AntwortDesKunden or VerlaufArt.VomKundenWiederGeoeffnet => true,
                 VerlaufArt.Weitergeleitet => v.Auftrag.BevorzugterBearbeiterId is not null,
                 _ => false,
             })
