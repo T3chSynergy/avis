@@ -49,6 +49,10 @@ public class AuftragException(string message) : Exception(message);
 /// Bearbeiter. Der Status ergibt sich daraus und wird nicht gespeichert.
 /// Alles an einem Auftrag ändert sich nur über die Methoden dieser Klasse,
 /// und jede davon schreibt einen Verlaufseintrag.
+///
+/// Übernehmen darf jeder Bearbeiter. Alles Weitere setzt das Übernehmen
+/// voraus: Nur wer den Auftrag bearbeitet, leitet ihn weiter, kommentiert
+/// ihn, schreibt dem Kunden, ändert Angaben oder schließt ihn ab.
 /// </summary>
 public class Auftrag
 {
@@ -163,6 +167,7 @@ public class Auftrag
     public bool Aendern(AuftragAngaben angaben, Benutzer durch, DateTime jetzt)
     {
         NichtAbgeschlossen();
+        NurZustaendig(durch);
         var neu = Bereinigt(angaben);
 
         var aenderungen = new List<string>();
@@ -201,6 +206,7 @@ public class Auftrag
     public void KundeAendern(Kunde kunde, Benutzer durch, DateTime jetzt)
     {
         NichtAbgeschlossen();
+        NurZustaendig(durch);
         if (kunde.Id == KundeId)
             throw new AuftragException($"{kunde.Name} ist bereits der Kunde dieses Auftrags.");
 
@@ -232,8 +238,7 @@ public class Auftrag
     public void Weiterleiten(Gruppe ziel, Benutzer durch, DateTime jetzt, Benutzer? bevorzugt = null, string? text = null)
     {
         NichtAbgeschlossen();
-        if (BearbeiterId is null && ziel.Id == GruppeId)
-            throw new AuftragException($"Der Auftrag liegt bereits in der Gruppe {ziel.Name}.");
+        NurZustaendig(durch);
 
         var beschreibung = $"Weitergeleitet an Gruppe {ziel.Name}";
         if (bevorzugt is not null)
@@ -248,9 +253,26 @@ public class Auftrag
         Eintragen(VerlaufArt.Weitergeleitet, durch, jetzt, beschreibung, text);
     }
 
+    /// <summary>
+    /// Gibt den Auftrag ohne Zutun des Bearbeiters an seine Gruppe zurück,
+    /// zum Beispiel wenn der Bearbeiter ausscheidet. Das ist eine Handlung der
+    /// Verwaltung, kein Weiterleiten durch den Bearbeiter.
+    /// </summary>
+    public void ZurueckAnGruppe(Benutzer durch, DateTime jetzt, string? grund = null)
+    {
+        NichtAbgeschlossen();
+        if (BearbeiterId is null)
+            throw new AuftragException("Der Auftrag liegt bereits offen in seiner Gruppe.");
+
+        Bearbeiter = null;
+        BearbeiterId = null;
+        Eintragen(VerlaufArt.Weitergeleitet, durch, jetzt, $"Zurück an Gruppe {Gruppe.Name}", grund);
+    }
+
     /// <summary>Für den Kunden unsichtbar.</summary>
     public void InternKommentieren(Benutzer durch, string? text, DateTime jetzt, IReadOnlyList<Anhang>? anhaenge = null)
     {
+        NurZustaendig(durch);
         TextOderAnhang(text, anhaenge);
         Eintragen(VerlaufArt.InternerKommentar, durch, jetzt, null, text, aendertDenStand: false, anhaenge);
     }
@@ -259,6 +281,7 @@ public class Auftrag
     public void NachrichtAnKunden(Benutzer durch, string? text, DateTime jetzt, IReadOnlyList<Anhang>? anhaenge = null)
     {
         NichtAbgeschlossen();
+        NurZustaendig(durch);
         TextOderAnhang(text, anhaenge);
         KundeWartetSeit = null;
         Eintragen(VerlaufArt.NachrichtAnKunden, durch, jetzt, null, text, aendertDenStand: false, anhaenge);
@@ -277,8 +300,7 @@ public class Auftrag
     public void Abschliessen(Benutzer durch, string abschlusstext, DateTime jetzt)
     {
         NichtAbgeschlossen();
-        if (BearbeiterId != durch.Id)
-            throw new AuftragException("Nur der zuständige Bearbeiter kann abschließen. Übernimm den Auftrag zuerst.");
+        NurZustaendig(durch);
 
         AbgeschlossenAm = jetzt;
         KundeWartetSeit = null;
@@ -328,6 +350,16 @@ public class Auftrag
         if (string.IsNullOrWhiteSpace(text) && anhaenge is not { Count: > 0 })
             throw new AuftragException("Bitte einen Text eingeben oder eine Datei anhängen.");
     }
+
+    /// <summary>Übernehmen ist die Voraussetzung für alles Weitere am Auftrag.</summary>
+    private void NurZustaendig(Benutzer durch)
+    {
+        if (BearbeiterId != durch.Id)
+            throw new AuftragException(NichtUebernommen);
+    }
+
+    public const string NichtUebernommen =
+        "Übernimm den Auftrag zuerst. Nur wer ihn bearbeitet, kann ihn weiterleiten, kommentieren, dem Kunden schreiben, Angaben ändern oder ihn abschließen.";
 
     private void NichtAbgeschlossen()
     {

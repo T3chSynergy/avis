@@ -111,9 +111,11 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
-    public async Task Die_Mail_eines_Bearbeiters_zu_einem_Auftrag_wird_ein_interner_Kommentar()
+    public async Task Die_Mail_des_zustaendigen_Bearbeiters_wird_ein_interner_Kommentar()
     {
         var id = (await AnnehmenAsync(Mail("dieter.kunde@example.org", "Monitor flimmert", "Seit heute."))).AuftragId!.Value;
+        var bernd = await app.AnmeldenAlsAsync("bernd");
+        await bernd.UebernehmenAsync(app, id);
 
         var eingang = await AnnehmenAsync(Mail("bernd.muster@example.org", $"AW: [AVIS-{id}] Monitor flimmert", "NUR-INTERN: Kabel ist bestellt."));
 
@@ -124,6 +126,20 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
         var dieter = await app.AnmeldenAlsAsync("dieter");
         Assert.DoesNotContain("NUR-INTERN", await dieter.GetStringAsync($"/Meine/{id}"));
+    }
+
+    [Fact]
+    public async Task Die_Mail_eines_Bearbeiters_der_den_Auftrag_nicht_bearbeitet_landet_nicht_im_Auftrag()
+    {
+        var id = (await AnnehmenAsync(Mail("dieter.kunde@example.org", "Tastatur prellt", "Seit gestern."))).AuftragId!.Value;
+        var eintraege = (await LadenAsync(id)).Verlauf.Count;
+
+        // Clara hat den Auftrag nicht übernommen.
+        var eingang = await AnnehmenAsync(Mail("clara.probe@example.org", $"AW: [AVIS-{id}] Tastatur prellt", "Ich mische mich ein."));
+
+        Assert.Equal(MaileingangErgebnis.NeuerAuftrag, eingang.Ergebnis);
+        Assert.NotEqual(id, eingang.AuftragId!.Value);
+        Assert.Equal(eintraege, (await LadenAsync(id)).Verlauf.Count);
     }
 
     [Fact]

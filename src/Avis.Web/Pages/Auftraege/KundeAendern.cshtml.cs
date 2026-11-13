@@ -25,6 +25,11 @@ public class KundeAendernModel(AvisDb db, TimeProvider uhr) : PageModel
             TempData["Fehler"] = "Ein abgeschlossener Auftrag lässt sich nicht bearbeiten. Öffne ihn zuerst wieder.";
             return RedirectToPage("Details", new { id });
         }
+        if (auftrag.BearbeiterId != User.BenutzerId())
+        {
+            TempData["Fehler"] = Auftrag.NichtUebernommen;
+            return RedirectToPage("Details", new { id });
+        }
 
         return await SeiteAsync(auftrag, auftrag.Version, suche: null, kundeId: null);
     }
@@ -48,7 +53,7 @@ public class KundeAendernModel(AvisDb db, TimeProvider uhr) : PageModel
         try
         {
             if (auftrag.Version != version)
-                throw new AuftragException("Der Auftrag wurde inzwischen von jemand anderem geändert. Bitte prüfe den aktuellen Stand.");
+                throw new AuftragException("Der Auftrag wurde inzwischen geändert. Bitte prüfe den aktuellen Stand.");
 
             var kunde = await db.Kunden.FirstOrDefaultAsync(k => k.Id == kundeId)
                 ?? throw new AuftragException("Bitte einen Kunden auswählen.");
@@ -64,7 +69,7 @@ public class KundeAendernModel(AvisDb db, TimeProvider uhr) : PageModel
         }
         catch (DbUpdateConcurrencyException)
         {
-            TempData["Fehler"] = "Der Auftrag wurde inzwischen von jemand anderem geändert. Bitte prüfe den aktuellen Stand.";
+            TempData["Fehler"] = "Der Auftrag wurde inzwischen geändert. Bitte prüfe den aktuellen Stand.";
         }
 
         return RedirectToPage("Details", new { id });

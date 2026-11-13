@@ -187,7 +187,8 @@ geschah, steht unter Verwaltung → Posteingang.
   Mail vom Kunden dieses Auftrags, ist sie seine Antwort. Der zitierte
   bisherige Schriftwechsel wird abgeschnitten. Ein abgeschlossener Auftrag
   wird dadurch wieder geöffnet.
-- Kommt eine solche Mail von einem Bearbeiter, wird sie ein interner Kommentar.
+- Kommt eine solche Mail von dem Bearbeiter, der den Auftrag bearbeitet, wird
+  sie ein interner Kommentar.
 - Kommt sie von jemand anderem, wird sie ein neuer Auftrag mit einem Hinweis.
   Niemand kann per Mail in den Auftrag eines anderen schreiben.
 - Abwesenheitsnotizen, Zustellberichte, Rundmails und Mails von der eigenen

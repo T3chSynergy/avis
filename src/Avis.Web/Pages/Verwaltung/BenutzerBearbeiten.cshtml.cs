@@ -92,7 +92,7 @@ public class BenutzerBearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
             .ToListAsync();
 
         foreach (var auftrag in auftraege)
-            auftrag.Weiterleiten(auftrag.Gruppe, ich, jetzt, text: $"{benutzer.Name} ist kein Bearbeiter mehr.");
+            auftrag.ZurueckAnGruppe(ich, jetzt, $"{benutzer.Name} ist kein Bearbeiter mehr.");
 
         benutzer.Gruppen.Clear();
         return auftraege.Count;

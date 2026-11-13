@@ -35,6 +35,15 @@
             <partial name="_Eintragstext" model="new Avis.Web.Pages.Shared.Eintragstext(a.Beschreibung, a.Verlauf.SelectMany(v => v.Anhaenge).ToList(), AnhaengeAuflisten: false)" />
         </section>
 
+        @if (Model.Entwurf is not null && !(meiner || (!laeuft && Model.OffeneAktion == "oeffnen")))
+        {
+            @* Der Auftrag wurde einem beim Schreiben weggenommen. Der Text soll nicht verloren sein. *@
+            <div class="meldung fehler">
+                <label for="entwurf">Dein Text wurde nicht gespeichert. Hier steht er zum Kopieren:</label>
+                <textarea id="entwurf" rows="6" readonly>@Model.Entwurf</textarea>
+            </div>
+        }
+
         @* Die Schaltflächen wählen, welches Formular darunter aufgeht. Das geht ohne Skript. *@
         <section class="aktionen" aria-labelledby="h-aktionen">
             <h2 id="h-aktionen" class="unsichtbar">Aktionen</h2>
@@ -43,27 +52,31 @@
                 {
                     <label class="knopf wahl haupt"><input type="radio" name="aktion" value="oeffnen" class="unsichtbar" checked="@(Model.OffeneAktion == "oeffnen")" /> Wieder öffnen</label>
                 }
-                else
+                else if (meiner)
                 {
-                    @if (meiner)
-                    {
-                        <label class="knopf wahl haupt"><input type="radio" name="aktion" value="abschliessen" class="unsichtbar" checked="@(Model.OffeneAktion == "abschliessen")" /> Abschließen</label>
-                    }
-                    else
-                    {
-                        <form method="post" asp-page-handler="Uebernehmen">
-                            <input type="hidden" name="version" value="@a.Version" />
-                            <button type="submit" class="haupt">@(a.Status == AuftragStatus.Offen ? "Übernehmen" : $"Von {a.Bearbeiter!.Name} übernehmen")</button>
-                        </form>
-                    }
+                    <label class="knopf wahl haupt"><input type="radio" name="aktion" value="abschliessen" class="unsichtbar" checked="@(Model.OffeneAktion == "abschliessen")" /> Abschließen</label>
                     <label class="knopf wahl"><input type="radio" name="aktion" value="nachricht" class="unsichtbar" checked="@(Model.OffeneAktion == "nachricht")" /> Nachricht an den Kunden</label>
                 }
-                <label class="knopf wahl intern"><input type="radio" name="aktion" value="intern" class="unsichtbar" checked="@(Model.OffeneAktion == "intern")" /> Interner Kommentar</label>
-                @if (laeuft)
+                else
+                {
+                    <form method="post" asp-page-handler="Uebernehmen">
+                        <input type="hidden" name="version" value="@a.Version" />
+                        <button type="submit" class="haupt">@(a.Status == AuftragStatus.Offen ? "Übernehmen" : $"Von {a.Bearbeiter!.Name} übernehmen")</button>
+                    </form>
+                }
+                @if (meiner)
+                {
+                    <label class="knopf wahl intern"><input type="radio" name="aktion" value="intern" class="unsichtbar" checked="@(Model.OffeneAktion == "intern")" /> Interner Kommentar</label>
+                }
+                @if (laeuft && meiner)
                 {
                     <label class="knopf wahl"><input type="radio" name="aktion" value="weiterleiten" class="unsichtbar" checked="@(Model.OffeneAktion == "weiterleiten")" /> Weiterleiten</label>
                 }
             </div>
+            @if (laeuft && !meiner)
+            {
+                <p class="erklaerung voraussetzung">Wer den Auftrag übernimmt, kann ihn weiterleiten, kommentieren, dem Kunden schreiben, Angaben ändern und ihn abschließen.</p>
+            }
 
             @if (!laeuft)
             {
@@ -98,6 +111,8 @@
                     </div>
                 }
 
+                @if (meiner)
+                {
                 <div class="panel" data-aktion="nachricht">
                     <div class="panelkopf">
                         <h3>Nachricht an den Kunden</h3>
@@ -142,8 +157,11 @@
                         <button type="submit" class="haupt">Weiterleiten</button>
                     </form>
                 </div>
+                }
             }
 
+            @if (meiner)
+            {
             <div class="panel intern" data-aktion="intern">
                 <div class="panelkopf">
                     <h3>Interner Kommentar</h3>
@@ -157,6 +175,7 @@
                     <button type="submit" class="haupt">Intern speichern</button>
                 </form>
             </div>
+            }
         </section>
 
         <section aria-labelledby="h-verlauf">
@@ -214,7 +233,7 @@
             <dt>Erstellt</dt>
             <dd>@Ortszeit.Anzeigen(a.ErstelltAm)</dd>
         </dl>
-        @if (laeuft)
+        @if (laeuft && meiner)
         {
             <p class="nebenlinks">
                 <a asp-page="Bearbeiten" asp-route-id="@a.Id">Angaben bearbeiten</a>

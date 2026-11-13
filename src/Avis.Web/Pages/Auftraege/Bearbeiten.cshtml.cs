@@ -30,6 +30,11 @@ public class BearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
             TempData["Fehler"] = "Ein abgeschlossener Auftrag lässt sich nicht bearbeiten. Öffne ihn zuerst wieder.";
             return RedirectToPage("Details", new { id });
         }
+        if (auftrag.BearbeiterId != User.BenutzerId())
+        {
+            TempData["Fehler"] = Auftrag.NichtUebernommen;
+            return RedirectToPage("Details", new { id });
+        }
 
         Id = id;
         Felder = AuftragFelder.Aus(auftrag);
@@ -46,12 +51,21 @@ public class BearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
 
         var angaben = await Felder.AlsAngabenAsync(db, ModelState, nameof(Felder), auftrag);
 
+        // Hat inzwischen jemand anderes den Auftrag übernommen, bleiben die
+        // Eingaben im Formular stehen, gespeichert wird nichts.
+        if (angaben is not null && auftrag.BearbeiterId != User.BenutzerId())
+        {
+            ModelState.AddModelError("", Auftrag.NichtUebernommen);
+            ModelState.Remove(nameof(Version));
+            Version = auftrag.Version;
+        }
+
         // Hat jemand den Auftrag inzwischen geändert, wird nichts
         // überschrieben. Die Eingaben bleiben im Formular stehen.
-        if (angaben is not null && auftrag.Version != Version)
+        else if (angaben is not null && auftrag.Version != Version)
         {
             ModelState.AddModelError("",
-                "Der Auftrag wurde inzwischen von jemand anderem geändert. Deine Eingaben stehen noch im Formular. "
+                "Der Auftrag wurde inzwischen geändert. Deine Eingaben stehen noch im Formular. "
                 + "Vergleiche sie mit dem aktuellen Stand, bevor du erneut speicherst.");
             ModelState.Remove(nameof(Version));
             Version = auftrag.Version;
@@ -74,7 +88,7 @@ public class BearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
             }
             catch (DbUpdateConcurrencyException)
             {
-                TempData["Fehler"] = "Der Auftrag wurde inzwischen von jemand anderem geändert. Bitte prüfe den aktuellen Stand.";
+                TempData["Fehler"] = "Der Auftrag wurde inzwischen geändert. Bitte prüfe den aktuellen Stand.";
                 return RedirectToPage("Details", new { id });
             }
         }

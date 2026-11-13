@@ -144,6 +144,7 @@ public class GeraeteTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     {
         var anna = await app.AnmeldenAlsAsync("anna");
         var id = await ErfassenAsync(anna, "Notebook lädt nicht", "NB-1017");
+        await anna.UebernehmenAsync(app, id);
         var seite = $"/Auftraege/{id}/Bearbeiten";
         Assert.Contains("value=\"NB-1017\"", await anna.GetStringAsync(seite));
 
@@ -218,6 +219,8 @@ public class GeraeteTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
     private async Task BearbeitenAsync(HttpClient client, int id, string inventarnummer, string? betreff = null)
     {
+        if ((await LadenAsync(id)).BearbeiterId is null)
+            await client.UebernehmenAsync(app, id);
         var auftrag = await LadenAsync(id);
         var seite = $"/Auftraege/{id}/Bearbeiten";
         var antwort = await client.PostFormularAsync(seite, seite, new()

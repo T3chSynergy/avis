@@ -17,6 +17,14 @@ public class AuftragTests
     private Auftrag Neu(AuftragAngaben? angaben = null) =>
         Auftrag.Erfassen(angaben ?? Angaben, _kunde, _anna, _hotline, Eingang.Telefon, Jetzt);
 
+    /// <summary>Ein Auftrag, den Anna übernommen hat.</summary>
+    private Auftrag BeiAnna(AuftragAngaben? angaben = null)
+    {
+        var auftrag = Neu(angaben);
+        auftrag.Uebernehmen(_anna, Jetzt);
+        return auftrag;
+    }
+
     [Fact]
     public void Neuer_Auftrag_liegt_offen_in_der_Gruppe()
     {
@@ -79,7 +87,7 @@ public class AuftragTests
     [Fact]
     public void Der_bevorzugte_Bearbeiter_ist_nur_ein_Hinweis()
     {
-        var auftrag = Neu();
+        var auftrag = BeiAnna();
         auftrag.Weiterleiten(_netzwerk, _anna, Jetzt, _bernd);
 
         auftrag.Uebernehmen(_anna, Jetzt);
@@ -89,11 +97,49 @@ public class AuftragTests
     }
 
     [Fact]
-    public void Weiterleiten_an_die_Gruppe_in_der_der_Auftrag_offen_liegt_geht_nicht()
+    public void Ohne_Uebernehmen_geht_nichts_weiter()
+    {
+        var kategorie = new Kategorie { Id = 1, Name = "Störung" };
+        var offen = Neu();
+        var beiBernd = Neu();
+        beiBernd.Uebernehmen(_bernd, Jetzt);
+
+        foreach (var auftrag in new[] { offen, beiBernd })
+        {
+            var eintraege = auftrag.Verlauf.Count;
+
+            Assert.Throws<AuftragException>(() => auftrag.Weiterleiten(_netzwerk, _anna, Jetzt));
+            Assert.Throws<AuftragException>(() => auftrag.InternKommentieren(_anna, "Notiz.", Jetzt));
+            Assert.Throws<AuftragException>(() => auftrag.NachrichtAnKunden(_anna, "Hallo.", Jetzt));
+            Assert.Throws<AuftragException>(() => auftrag.Aendern(Angaben with { Kategorie = kategorie }, _anna, Jetzt));
+            Assert.Throws<AuftragException>(() => auftrag.KundeAendern(new Kunde { Id = 2, Name = "Anderer" }, _anna, Jetzt));
+            Assert.Throws<AuftragException>(() => auftrag.Abschliessen(_anna, "Erledigt.", Jetzt));
+
+            Assert.Equal(eintraege, auftrag.Verlauf.Count);
+            Assert.Null(auftrag.Kategorie);
+            Assert.Same(_kunde, auftrag.Kunde);
+            Assert.Same(_hotline, auftrag.Gruppe);
+        }
+
+        // Übernehmen selbst darf jeder, danach geht alles.
+        beiBernd.Uebernehmen(_anna, Jetzt);
+        beiBernd.InternKommentieren(_anna, "Notiz.", Jetzt);
+        beiBernd.Weiterleiten(_netzwerk, _anna, Jetzt);
+        Assert.Same(_netzwerk, beiBernd.Gruppe);
+    }
+
+    [Fact]
+    public void Die_Verwaltung_gibt_einen_Auftrag_an_seine_Gruppe_zurueck()
     {
         var auftrag = Neu();
+        auftrag.Uebernehmen(_bernd, Jetzt);
 
-        Assert.Throws<AuftragException>(() => auftrag.Weiterleiten(_hotline, _anna, Jetzt));
+        auftrag.ZurueckAnGruppe(_anna, Jetzt, "Bernd Muster ist kein Bearbeiter mehr.");
+
+        Assert.Equal(AuftragStatus.Offen, auftrag.Status);
+        Assert.Same(_hotline, auftrag.Gruppe);
+        Assert.Equal("Zurück an Gruppe IT-Hotline", auftrag.Verlauf[^1].Beschreibung);
+        Assert.Throws<AuftragException>(() => auftrag.ZurueckAnGruppe(_anna, Jetzt));
     }
 
     [Fact]
@@ -134,7 +180,7 @@ public class AuftragTests
     [Fact]
     public void Wieder_oeffnen_legt_den_Auftrag_offen_in_die_letzte_Gruppe()
     {
-        var auftrag = Neu();
+        var auftrag = BeiAnna();
         auftrag.Weiterleiten(_netzwerk, _anna, Jetzt);
         auftrag.Uebernehmen(_bernd, Jetzt);
         auftrag.Abschliessen(_bernd, "Erledigt.", Jetzt);
@@ -149,7 +195,7 @@ public class AuftragTests
     [Fact]
     public void Der_Kunde_oeffnet_wieder_und_der_bisherige_Bearbeiter_wird_bevorzugt()
     {
-        var auftrag = Neu();
+        var auftrag = BeiAnna();
         auftrag.Weiterleiten(_netzwerk, _anna, Jetzt);
         auftrag.Uebernehmen(_bernd, Jetzt);
         auftrag.Abschliessen(_bernd, "Erledigt.", Jetzt);
@@ -190,8 +236,8 @@ public class AuftragTests
         auftrag.KundeAntwortet(_anna, "Zweite Frage.", Jetzt.AddHours(1));
         Assert.Equal(Jetzt, auftrag.KundeWartetSeit);
 
-        auftrag.InternKommentieren(_anna, "Intern.", Jetzt.AddHours(2));
         auftrag.Uebernehmen(_anna, Jetzt.AddHours(2));
+        auftrag.InternKommentieren(_anna, "Intern.", Jetzt.AddHours(2));
         Assert.Equal(Jetzt, auftrag.KundeWartetSeit);
 
         auftrag.NachrichtAnKunden(_anna, "Antwort.", Jetzt.AddHours(3));
@@ -214,7 +260,7 @@ public class AuftragTests
     [Fact]
     public void Interne_Kommentare_und_Weiterleitungen_sieht_der_Kunde_nicht()
     {
-        var auftrag = Neu();
+        var auftrag = BeiAnna();
         auftrag.InternKommentieren(_anna, "Passwort liegt im Tresor.", Jetzt);
         auftrag.NachrichtAnKunden(_anna, "Wir kümmern uns.", Jetzt);
         auftrag.Weiterleiten(_netzwerk, _anna, Jetzt, text: "Interner Hinweis.");
@@ -230,11 +276,11 @@ public class AuftragTests
         var auftrag = Neu();
         var vorher = auftrag.Version;
 
+        auftrag.Uebernehmen(_anna, Jetzt);
+        Assert.Equal(vorher + 1, auftrag.Version);
+
         auftrag.InternKommentieren(_anna, "Notiz.", Jetzt);
         auftrag.NachrichtAnKunden(_anna, "Hallo.", Jetzt);
-        Assert.Equal(vorher, auftrag.Version);
-
-        auftrag.Uebernehmen(_anna, Jetzt);
         Assert.Equal(vorher + 1, auftrag.Version);
 
         auftrag.Aendern(Angaben with { Dringlichkeit = Stufe.Hoch }, _anna, Jetzt);
@@ -248,6 +294,7 @@ public class AuftragTests
         var anfrage = new Kategorie { Id = 2, Name = "Anfrage" };
         var haupthaus = new Standort { Id = 1, Name = "Haupthaus" };
         var auftrag = Neu(Angaben with { Kategorie = stoerung, Geraet = "PC-0815" });
+        auftrag.Uebernehmen(_bernd, Jetzt);
 
         var geaendert = auftrag.Aendern(
             new("Drucker im Flur defekt", "Druckt nicht.")
@@ -285,7 +332,7 @@ public class AuftragTests
     [Fact]
     public void Der_bisherige_Text_der_Beschreibung_bleibt_im_Verlauf()
     {
-        var auftrag = Neu();
+        var auftrag = BeiAnna();
 
         auftrag.Aendern(Angaben with { Beschreibung = "Druckt nur leere Seiten." }, _anna, Jetzt);
 
@@ -297,7 +344,7 @@ public class AuftragTests
     [Fact]
     public void Aendern_ohne_Unterschied_schreibt_nichts_in_den_Verlauf()
     {
-        var auftrag = Neu(new("Drucker defekt", "Zeile eins\nZeile zwei") { Geraet = "PC-0815" });
+        var auftrag = BeiAnna(new("Drucker defekt", "Zeile eins\nZeile zwei") { Geraet = "PC-0815" });
         var eintraege = auftrag.Verlauf.Count;
 
         // So kommt ein unverändertes Formular aus dem Browser zurück.

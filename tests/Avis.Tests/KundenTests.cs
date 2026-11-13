@@ -140,6 +140,7 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     {
         var anna = await app.AnmeldenAlsAsync("anna");
         var id = await ErfassenAsync(anna, "Falsch zugeordnet", new() { ["kundeId"] = (await KundeIdAsync("Frank Müller")).ToString() });
+        await anna.UebernehmenAsync(app, id);
         var gabi = await KundeIdAsync("Gabi Müller");
         var seite = $"/Auftraege/{id}/Kunde";
         var version = (await LadenAsync(id)).Version;
@@ -161,7 +162,7 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var nochmal = await anna.PostFormularAsync(seite, seite, new() { ["version"] = auftrag.Version.ToString(), ["kundeId"] = gabi.ToString() });
         Assert.Contains("ist bereits der Kunde", await nochmal.Content.ReadAsStringAsync());
         var veraltet = await anna.PostFormularAsync(seite, seite, new() { ["version"] = version.ToString(), ["kundeId"] = (await KundeIdAsync("Eva Test")).ToString() });
-        Assert.Contains("inzwischen von jemand anderem geändert", await veraltet.Content.ReadAsStringAsync());
+        Assert.Contains("inzwischen geändert", await veraltet.Content.ReadAsStringAsync());
         Assert.Equal(gabi, (await LadenAsync(id)).KundeId);
     }
 

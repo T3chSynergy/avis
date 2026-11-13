@@ -141,7 +141,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
         if (auftrag is null)
             return NotFound();
 
-        const string veraltet = "Der Auftrag wurde inzwischen von jemand anderem geändert. Bitte prüfe den aktuellen Stand.";
+        const string veraltet = "Der Auftrag wurde inzwischen geändert. Bitte prüfe den aktuellen Stand.";
         try
         {
             if (versionPruefen && auftrag.Version != version)

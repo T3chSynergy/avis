@@ -42,6 +42,7 @@ public class AnhangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var seite = $"/Auftraege/{id}";
 
         // Ein interner Kommentar darf auch nur aus einer Datei bestehen.
+        await anna.UebernehmenAsync(app, id);
         await anna.PostMitDateienAsync(seite, $"{seite}?handler=InternerKommentar", new() { ["version"] = "1" }, ("intern-speicherabbild.txt", Protokoll));
         await anna.PostMitDateienAsync(seite, $"{seite}?handler=NachrichtAnKunden", new() { ["version"] = "1", ["text"] = "Bitte dieses Werkzeug starten." }, ("anleitung.pdf", Bild));
 
@@ -99,7 +100,8 @@ public class AnhangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         await anna.PostFormularAsync("/Verwaltung/Gruppen", "/Verwaltung/Gruppen", new() { ["name"] = "Anhangtresor" });
         var gruppe = await app.DatenbankAsync(db => db.Gruppen.Where(g => g.Name == "Anhangtresor").Select(g => g.Id).FirstAsync());
         await anna.PostFormularAsync($"/Verwaltung/Gruppen/{gruppe}", $"/Verwaltung/Gruppen/{gruppe}?handler=Speichern", new() { ["name"] = "Anhangtresor", ["aktiv"] = "true", ["gesperrt"] = "true" });
-        await anna.PostFormularAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=Weiterleiten", new() { ["version"] = "1", ["gruppeId"] = gruppe.ToString() });
+        await anna.UebernehmenAsync(app, id);
+        await anna.PostFormularAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=Weiterleiten", new() { ["version"] = "2", ["gruppeId"] = gruppe.ToString() });
         Assert.Equal(HttpStatusCode.NotFound, (await bernd.GetAsync($"/Anhaenge/{anhang.Id}")).StatusCode);
 
         Assert.Equal(HttpStatusCode.NotFound, (await anna.GetAsync("/Anhaenge/987654")).StatusCode);
@@ -148,11 +150,12 @@ public class AnhangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var anna = await app.AnmeldenAlsAsync("anna");
         var id = await ErfassenAsync(anna, "Leerer Kommentar");
         var seite = $"/Auftraege/{id}";
+        await anna.UebernehmenAsync(app, id);
 
         var antwort = await anna.PostMitDateienAsync(seite, $"{seite}?handler=InternerKommentar", new() { ["version"] = "1", ["text"] = "  " });
 
         Assert.Contains("Bitte einen Text eingeben oder eine Datei anhängen.", await antwort.Content.ReadAsStringAsync());
-        Assert.Single((await LadenAsync(id)).Verlauf);
+        Assert.Equal([VerlaufArt.Erfasst, VerlaufArt.Uebernommen], (await LadenAsync(id)).Verlauf.OrderBy(v => v.Id).Select(v => v.Art));
     }
 
     [Fact]
@@ -177,6 +180,7 @@ public class AnhangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var anna = await app.AnmeldenAlsAsync("anna");
         var id = await ErfassenAsync(anna, "Anleitung per Mail", kunde: "Frank Müller");
         var seite = $"/Auftraege/{id}";
+        await anna.UebernehmenAsync(app, id);
         await app.MailsVersendenAsync();
 
         await anna.PostMitDateienAsync(seite, $"{seite}?handler=NachrichtAnKunden", new() { ["version"] = "1" }, ("anleitung.pdf", Bild), ("formular.docx", Bild));

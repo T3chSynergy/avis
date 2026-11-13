@@ -19,8 +19,8 @@ namespace Avis.Web.Posteingang;
 /// - Steht im Betreff eine Auftragsnummer in der Form [AVIS-123] und kommt die
 ///   Mail vom Kunden dieses Auftrags, ist sie seine Antwort. Ist der Auftrag
 ///   abgeschlossen, öffnet sie ihn wieder.
-/// - Kommt sie von einem Bearbeiter, der den Auftrag sehen darf, wird sie ein
-///   interner Kommentar. So gelangt nichts versehentlich zum Kunden.
+/// - Kommt sie von dem Bearbeiter, der den Auftrag gerade bearbeitet, wird sie
+///   ein interner Kommentar. So gelangt nichts versehentlich zum Kunden.
 /// - Alles andere wird ein neuer Auftrag in der Eingangsgruppe. Das gilt auch,
 ///   wenn ein Dritter eine Auftragsnummer nennt: Niemand kann per Mail in den
 ///   Auftrag eines anderen schreiben.
@@ -91,8 +91,7 @@ public partial class Mailannahme(
                 }
                 eingang.Auftrag = bezug;
             }
-            else if (bezug is not null && durch is { Aktiv: true, IstBearbeiter: true }
-                && await db.AuftraegeFuer(durch.Id).AnyAsync(a => a.Id == bezug.Id, abbruch))
+            else if (bezug is not null && durch is { Aktiv: true, IstBearbeiter: true } && bezug.BearbeiterId == durch.Id)
             {
                 bezug.InternKommentieren(durch, MitHinweis(OhneZitat(text, anhaenge, bilderImText), ausgelassen), jetzt, anhaenge);
                 eingang.Ergebnis = MaileingangErgebnis.InternerKommentar;

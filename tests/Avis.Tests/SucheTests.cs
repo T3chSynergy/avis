@@ -94,11 +94,12 @@ public class SucheTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     {
         var anna = await app.AnmeldenAlsAsync("anna");
         var id = await ErfassenAsync(anna, "Vorher Zitronenfalter", null);
+        await anna.UebernehmenAsync(app, id);
         var seite = $"/Auftraege/{id}/Bearbeiten";
 
         await anna.PostFormularAsync(seite, seite, new()
         {
-            ["Version"] = "1",
+            ["Version"] = "2",
             ["Felder.Betreff"] = "Nachher Schwalbenschwanz",
             ["Felder.Beschreibung"] = "Für einen Test.",
         });
@@ -123,7 +124,8 @@ public class SucheTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             ["Eingabe.GruppeId"] = (await HotlineAsync()).ToString(),
         });
         var id = int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
-        await anna.PostFormularAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=InternerKommentar", new() { ["version"] = "1", ["text"] = "Wärmeleitpaste erneuern." });
+        await anna.UebernehmenAsync(app, id);
+        await anna.PostFormularAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=InternerKommentar", new() { ["version"] = "2", ["text"] = "Wärmeleitpaste erneuern." });
         return id;
     }
 

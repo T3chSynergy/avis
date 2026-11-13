@@ -147,6 +147,7 @@ public class MailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var netzwerk = await app.DatenbankAsync(db => db.Gruppen.Where(g => g.Name == "Netzwerk").Select(g => g.Id).FirstAsync());
         var bernd = await app.DatenbankAsync(db => db.Benutzer.Where(b => b.Anmeldename == "bernd").Select(b => b.Id).FirstAsync());
 
+        await AktionAsync(anna, seite, "Uebernehmen");
         await AktionAsync(anna, seite, "Weiterleiten", new() { ["gruppeId"] = netzwerk.ToString(), ["bevorzugtId"] = bernd.ToString(), ["text"] = "Du kennst den Schrank." });
 
         var mail = Assert.Single(await app.MailsVersendenAsync());
@@ -166,6 +167,7 @@ public class MailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var netzwerk = await app.DatenbankAsync(db => db.Gruppen.Where(g => g.Name == "Netzwerk").Select(g => g.Id).FirstAsync());
         var bernd = await app.DatenbankAsync(db => db.Benutzer.Where(b => b.Anmeldename == "bernd").Select(b => b.Id).FirstAsync());
 
+        await AktionAsync(anna, seite, "Uebernehmen");
         await AktionAsync(anna, seite, "Weiterleiten", new() { ["gruppeId"] = netzwerk.ToString(), ["bevorzugtId"] = bernd.ToString() });
         await AktionAsync(anna, seite, "Uebernehmen");
 

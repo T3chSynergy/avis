@@ -100,7 +100,8 @@ public class MarkdownTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             ["Eingabe.Beschreibung"] = "Der Fehler lautet `E42`.\n\n- Schritt eins\n- Schritt zwei\n\n<script>alert('x')</script>",
         });
         var id = int.Parse(gestellt.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
-        await anna.PostFormularAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=NachrichtAnKunden", new() { ["version"] = "1", ["text"] = "Bitte **neu starten**." });
+        await anna.UebernehmenAsync(app, id);
+        await anna.PostFormularAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=NachrichtAnKunden", new() { ["version"] = "2", ["text"] = "Bitte **neu starten**." });
 
         foreach (var seite in new[] { await anna.GetStringAsync($"/Auftraege/{id}"), await dieter.GetStringAsync($"/Meine/{id}") })
         {
@@ -188,7 +189,8 @@ public class MarkdownTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             ["Eingabe.Beschreibung"] = "Siehe Bild.",
         }, ("vom-kunden.png", Png));
         var id = int.Parse(gestellt.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
-        await anna.PostMitDateienAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=InternerKommentar", new() { ["version"] = "1" }, ("intern.png", Png));
+        await anna.UebernehmenAsync(app, id);
+        await anna.PostMitDateienAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=InternerKommentar", new() { ["version"] = "2" }, ("intern.png", Png));
 
         var anhaenge = await AnhaengeAsync(id);
         var sichtbar = anhaenge.Single(a => a.Dateiname == "vom-kunden.png");

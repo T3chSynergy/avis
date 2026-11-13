@@ -57,14 +57,21 @@ Aufträge gesperrter Gruppen auch während der Bearbeitung geschützt bleiben.
 |---|---|---|
 | Erfassen | Kunde, Bearbeiter, E-Mail-Eingang | Auftrag entsteht in einer Gruppe, Standard ist die IT-Hotline |
 | Übernehmen | jeder Bearbeiter, der den Auftrag sehen darf | Bearbeiter wird gesetzt, auch wenn schon ein anderer eingetragen ist |
-| Weiterleiten | Bearbeiter | neue Gruppe wird gesetzt, Bearbeiter wird geleert, optional bevorzugter Bearbeiter |
-| Interner Kommentar | Bearbeiter | Eintrag im Verlauf, für den Kunden unsichtbar |
-| Nachricht an den Kunden | Bearbeiter | Eintrag im Verlauf, der Kunde sieht ihn und erhält eine Mail |
+| Weiterleiten | wer den Auftrag bearbeitet | neue Gruppe wird gesetzt, Bearbeiter wird geleert, optional bevorzugter Bearbeiter |
+| Interner Kommentar | wer den Auftrag bearbeitet | Eintrag im Verlauf, für den Kunden unsichtbar |
+| Nachricht an den Kunden | wer den Auftrag bearbeitet | Eintrag im Verlauf, der Kunde sieht ihn und erhält eine Mail |
 | Antwort des Kunden | Kunde | Eintrag im Verlauf |
-| Ändern | Bearbeiter | Felder anpassen, Änderung steht im Verlauf |
-| Abschließen | zuständiger Bearbeiter | Auftrag ist erledigt, mit Abschlusstext für den Kunden |
-| Wieder öffnen | Bearbeiter | Auftrag liegt wieder offen in seiner letzten Gruppe |
+| Ändern | wer den Auftrag bearbeitet | Angaben und Kunde anpassen, Änderung steht im Verlauf |
+| Abschließen | wer den Auftrag bearbeitet | Auftrag ist erledigt, mit Abschlusstext für den Kunden |
+| Wieder öffnen | jeder Bearbeiter, der den Auftrag sehen darf | Auftrag liegt wieder offen in seiner letzten Gruppe |
 | Wieder öffnen | Kunde | wie oben, mit Begründung. Wer den Auftrag zuletzt bearbeitet hat, wird als bevorzugter Bearbeiter genannt und erhält eine Mail |
+
+Übernehmen ist die Voraussetzung für alles Weitere: Nur wer den Auftrag
+bearbeitet, leitet ihn weiter, kommentiert ihn, schreibt dem Kunden, ändert
+Angaben oder schließt ihn ab. Ein offener Auftrag in einer Gruppe lässt sich
+nur ansehen und übernehmen. Wer einem anderen den Auftrag abnimmt, übernimmt
+ihn ebenfalls zuerst. Scheidet ein Bearbeiter aus, gibt die Verwaltung seine
+Aufträge an ihre Gruppen zurück.
 
 Aufträge aus dem Kundenformular und aus dem E-Mail-Eingang gehen immer an die
 IT-Hotline und werden dort zuerst bearbeitet. Ein Bearbeiter, den ein Kunde
@@ -215,7 +222,8 @@ Mailsystem ist Exchange.
 - Antworten mit Auftragsnummer im Betreff landen als Antwort des Kunden im
   Verlauf des bestehenden Auftrags, wenn sie vom Kunden dieses Auftrags
   kommen. Ein abgeschlossener Auftrag wird dadurch wieder geöffnet.
-- Die Mail eines Bearbeiters zu einem Auftrag wird ein interner Kommentar.
+- Die Mail des Bearbeiters, der den Auftrag bearbeitet, wird ein interner
+  Kommentar.
 - Nennt jemand anderes eine Auftragsnummer, entsteht ein neuer Auftrag. Niemand
   kann per Mail in den Auftrag eines anderen schreiben.
 - Automatische Mails wie Abwesenheitsnotizen werden übergangen.
