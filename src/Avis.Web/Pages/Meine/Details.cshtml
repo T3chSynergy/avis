@@ -44,7 +44,7 @@
                 <li>
                     <div class="kopfzeile">
                         <strong>@DetailsModel.Titel(v.Art)</strong>
-                        <span>@(DetailsModel.VomKunden(v.Art) ? v.Benutzer.Name : "IT") · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
+                        <span>@(!DetailsModel.VomKunden(v.Art) ? "IT" : v.Benutzer.Anmeldename == Avis.Web.Posteingang.Mailannahme.Systemkonto ? "per E-Mail" : v.Benutzer.Name) · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
                     </div>
                     @if (DetailsModel.ZeigtText(v.Art) && v.Text is not null)
                     {

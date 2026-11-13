@@ -108,6 +108,7 @@ public class Benachrichtigungsversand(
 
         // Abwesenheitsnotizen und andere automatische Antworten sollen ausbleiben.
         nachricht.Headers.Add("Auto-Submitted", "auto-generated");
+        nachricht.Headers.Add("X-Auto-Response-Suppress", "All");
         nachricht.Headers.Add("X-AVIS-Auftrag", benachrichtigung.Verlaufseintrag.AuftragId.ToString());
         return nachricht;
     }

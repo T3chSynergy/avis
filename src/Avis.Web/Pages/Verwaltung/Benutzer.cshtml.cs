@@ -43,7 +43,9 @@ public class BenutzerModel(AvisDb db) : PageModel
 
     public async Task OnGetAsync()
     {
+        // Das Konto des E-Mail-Eingangs gehört AVIS selbst und wird nicht gepflegt.
         var benutzer = await db.Benutzer.AsNoTracking()
+            .Where(b => !b.Anmeldename.StartsWith("avis:"))
             .Include(b => b.Gruppen)
             .OrderByDescending(b => b.Aktiv).ThenBy(b => b.Name)
             .ToListAsync();

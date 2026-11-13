@@ -70,6 +70,21 @@ public class Anhangablage(IOptions<AnhangOptionen> optionen, IWebHostEnvironment
         return anhaenge;
     }
 
+    public long HoechstgroesseBytes => optionen.Value.HoechstgroesseMb * 1024L * 1024L;
+
+    /// <summary>Speichert eine einzelne Datei, zum Beispiel den Anhang einer Mail. Die Größe prüft der Aufrufer.</summary>
+    public async Task<Anhang> SpeichernAsync(string dateiname, string? inhaltstyp, Stream inhalt, CancellationToken abbruch = default)
+    {
+        var monat = uhr.GetUtcNow().ToString("yyyy/MM", CultureInfo.InvariantCulture);
+        var ablagename = $"{monat}/{Guid.NewGuid():N}";
+        var pfad = Path.Combine(Wurzel, ablagename);
+        Directory.CreateDirectory(Path.GetDirectoryName(pfad)!);
+
+        await using var ziel = new FileStream(pfad, FileMode.CreateNew, FileAccess.Write);
+        await inhalt.CopyToAsync(ziel, abbruch);
+        return new Anhang(Bereinigt(dateiname), Gekuerzt(inhaltstyp, 200), ziel.Length, ablagename);
+    }
+
     /// <summary>Löscht die Dateien wieder, wenn der Auftrag danach nicht gespeichert werden konnte.</summary>
     public void Verwerfen(IEnumerable<Anhang> anhaenge)
     {

@@ -387,6 +387,48 @@ namespace Avis.Web.Data.Migrations
                     b.ToTable("Kunden", (string)null);
                 });
 
+            modelBuilder.Entity("Avis.Web.Domain.Maileingang", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AuftragId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Betreff")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("EmpfangenAm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Ergebnis")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Hinweis")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Kennung")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Von")
+                        .HasMaxLength(320)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuftragId");
+
+                    b.HasIndex("Kennung")
+                        .IsUnique();
+
+                    b.ToTable("Maileingaenge", (string)null);
+                });
+
             modelBuilder.Entity("Avis.Web.Domain.Standort", b =>
                 {
                     b.Property<int>("Id")
@@ -566,6 +608,16 @@ namespace Avis.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Standort");
+                });
+
+            modelBuilder.Entity("Avis.Web.Domain.Maileingang", b =>
+                {
+                    b.HasOne("Avis.Web.Domain.Auftrag", "Auftrag")
+                        .WithMany()
+                        .HasForeignKey("AuftragId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Auftrag");
                 });
 
             modelBuilder.Entity("Avis.Web.Domain.Verlaufseintrag", b =>

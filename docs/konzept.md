@@ -208,11 +208,17 @@ passenden Geräteeintrag erfassen.
 
 Mailsystem ist Exchange.
 
-- Eingang: Eine Mail an das Hotline-Postfach erzeugt einen Auftrag in der
-  Gruppe IT-Hotline. Der Absender wird über die Kundentabelle zugeordnet,
-  Betreff und Text werden übernommen, Anhänge angehängt.
+- Eingang: AVIS ruft das Hotline-Postfach über IMAP ab. Eine Mail erzeugt
+  einen Auftrag in der Gruppe IT-Hotline. Der Absender wird über die
+  Kundentabelle zugeordnet, Betreff und Text werden übernommen, Anhänge
+  angehängt.
 - Antworten mit Auftragsnummer im Betreff landen als Antwort des Kunden im
-  Verlauf des bestehenden Auftrags.
+  Verlauf des bestehenden Auftrags, wenn sie vom Kunden dieses Auftrags
+  kommen. Ein abgeschlossener Auftrag wird dadurch wieder geöffnet.
+- Die Mail eines Bearbeiters zu einem Auftrag wird ein interner Kommentar.
+- Nennt jemand anderes eine Auftragsnummer, entsteht ein neuer Auftrag. Niemand
+  kann per Mail in den Auftrag eines anderen schreiben.
+- Automatische Mails wie Abwesenheitsnotizen werden übergangen.
 - Ausgang: Versand über SMTP. Der Kunde erhält eine Mail bei Erfassung, bei
   Nachrichten an ihn und beim Abschluss. Interne Kommentare, Weiterleitungen
   und Gruppen stehen in keiner Mail an den Kunden.
@@ -232,7 +238,7 @@ Mailsystem ist Exchange.
 | Betrieb | Windows Server mit IIS |
 | Anmeldung | Windows-Anmeldung über Active Directory, ohne Passworteingabe |
 | Datenbank | SQLite, Zugriff über Entity Framework Core |
-| Mail | Exchange |
+| Mail | Exchange im Haus: Versand über SMTP, Abruf über IMAP |
 
 Grundsätze:
 
@@ -270,8 +276,8 @@ Ein Wechsel ist möglich und vorbereitet:
 
 ## 10. Offene Punkte
 
-- Exchange: im Haus oder Exchange Online, und welcher Zugriff auf das
-  Hotline-Postfach freigeschaltet ist
+- Der Abruf über IMAP ist gegen einen IMAP-Server erprobt, aber noch nicht
+  gegen Exchange.
 - Die Abfrage des Active Directory für Name, E-Mail, Telefon und Abteilung
   neuer Konten ist eingebaut, aber noch nicht an einem echten Verzeichnis
   erprobt.

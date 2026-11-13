@@ -16,7 +16,8 @@ public class BenutzerBearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
-        var benutzer = await db.Benutzer.AsNoTracking().Include(b => b.Gruppen).FirstOrDefaultAsync(b => b.Id == id);
+        var benutzer = await db.Benutzer.AsNoTracking().Include(b => b.Gruppen)
+            .FirstOrDefaultAsync(b => b.Id == id && !b.Anmeldename.StartsWith("avis:"));
         if (benutzer is null)
             return NotFound();
 
@@ -28,7 +29,8 @@ public class BenutzerBearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
 
     public async Task<IActionResult> OnPostAsync(int id, string? name, string? email, Rolle rolle, bool aktiv)
     {
-        var benutzer = await db.Benutzer.Include(b => b.Gruppen).FirstOrDefaultAsync(b => b.Id == id);
+        var benutzer = await db.Benutzer.Include(b => b.Gruppen)
+            .FirstOrDefaultAsync(b => b.Id == id && !b.Anmeldename.StartsWith("avis:"));
         if (benutzer is null)
             return NotFound();
 

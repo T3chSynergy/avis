@@ -6,7 +6,7 @@ Was AVIS können soll und warum, steht im [Konzept](docs/konzept.md).
 
 ## Stand
 
-Die Ausbaustufen 1 bis 3 sind umgesetzt. Vorhanden sind:
+Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 
 - Datenmodell mit Aufträgen, Verlauf, Gruppen, Benutzern, Kunden, Kategorien und
   Standorten
@@ -28,9 +28,10 @@ Die Ausbaustufen 1 bis 3 sind umgesetzt. Vorhanden sind:
 - Suche über alle Aufträge mit Filtern nach Status, Gruppe und Bearbeiter
 - Gerätetabelle, mit der Aufträge über die Inventarnummer verknüpft werden
 - Anhänge an Aufträgen, Kommentaren, Nachrichten und Antworten
+- E-Mail-Eingang über IMAP: Mails an die Hotline werden Aufträge, Antworten
+  mit Auftragsnummer im Betreff landen im Auftrag
+- Kunden öffnen abgeschlossene Aufträge wieder, im Browser oder per Mail
 - Testanmeldung für die Entwicklung, Windows-Anmeldung für den Betrieb
-
-Als Nächstes folgt Ausbaustufe 4 mit dem E-Mail-Eingang über Exchange.
 
 ## Voraussetzungen
 
@@ -69,6 +70,7 @@ und die Seiten gegen eine laufende Anwendung mit eigener Datenbank
 | `src/Avis.Web/Data` | Datenbankzugriff, Migrationen, Start- und Testdaten |
 | `src/Avis.Web/Anmeldung` | Anmeldung, Rollen, Verzeichnisabfrage, Zuordnung von Konto und Kunde |
 | `src/Avis.Web/Mail` | Mailtexte und Versand |
+| `src/Avis.Web/Posteingang` | Abruf des Hotline-Postfachs und Verarbeitung eingehender Mails |
 | `src/Avis.Web/Anhaenge` | Ablage hochgeladener Dateien |
 | `src/Avis.Web/Pages` | Seiten |
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
@@ -109,6 +111,14 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 | `Mail:Benutzer`, `Mail:Kennwort` | Nur wenn der Mailserver eine Anmeldung verlangt |
 | `Mail:Absender`, `Mail:Absendername` | Absenderadresse und angezeigter Name |
 | `Mail:BasisUrl` | Adresse von AVIS für die Links in den Mails |
+| `Posteingang:Art` | `Imap` ruft das Hotline-Postfach ab, `Aus` nicht |
+| `Posteingang:Server`, `Posteingang:Port` | IMAP-Server, Standardport 993 |
+| `Posteingang:Verschluesselung` | `Auto`, `Keine`, `StartTls` oder `Ssl` |
+| `Posteingang:Benutzer`, `Posteingang:Kennwort` | Anmeldung am Postfach |
+| `Posteingang:Ordner` | Ordner, aus dem ungelesene Mails geholt werden, Standard `INBOX` |
+| `Posteingang:Erledigtordner` | Ordner, in den verarbeitete Mails verschoben werden. Leer: Sie bleiben als gelesen im Eingang |
+| `Posteingang:AbstandSekunden` | Abstand zwischen zwei Abrufen, Standard 60 |
+| `Posteingang:BilderImTextAbKb` | Kleinere Bilder im Text einer Mail gelten als Logo und werden nicht übernommen, Standard 20 |
 | `Anhaenge:Ordner` | Ordner für Anhänge, relativ zum Ordner der Anwendung, Standard `App_Data/Anhaenge` |
 | `Anhaenge:HoechstgroesseMb` | Höchstgröße einer Datei, Standard 10 |
 | `Anhaenge:Hoechstzahl` | Höchstzahl der Dateien je Upload, Standard 10 |
@@ -116,8 +126,9 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 Die Testanmeldung und die Testdaten lassen sich nur in der
 Entwicklungsumgebung einschalten. Im Betrieb bricht der Start sonst ab.
 
-Ein Kennwort für den Mailserver gehört nicht in die Datei im Repository. Auf
-dem Server lässt es sich als Umgebungsvariable `Mail__Kennwort` setzen.
+Kennwörter gehören nicht in die Datei im Repository. Auf dem Server lassen sie
+sich als Umgebungsvariablen `Mail__Kennwort` und `Posteingang__Kennwort`
+setzen.
 
 ## Mails
 
@@ -129,6 +140,39 @@ Mails steht, was gesendet wurde, was wartet und warum etwas entfallen ist.
 Dort lässt sich eine fehlgeschlagene Mail erneut anstoßen.
 
 Die Texte aller Mails stehen in `src/Avis.Web/Mail/Mailtexte.cs`.
+
+## E-Mail-Eingang
+
+AVIS holt ungelesene Mails aus dem Hotline-Postfach und markiert sie danach
+als gelesen oder verschiebt sie in den Erledigtordner. Was mit jeder Mail
+geschah, steht unter Verwaltung → Posteingang.
+
+- Eine Mail ohne Auftragsnummer wird ein neuer Auftrag in der Eingangsgruppe.
+  Den Kunden erkennt AVIS an der Absenderadresse, einen unbekannten Absender
+  legt es als Kunden an.
+- Steht im Betreff eine Auftragsnummer in der Form `[AVIS-123]` und kommt die
+  Mail vom Kunden dieses Auftrags, ist sie seine Antwort. Der zitierte
+  bisherige Schriftwechsel wird abgeschnitten. Ein abgeschlossener Auftrag
+  wird dadurch wieder geöffnet.
+- Kommt eine solche Mail von einem Bearbeiter, wird sie ein interner Kommentar.
+- Kommt sie von jemand anderem, wird sie ein neuer Auftrag mit einem Hinweis.
+  Niemand kann per Mail in den Auftrag eines anderen schreiben.
+- Abwesenheitsnotizen, Zustellberichte, Rundmails und Mails von der eigenen
+  Absenderadresse werden übergangen.
+- Anhänge werden übernommen. Zu große Dateien und kleine Bilder im Text (Logos
+  in Signaturen) bleiben weg, zu große werden im Auftrag genannt.
+- Jede Mail wird über ihre Message-ID nur einmal verarbeitet.
+- Lässt sich eine Mail dreimal nicht verarbeiten, bleibt sie gelesen und
+  markiert im Postfach liegen, damit jemand sie sich ansieht.
+
+Damit Antworten ankommen, muss `Mail:Absender` die Adresse des Postfachs sein,
+das AVIS abruft.
+
+Der Abruf ist gegen einen IMAP-Server (Dovecot) erprobt, nicht gegen
+Exchange. Der dazugehörige Test läuft nur, wenn die Umgebungsvariable
+`AVIS_TEST_IMAP` in der Form `host:port:benutzer:kennwort` gesetzt ist. Er
+verarbeitet die ungelesenen Mails dieses Postfachs und markiert sie als
+gelesen, gehört also nur an ein Testpostfach.
 
 ## Anhänge
 
@@ -153,10 +197,12 @@ Dieser Teil ist noch nicht auf einem echten Server erprobt.
 - Das Konto des Anwendungspools braucht Schreibrechte auf den Ordner
   `App_Data`. Dort liegen die Datenbank und die Anhänge.
 - Der erste Administrator wird über `Anmeldung:Administratoren` festgelegt.
-- Der Hintergrundversand läuft nur, solange die Anwendung läuft. Damit IIS sie
+- Der Hintergrundversand und der Abruf des Postfachs laufen nur, solange die
+  Anwendung läuft. Damit IIS sie
   nicht nach Leerlauf beendet, den Anwendungspool auf „AlwaysRunning" stellen
   und das Leerlauftimeout abschalten. Sonst gehen wartende Mails erst beim
-  nächsten Aufruf hinaus.
+  nächsten Aufruf hinaus, und neue Mails werden erst dann abgeholt.
+- Am Exchange-Server muss IMAP für das Hotline-Postfach eingeschaltet sein.
 - Die Abfrage des Active Directory nutzt die Domäne, in der der Server Mitglied
   ist. Schlägt sie fehl, arbeitet AVIS mit dem Anmeldenamen weiter und schreibt
   eine Warnung ins Protokoll.
