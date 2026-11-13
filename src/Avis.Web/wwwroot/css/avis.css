@@ -333,9 +333,7 @@ ol.verlauf .md { margin: 4px 0 0; }
 .md hr { border: 0; border-top: 1px solid var(--linie); margin: 10px 0; }
 li.intern .md code, li.intern .md pre { background: #f3e6b8; }
 
-/* Formatierleiste über einem Textfeld. */
-.editorleiste { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 4px; }
-.editorleiste button { margin: 0; padding: 2px 9px; font-size: 13px; font-weight: 600; box-shadow: none; border-radius: 4px; }
+/* Eine Datei wird über das Textfeld gezogen. */
 textarea.ablegen { outline: 3px dashed var(--akzent); outline-offset: 2px; }
 
 /* Bilder im Verlauf und Vorschau vor dem Absenden. */

@@ -60,14 +60,13 @@ Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
   schreibt.
 - Strg+V fügt ein Bild aus der Zwischenablage als Anhang ein. Dateien lassen
   sich auch auf das Textfeld ziehen.
-- Strg+B und Strg+I setzen fett und kursiv.
 
 ## Texte mit Markdown
 
 Beschreibung, Kommentare, Nachrichten und Antworten verstehen Markdown: fett,
-kursiv, Listen, Zitate, Code und Links. Über jedem dieser Textfelder steht eine
-Leiste mit den Formatierungen. Gespeichert wird der reine Text, erst die
-Anzeige formatiert ihn. Suche und Mails arbeiten deshalb mit dem reinen Text,
+kursiv, Listen, Zitate, Code und Links. Wer Markdown kennt, tippt es einfach;
+eine Formatierleiste gibt es bewusst nicht. Gespeichert wird der reine Text,
+erst die Anzeige formatiert ihn. Suche und Mails arbeiten deshalb mit dem reinen Text,
 in Mails stehen die Markdown-Zeichen so, wie sie getippt wurden.
 
 Eingegebenes HTML wird als Text gezeigt. Links führen nur zu `http`, `https`
@@ -102,7 +101,7 @@ und die Seiten gegen eine laufende Anwendung mit eigener Datenbank
 | `src/Avis.Web/Anhaenge` | Ablage hochgeladener Dateien |
 | `src/Avis.Web/Pages` | Seiten |
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
-| `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen (Suche beim Tippen, Formatierleiste, Bilder einfügen, Tastenkürzel); ohne sie funktioniert alles |
+| `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen (Suche beim Tippen, Bilder einfügen, Tastenkürzel); ohne sie funktioniert alles |
 | `tests/Avis.Tests` | Tests |
 
 Bezeichner im Code sind deutsch und folgen den Begriffen des Konzepts, Umlaute

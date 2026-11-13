@@ -1,95 +1,13 @@
-// Formatierleiste für Textfelder mit Markdown und Einfügen von Bildern.
-// Ohne dieses Skript tippt man Markdown von Hand und wählt Dateien über das Dateifeld.
+// Bilder in Textfelder einfügen: Ein Bild aus der Zwischenablage (Strg+V) und
+// hineingezogene Dateien werden Anhänge dieses Eintrags. Unter dem Dateifeld
+// steht, was mitgeschickt wird.
+// Ohne dieses Skript wählt man Dateien über das Dateifeld.
 (function () {
-    const KNOEPFE = [
-        { text: 'Fett', titel: 'Fett (Strg+B)', aktion: feld => umschliessen(feld, '**', '**', 'fetter Text') },
-        { text: 'Kursiv', titel: 'Kursiv (Strg+I)', aktion: feld => umschliessen(feld, '*', '*', 'kursiver Text') },
-        { text: 'Liste', titel: 'Aufzählung', aktion: feld => zeilenanfang(feld, () => '- ') },
-        { text: '1. Liste', titel: 'Nummerierte Liste', aktion: feld => zeilenanfang(feld, i => (i + 1) + '. ') },
-        { text: 'Zitat', titel: 'Zitat', aktion: feld => zeilenanfang(feld, () => '> ') },
-        { text: 'Code', titel: 'Code oder Fehlermeldung', aktion: code },
-        { text: 'Link', titel: 'Link', aktion: link },
-    ];
-
     document.querySelectorAll('textarea[data-markdown]').forEach(feld => {
-        leiste(feld);
-        feld.addEventListener('keydown', ereignis => {
-            if (!(ereignis.ctrlKey || ereignis.metaKey) || ereignis.altKey) return;
-            const taste = ereignis.key.toLowerCase();
-            if (taste === 'b') { ereignis.preventDefault(); KNOEPFE[0].aktion(feld); }
-            if (taste === 'i') { ereignis.preventDefault(); KNOEPFE[1].aktion(feld); }
-        });
-
         const dateifeld = feld.form && feld.form.querySelector('input[type="file"][name="dateien"]');
         if (dateifeld) bilder(feld, dateifeld);
     });
 
-    function leiste(feld) {
-        const zeile = document.createElement('div');
-        zeile.className = 'editorleiste';
-        zeile.setAttribute('role', 'toolbar');
-        zeile.setAttribute('aria-label', 'Formatierung');
-        KNOEPFE.forEach(k => {
-            const knopf = document.createElement('button');
-            knopf.type = 'button';
-            knopf.textContent = k.text;
-            knopf.title = k.titel;
-            knopf.addEventListener('click', () => { k.aktion(feld); feld.focus(); });
-            zeile.appendChild(knopf);
-        });
-        feld.parentNode.insertBefore(zeile, feld);
-    }
-
-    // Ersetzt die Auswahl und lässt sich mit Strg+Z zurücknehmen.
-    function ersetzen(feld, start, ende, text, auswahlStart, auswahlEnde) {
-        feld.focus();
-        feld.setSelectionRange(start, ende);
-        if (!document.execCommand || !document.execCommand('insertText', false, text)) {
-            feld.setRangeText(text, start, ende, 'end');
-            feld.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-        feld.setSelectionRange(start + auswahlStart, start + auswahlEnde);
-    }
-
-    function umschliessen(feld, davor, danach, platzhalter) {
-        const start = feld.selectionStart, ende = feld.selectionEnd;
-        const auswahl = feld.value.slice(start, ende) || platzhalter;
-        ersetzen(feld, start, ende, davor + auswahl + danach, davor.length, davor.length + auswahl.length);
-    }
-
-    function zeilenanfang(feld, praefix) {
-        const wert = feld.value;
-        const start = wert.lastIndexOf('\n', feld.selectionStart - 1) + 1;
-        let ende = wert.indexOf('\n', feld.selectionEnd);
-        if (ende < 0) ende = wert.length;
-        const neu = wert.slice(start, ende).split('\n').map((zeile, i) => praefix(i) + zeile).join('\n');
-        ersetzen(feld, start, ende, neu, 0, neu.length);
-    }
-
-    function code(feld) {
-        const auswahl = feld.value.slice(feld.selectionStart, feld.selectionEnd);
-        if (auswahl.includes('\n')) {
-            const start = feld.selectionStart, ende = feld.selectionEnd;
-            const vorher = start > 0 && feld.value[start - 1] !== '\n' ? '\n' : '';
-            ersetzen(feld, start, ende, vorher + '```\n' + auswahl + '\n```\n', vorher.length + 4, vorher.length + 4 + auswahl.length);
-        } else {
-            umschliessen(feld, '`', '`', 'Code');
-        }
-    }
-
-    function link(feld) {
-        const start = feld.selectionStart, ende = feld.selectionEnd;
-        const auswahl = feld.value.slice(start, ende);
-        if (/^https?:\/\//i.test(auswahl)) {
-            ersetzen(feld, start, ende, '[Linktext](' + auswahl + ')', 1, 9);
-        } else {
-            const text = auswahl || 'Linktext';
-            ersetzen(feld, start, ende, '[' + text + '](https://)', text.length + 3, text.length + 11);
-        }
-    }
-
-    // Bilder aus der Zwischenablage und hineingezogene Dateien werden Anhänge
-    // dieses Eintrags. Unter dem Dateifeld steht, was mitgeschickt wird.
     function bilder(feld, dateifeld) {
         const hinweis = document.createElement('p');
         hinweis.className = 'erklaerung';
