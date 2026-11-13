@@ -64,15 +64,21 @@ Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
 ## Texte mit Markdown
 
 Beschreibung, Kommentare, Nachrichten und Antworten verstehen Markdown: fett,
-kursiv, Listen, Zitate, Code und Links. Wer Markdown kennt, tippt es einfach;
+kursiv, Listen, Zitate, Code, Links und Tabellen. Wer Markdown kennt, tippt es einfach;
 eine Formatierleiste gibt es bewusst nicht. Gespeichert wird der reine Text,
 erst die Anzeige formatiert ihn. Suche und Mails arbeiten deshalb mit dem reinen Text,
 in Mails stehen die Markdown-Zeichen so, wie sie getippt wurden.
 
 Eingegebenes HTML wird als Text gezeigt. Links führen nur zu `http`, `https`
 und `mailto`. Bilder von fremden Adressen werden nicht geladen, Bilder gehören
-als Anhang an den Eintrag. Die Umsetzung steht in
+als Anhang an den Eintrag. Ein umgekehrter Schrägstrich ist immer er selbst,
+damit Pfade wie `\\server\freigabe` stimmen; ein Zeichen maskiert man dafür
+nicht mit `\`, sondern als Zeichencode wie `&#42;`. Die Umsetzung steht in
 `src/Avis.Web/Markdowntext.cs`.
+
+Ein Verweis der Form `![Name](anhang:…)` setzt ein Bild aus den Anhängen
+desselben Eintrags an diese Stelle im Text. So stehen Bilder aus Mails an
+ihrem Platz. Sie erscheinen dann nicht noch einmal in der Liste der Anhänge.
 
 Die Tastenkürzel brauchen JavaScript. Ohne funktioniert alles andere genauso.
 
@@ -186,8 +192,18 @@ geschah, steht unter Verwaltung → Posteingang.
   Niemand kann per Mail in den Auftrag eines anderen schreiben.
 - Abwesenheitsnotizen, Zustellberichte, Rundmails und Mails von der eigenen
   Absenderadresse werden übergangen.
+- Hat die Mail einen HTML-Teil, bleibt ihre Formatierung erhalten, soweit sie
+  eindeutig ist: fett, kursiv, Überschriften, Links, Listen, Zitate und kleine,
+  einfache Tabellen (höchstens 6 Spalten und 30 Zeilen, keine verbundenen
+  Zellen, keine Tabelle in der Tabelle). Alles andere wird gewöhnlicher Text:
+  Schriftarten, Farben, Layout-Tabellen wie in Signaturen. Die Umwandlung steht
+  in `src/Avis.Web/Posteingang/HtmlZuMarkdown.cs`.
+- Ein Bild im Text der Mail, etwa ein eingefügtes Bildschirmfoto, steht im
+  Auftrag an derselben Stelle im Text.
 - Anhänge werden übernommen. Zu große Dateien und kleine Bilder im Text (Logos
   in Signaturen) bleiben weg, zu große werden im Auftrag genannt.
+- Bei einer Antwort werden Bilder aus dem zitierten Schriftwechsel nicht noch
+  einmal angehängt.
 - Jede Mail wird über ihre Message-ID nur einmal verarbeitet.
 - Lässt sich eine Mail dreimal nicht verarbeiten, bleibt sie gelesen und
   markiert im Postfach liegen, damit jemand sie sich ansieht.
@@ -196,7 +212,8 @@ Damit Antworten ankommen, muss `Mail:Absender` die Adresse des Postfachs sein,
 das AVIS abruft.
 
 Der Abruf ist gegen einen IMAP-Server (Dovecot) erprobt, nicht gegen
-Exchange. Der dazugehörige Test läuft nur, wenn die Umgebungsvariable
+Exchange. Die Umwandlung von HTML ist mit nachgebauten Mails aus Outlook,
+Gmail und Thunderbird geprüft, nicht mit echten Mails aus dem Haus. Der dazugehörige Test läuft nur, wenn die Umgebungsvariable
 `AVIS_TEST_IMAP` in der Form `host:port:benutzer:kennwort` gesetzt ist. Er
 verarbeitet die ungelesenen Mails dieses Postfachs und markiert sie als
 gelesen, gehört also nur an ein Testpostfach.

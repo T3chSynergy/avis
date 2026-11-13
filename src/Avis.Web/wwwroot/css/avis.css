@@ -350,3 +350,9 @@ ul.dateivorschau li {
 ul.dateivorschau img { max-width: 186px; max-height: 120px; border-radius: 3px; }
 ul.dateivorschau span { overflow-wrap: anywhere; }
 ul.dateivorschau button { margin: 0; padding: 1px 8px; font-size: 13px; box-shadow: none; }
+
+/* Tabellen und Bilder im Text, zum Beispiel aus einer Mail. */
+.md table { border-collapse: collapse; margin: 0 0 8px; }
+.md th, .md td { border: 1px solid var(--linie); padding: 3px 8px; text-align: left; vertical-align: top; }
+.md th { background: #eef1f5; }
+.md img { display: block; max-width: 100%; max-height: 480px; margin: 6px 0; border: 1px solid var(--linie); border-radius: 4px; }

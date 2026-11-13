@@ -219,6 +219,9 @@ Mailsystem ist Exchange.
 - Nennt jemand anderes eine Auftragsnummer, entsteht ein neuer Auftrag. Niemand
   kann per Mail in den Auftrag eines anderen schreiben.
 - Automatische Mails wie Abwesenheitsnotizen werden übergangen.
+- Die Formatierung einer HTML-Mail bleibt erhalten, soweit sie eindeutig ist:
+  fett, kursiv, Überschriften, Links, Listen und kleine, einfache Tabellen.
+  Bilder im Text der Mail stehen im Auftrag an derselben Stelle.
 - Ausgang: Versand über SMTP. Der Kunde erhält eine Mail bei Erfassung, bei
   Nachrichten an ihn und beim Abschluss. Interne Kommentare, Weiterleitungen
   und Gruppen stehen in keiner Mail an den Kunden.

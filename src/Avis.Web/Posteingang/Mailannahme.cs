@@ -67,16 +67,18 @@ public partial class Mailannahme(
             return eingang;
         }
 
-        var (anhaenge, ausgelassen) = await AnhaengeAsync(mail, abbruch);
+        var (anhaenge, ausgelassen, bilderImText) = await AnhaengeAsync(mail, abbruch);
         try
         {
-            var text = Mailtext.Lesen(mail);
+            // Ein Bild im Text der Mail steht auch im Auftrag an seiner Stelle.
+            var text = Mailtext.Lesen(mail, (kennung, alternativtext) =>
+                bilderImText.TryGetValue(kennung, out var bild) ? Markdowntext.Bildverweis(bild, alternativtext) : null);
             var bezug = await BezugAsync(mail.Subject, abbruch);
             var durch = await KontoAsync(adresse!, abbruch);
 
             if (bezug is not null && bezug.Kunde.Email == adresse)
             {
-                var antwort = MitHinweis(Mailtext.OhneZitat(text), ausgelassen);
+                var antwort = MitHinweis(OhneZitat(text, anhaenge, bilderImText), ausgelassen);
                 if (bezug.Status == AuftragStatus.Abgeschlossen)
                 {
                     bezug.KundeOeffnetWieder(durch, antwort, jetzt, anhaenge);
@@ -92,7 +94,7 @@ public partial class Mailannahme(
             else if (bezug is not null && durch is { Aktiv: true, IstBearbeiter: true }
                 && await db.AuftraegeFuer(durch.Id).AnyAsync(a => a.Id == bezug.Id, abbruch))
             {
-                bezug.InternKommentieren(durch, MitHinweis(Mailtext.OhneZitat(text), ausgelassen), jetzt, anhaenge);
+                bezug.InternKommentieren(durch, MitHinweis(OhneZitat(text, anhaenge, bilderImText), ausgelassen), jetzt, anhaenge);
                 eingang.Ergebnis = MaileingangErgebnis.InternerKommentar;
                 eingang.Auftrag = bezug;
             }
@@ -127,6 +129,23 @@ public partial class Mailannahme(
             ablage.Verwerfen(anhaenge);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Schneidet den zitierten Schriftwechsel ab. Bilder, die nur im
+    /// abgeschnittenen Teil standen, gehören zu früheren Nachrichten und
+    /// werden nicht noch einmal angehängt.
+    /// </summary>
+    private string OhneZitat(string text, List<Anhang> anhaenge, Dictionary<string, Anhang> bilderImText)
+    {
+        var gekuerzt = Mailtext.OhneZitat(text);
+        var nurImZitat = bilderImText.Values
+            .Where(bild => Markdowntext.Verweist(text, bild) && !Markdowntext.Verweist(gekuerzt, bild))
+            .ToList();
+
+        ablage.Verwerfen(nurImZitat);
+        anhaenge.RemoveAll(nurImZitat.Contains);
+        return gekuerzt;
     }
 
     /// <summary>Der Auftrag, dessen Nummer im Betreff steht.</summary>
@@ -209,11 +228,15 @@ public partial class Mailannahme(
     /// Speichert die Anhänge der Mail. Zu große werden ausgelassen und im
     /// Text genannt. Kleine Bilder im Text gelten als Logo und entfallen.
     /// </summary>
-    private async Task<(List<Anhang> Anhaenge, List<string> Ausgelassen)> AnhaengeAsync(MimeMessage mail, CancellationToken abbruch)
+    private async Task<(List<Anhang> Anhaenge, List<string> Ausgelassen, Dictionary<string, Anhang> BilderImText)> AnhaengeAsync(
+        MimeMessage mail, CancellationToken abbruch)
     {
         var anhaenge = new List<Anhang>();
         var ausgelassen = new List<string>();
+        // Bilder, auf die der HTML-Teil mit cid: verweist, nach ihrer Kennung.
+        var bilderImText = new Dictionary<string, Anhang>(StringComparer.OrdinalIgnoreCase);
         var mindestgroesseBild = optionen.Value.BilderImTextAbKb * 1024L;
+        var html = mail.HtmlBody ?? "";
 
         try
         {
@@ -222,6 +245,7 @@ public partial class Mailannahme(
                 using var inhalt = new MemoryStream();
                 string name;
                 string? typ;
+                string? kennung = null;
 
                 if (teil is MessagePart { Message: not null } weitergeleitet)
                 {
@@ -231,7 +255,12 @@ public partial class Mailannahme(
                 }
                 else if (teil is MimePart datei && datei.Content is not null)
                 {
-                    var bildImText = !datei.IsAttachment && datei.ContentType.IsMimeType("image", "*");
+                    // Ein Bild steht im Text, wenn der HTML-Teil mit cid: darauf verweist.
+                    // Ob das Mailprogramm es als "inline" oder als "Anhang" kennzeichnet, ist uneinheitlich.
+                    var istBild = datei.ContentType.IsMimeType("image", "*");
+                    var verwiesen = istBild && !string.IsNullOrEmpty(datei.ContentId)
+                        && html.Contains("cid:" + datei.ContentId, StringComparison.OrdinalIgnoreCase);
+                    var bildImText = verwiesen || (istBild && !datei.IsAttachment);
                     if (!datei.IsAttachment && !bildImText)
                         continue; // der Text der Mail selbst
 
@@ -241,6 +270,8 @@ public partial class Mailannahme(
 
                     name = string.IsNullOrWhiteSpace(datei.FileName) ? $"Anhang.{datei.ContentType.MediaSubtype}" : datei.FileName;
                     typ = datei.ContentType.MimeType;
+                    if (verwiesen)
+                        kennung = datei.ContentId;
                 }
                 else
                 {
@@ -261,7 +292,10 @@ public partial class Mailannahme(
                 }
 
                 inhalt.Position = 0;
-                anhaenge.Add(await ablage.SpeichernAsync(name, typ, inhalt, abbruch));
+                var anhang = await ablage.SpeichernAsync(name, typ, inhalt, abbruch);
+                anhaenge.Add(anhang);
+                if (!string.IsNullOrEmpty(kennung) && anhang.Bildtyp is not null)
+                    bilderImText[kennung] = anhang;
             }
         }
         catch
@@ -269,7 +303,7 @@ public partial class Mailannahme(
             ablage.Verwerfen(anhaenge);
             throw;
         }
-        return (anhaenge, ausgelassen);
+        return (anhaenge, ausgelassen, bilderImText);
     }
 
     private static string? MitHinweis(string text, List<string> ausgelassen)

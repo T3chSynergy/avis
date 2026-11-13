@@ -32,7 +32,7 @@
     <div>
         <section aria-labelledby="h-beschreibung">
             <h2 id="h-beschreibung">Beschreibung</h2>
-            @Markdowntext.AlsHtml(a.Beschreibung)
+            <partial name="_Eintragstext" model="new Avis.Web.Pages.Shared.Eintragstext(a.Beschreibung, a.Verlauf.SelectMany(v => v.Anhaenge).ToList(), AnhaengeAuflisten: false)" />
         </section>
 
         @* Die Schaltflächen wählen, welches Formular darunter aufgeht. Das geht ohne Skript. *@
@@ -171,8 +171,7 @@
                             @if (!v.FuerKundenSichtbar) { <span class="hinweis">intern</span> }
                         </div>
                         @if (v.Beschreibung is not null) { <p class="text">@v.Beschreibung</p> }
-                        @Markdowntext.AlsHtml(v.Text)
-                        <partial name="_Anhaenge" model="v.Anhaenge" />
+                        <partial name="_Eintragstext" model="new Avis.Web.Pages.Shared.Eintragstext(v.Text, v.Anhaenge, Verweistext: v.Art == VerlaufArt.Erfasst ? a.Beschreibung : null)" />
                     </li>
                 }
             </ol>

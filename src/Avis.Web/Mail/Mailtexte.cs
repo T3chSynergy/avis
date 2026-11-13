@@ -107,7 +107,8 @@ public static class Mailtexte
     private static string Text(string anrede, string?[] absaetze)
     {
         var teile = new List<string> { anrede };
-        teile.AddRange(absaetze.Where(a => !string.IsNullOrWhiteSpace(a)).Select(a => a!.Trim()));
+        // Ein Bild im Text ist in der Mail nicht zu sehen. Dort steht sein Name.
+        teile.AddRange(absaetze.Where(a => !string.IsNullOrWhiteSpace(a)).Select(a => Markdowntext.OhneBilder(a!.Trim())));
         teile.Add(Fusszeile);
         return string.Join("\n\n", teile) + "\n";
     }

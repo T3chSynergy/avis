@@ -203,7 +203,7 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
         var eingang = await AnnehmenAsync(mail);
 
-        Assert.Equal("Guten Tag,\ndie Maus & die Tastatur\nsind defekt.\nGrüße", (await LadenAsync(eingang.AuftragId!.Value)).Beschreibung);
+        Assert.Equal("Guten Tag,\n\ndie Maus & die Tastatur\nsind defekt.\nGrüße", (await LadenAsync(eingang.AuftragId!.Value)).Beschreibung);
     }
 
     [Fact]

@@ -21,7 +21,7 @@
 
 <section aria-labelledby="h-auftrag">
     <h2 id="h-auftrag">Auftrag</h2>
-    @Markdowntext.AlsHtml(a.Beschreibung)
+    <partial name="_Eintragstext" model="new Avis.Web.Pages.Shared.Eintragstext(a.Beschreibung, Model.Verlauf.SelectMany(v => v.Anhaenge).ToList(), AnhaengeAuflisten: false)" />
     <dl class="angaben">
         <dt>Erstellt</dt>
         <dd>@Ortszeit.Anzeigen(a.ErstelltAm)</dd>
@@ -47,11 +47,7 @@
                     <strong>@DetailsModel.Titel(v.Art)</strong>
                     <span>@(!DetailsModel.VomKunden(v.Art) ? "IT" : v.Benutzer.Anmeldename == Avis.Web.Posteingang.Mailannahme.Systemkonto ? "per E-Mail" : v.Benutzer.Name) · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
                 </div>
-                @if (DetailsModel.ZeigtText(v.Art))
-                {
-                    @Markdowntext.AlsHtml(v.Text)
-                }
-                <partial name="_Anhaenge" model="v.Anhaenge" />
+                <partial name="_Eintragstext" model="new Avis.Web.Pages.Shared.Eintragstext(DetailsModel.ZeigtText(v.Art) ? v.Text : null, v.Anhaenge, Verweistext: v.Art == VerlaufArt.Erfasst ? a.Beschreibung : null)" />
             </li>
         }
     </ol>
