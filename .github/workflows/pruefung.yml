@@ -1,0 +1,51 @@
+# Baut AVIS und lässt die Tests laufen: bei jedem Pull Request und nach jedem
+# Stand auf main. Unter Windows, weil AVIS dort betrieben wird, und unter
+# Linux, weil dort auch entwickelt wird.
+name: Prüfung
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Ein neuer Stand desselben Pull Requests bricht den laufenden Durchgang ab.
+concurrency:
+  group: pruefung-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Bauen und testen (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+          - name: Linux
+            os: ubuntu-latest
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+
+      - name: Pakete laden
+        run: dotnet restore
+
+      - name: Bauen
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Testen
+        run: dotnet test --no-build --configuration Release

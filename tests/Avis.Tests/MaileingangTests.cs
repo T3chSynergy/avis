@@ -186,7 +186,7 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     public async Task Anhaenge_werden_uebernommen_Logos_und_zu_grosse_Dateien_nicht()
     {
         var gestaltet = new BodyBuilder { TextBody = "Siehe Anhang.", HtmlBody = "<p>Siehe Anhang.</p>" };
-        gestaltet.Attachments.Add("fehler.log", "Fehler 42\n"u8.ToArray(), new ContentType("text", "plain"));
+        gestaltet.Attachments.Add("fehler.log", "Fehler 42\r\n"u8.ToArray(), new ContentType("text", "plain"));
         gestaltet.Attachments.Add("riesig.iso", new byte[1024 * 1024 + 5], new ContentType("application", "octet-stream"));
         gestaltet.LinkedResources.Add("logo.png", new byte[2_000], new ContentType("image", "png"));
         gestaltet.LinkedResources.Add("bildschirmfoto.png", new byte[40_000], new ContentType("image", "png"));
@@ -199,13 +199,13 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var anhaenge = await app.DatenbankAsync(db => db.Anhaenge.AsNoTracking()
             .Where(a => a.Verlaufseintrag.AuftragId == id).OrderBy(a => a.Dateiname).ToListAsync());
         Assert.Equal(["bildschirmfoto.png", "fehler.log"], anhaenge.Select(a => a.Dateiname));
-        Assert.Equal(10, anhaenge[1].Groesse);
+        Assert.Equal(11, anhaenge[1].Groesse);
         var auftrag = await LadenAsync(id);
         Assert.StartsWith("Siehe Anhang.", auftrag.Beschreibung);
         Assert.Contains("[Nicht übernommene Anhänge: riesig.iso (1,0 MB) ist größer als 1 MB]", auftrag.Beschreibung);
 
         var anna = await app.AnmeldenAlsAsync("anna");
-        Assert.Equal("Fehler 42\n", await anna.GetStringAsync($"/Anhaenge/{anhaenge[1].Id}"));
+        Assert.Equal("Fehler 42\r\n", await anna.GetStringAsync($"/Anhaenge/{anhaenge[1].Id}"));
     }
 
     [Fact]
@@ -302,9 +302,12 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
     private async Task<Maileingang> AnnehmenAsync(MimeMessage mail)
     {
-        // Wie nach dem Abruf: Die Mail wird einmal in ihre Rohform und zurück gewandelt.
+        // Wie nach dem Abruf: Die Mail wird einmal in ihre Rohform und zurück gewandelt,
+        // mit den Zeilenenden, die eine Mail unterwegs immer hat – auf jedem Rechner.
+        var unterwegs = FormatOptions.Default.Clone();
+        unterwegs.NewLineFormat = NewLineFormat.Dos;
         using var roh = new MemoryStream();
-        await mail.WriteToAsync(roh);
+        await mail.WriteToAsync(unterwegs, roh);
         roh.Position = 0;
         var gelesen = await MimeMessage.LoadAsync(roh);
 
