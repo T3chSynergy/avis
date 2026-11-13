@@ -101,6 +101,51 @@ namespace Avis.Web.Data.Migrations
                     b.ToTable("Auftraege", (string)null);
                 });
 
+            modelBuilder.Entity("Avis.Web.Domain.Benachrichtigung", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("An")
+                        .HasMaxLength(320)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Betreff")
+                        .HasMaxLength(300)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ErstelltAm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("GesendetAm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Hinweis")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("NaechsterVersuchAm")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("VerlaufseintragId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Versuche")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VerlaufseintragId");
+
+                    b.HasIndex("Status", "NaechsterVersuchAm");
+
+                    b.ToTable("Benachrichtigungen", (string)null);
+                });
+
             modelBuilder.Entity("Avis.Web.Domain.Benutzer", b =>
                 {
                     b.Property<int>("Id")
@@ -359,6 +404,17 @@ namespace Avis.Web.Data.Migrations
                     b.Navigation("Kunde");
 
                     b.Navigation("Standort");
+                });
+
+            modelBuilder.Entity("Avis.Web.Domain.Benachrichtigung", b =>
+                {
+                    b.HasOne("Avis.Web.Domain.Verlaufseintrag", "Verlaufseintrag")
+                        .WithMany()
+                        .HasForeignKey("VerlaufseintragId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Verlaufseintrag");
                 });
 
             modelBuilder.Entity("Avis.Web.Domain.Kunde", b =>

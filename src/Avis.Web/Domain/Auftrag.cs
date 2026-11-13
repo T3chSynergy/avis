@@ -237,6 +237,13 @@ public class Auftrag
         Eintragen(VerlaufArt.NachrichtAnKunden, durch, jetzt, null, text, aendertDenStand: false);
     }
 
+    /// <summary>Der Kunde antwortet, zum Beispiel auf eine Rückfrage.</summary>
+    public void KundeAntwortet(Benutzer durch, string text, DateTime jetzt)
+    {
+        NichtAbgeschlossen();
+        Eintragen(VerlaufArt.AntwortDesKunden, durch, jetzt, null, text, aendertDenStand: false);
+    }
+
     /// <summary>Nur der zuständige Bearbeiter schließt ab.</summary>
     public void Abschliessen(Benutzer durch, string abschlusstext, DateTime jetzt)
     {

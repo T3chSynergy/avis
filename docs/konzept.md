@@ -27,7 +27,7 @@ Leitsatz: Was das alte AVIS nicht brauchte, braucht das neue auch nicht.
 
 | Rolle | Darf |
 |---|---|
-| Kunde | eigene Aufträge erstellen, eigene Aufträge und deren Stand sehen, Rückfragen beantworten |
+| Kunde | eigene Aufträge erstellen, eigene Aufträge und deren Stand sehen, Rückfragen beantworten. Jedes Anmeldekonto ohne Rolle ist Kunde, auch Bearbeiter können eigene Aufträge stellen |
 | Bearbeiter | Aufträge erfassen, alle Aufträge sehen (außer gesperrte Gruppen), übernehmen, weiterleiten, abschließen, sich selbst Gruppen zuordnen, Kunden anlegen und pflegen |
 | Administrator | Gruppen, Kategorien, Standorte und Geräte pflegen, Mitglieder gesperrter Gruppen zuordnen, Rollen vergeben |
 
@@ -148,6 +148,9 @@ können, ohne dass sich am Auftrag etwas ändert.
 - Jeder Auftrag verweist auf einen Kunden.
 - Meldet sich ein Kunde an oder schreibt eine Mail, wird er über Anmeldename
   bzw. Mailadresse zugeordnet. Gibt es ihn noch nicht, wird er angelegt.
+- Die Mailadresse eines Anmeldekontos stammt aus dem Active Directory oder vom
+  Administrator, nie von der Person selbst. So kann sich niemand die Aufträge
+  eines anderen zuordnen.
 - Die Hotline kann am Telefon einen Kunden suchen oder neu anlegen. Gesucht
   wird über Name, E-Mail, Telefon und Organisationseinheit.
 - Eine E-Mail-Adresse gehört zu genau einem Kunden.
@@ -201,10 +204,16 @@ Mailsystem ist Exchange.
   Betreff und Text werden übernommen, Anhänge angehängt.
 - Antworten mit Auftragsnummer im Betreff landen als Antwort des Kunden im
   Verlauf des bestehenden Auftrags.
-- Ausgang: Der Kunde erhält eine Mail bei Erfassung, bei Nachrichten an ihn und
-  beim Abschluss. Interne Kommentare werden nie verschickt.
-- Bearbeiter erhalten keine Mails für Gruppenaufträge, höchstens einen Hinweis,
-  wenn sie als bevorzugter Bearbeiter genannt werden.
+- Ausgang: Versand über SMTP. Der Kunde erhält eine Mail bei Erfassung, bei
+  Nachrichten an ihn und beim Abschluss. Interne Kommentare, Weiterleitungen
+  und Gruppen stehen in keiner Mail an den Kunden.
+- Bearbeiter erhalten keine Mails für Gruppenaufträge. Der zuständige
+  Bearbeiter erhält eine Mail, wenn der Kunde antwortet, und wer als
+  bevorzugter Bearbeiter genannt wird, erhält einen Hinweis.
+- Der Betreff jeder Mail beginnt mit der Auftragsnummer in der Form
+  `[AVIS-123]`, damit Antworten später zugeordnet werden können.
+- Ist der Mailserver nicht erreichbar, geht nichts verloren: Mails werden
+  vorgemerkt und später erneut versucht.
 
 ## 8. Technik
 
@@ -253,6 +262,8 @@ Ein Wechsel ist möglich und vorbereitet:
 
 - Exchange: im Haus oder Exchange Online, und welcher Zugriff auf das
   Hotline-Postfach freigeschaltet ist
-- Anzeigename und E-Mail-Adresse neuer Benutzer: Die Windows-Anmeldung liefert
-  nur den Anmeldenamen. Die übrigen Angaben müssen aus dem Active Directory
-  gelesen oder von Hand gepflegt werden.
+- Die Abfrage des Active Directory für Name, E-Mail, Telefon und Abteilung
+  neuer Konten ist eingebaut, aber noch nicht an einem echten Verzeichnis
+  erprobt.
+- Darf ein Kunde auf einen abgeschlossenen Auftrag antworten und ihn damit
+  wieder öffnen? Bisher kann er das nicht.

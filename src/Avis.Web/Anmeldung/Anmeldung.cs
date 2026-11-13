@@ -30,6 +30,15 @@ public static class Rollen
     public const string Administrator = "Administrator";
 }
 
+public static class Richtlinien
+{
+    /// <summary>
+    /// Jedes aktive Konto, auch ohne Rolle. Reicht für die Seiten, auf denen
+    /// jemand als Kunde eigene Aufträge stellt und sieht.
+    /// </summary>
+    public const string Angemeldet = "Angemeldet";
+}
+
 public static class AnmeldungExtensions
 {
     private const string BenutzerIdClaim = "avis:benutzer";
@@ -65,12 +74,17 @@ public static class AnmeldungExtensions
             throw new InvalidOperationException($"Unbekannte Einstellung Anmeldung:Art = {art}.");
         }
 
+        // Eine Seite ohne eigene Angabe ist nur für Bearbeiter. Was Kunden
+        // oder nur Administratoren sehen, wird in Program.cs ausdrücklich genannt.
         builder.Services.AddAuthorizationBuilder()
             .SetFallbackPolicy(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
+                .RequireRole(Rollen.Bearbeiter)
                 .Build())
+            .AddPolicy(Richtlinien.Angemeldet, p => p.RequireClaim(BenutzerIdClaim))
             .AddPolicy(Rollen.Bearbeiter, p => p.RequireRole(Rollen.Bearbeiter))
             .AddPolicy(Rollen.Administrator, p => p.RequireRole(Rollen.Administrator));
+
+        builder.Services.AddScoped<Kundenzuordnung>();
     }
 
     /// <summary>Die Id des angemeldeten Benutzers in der Benutzertabelle.</summary>
@@ -80,6 +94,9 @@ public static class AnmeldungExtensions
 
     public static string Anzeigename(this ClaimsPrincipal user) =>
         user.FindFirstValue("avis:name") ?? user.Identity?.Name ?? "";
+
+    /// <summary>Ob ein aktives Konto angemeldet ist, mit oder ohne Rolle.</summary>
+    public static bool IstAngemeldet(this ClaimsPrincipal user) => user.HasClaim(c => c.Type == BenutzerIdClaim);
 
     public static bool IstBearbeiter(this ClaimsPrincipal user) => user.IsInRole(Rollen.Bearbeiter);
 
@@ -105,7 +122,7 @@ public static class AnmeldungExtensions
 /// </summary>
 public class BenutzerMiddleware(RequestDelegate next)
 {
-    public async Task InvokeAsync(HttpContext context, AvisDb db, IOptions<AnmeldungOptionen> optionen)
+    public async Task InvokeAsync(HttpContext context, AvisDb db, IOptions<AnmeldungOptionen> optionen, IVerzeichnis verzeichnis)
     {
         if (context.User.Identity is { IsAuthenticated: true, Name: { Length: > 0 } name })
         {
@@ -114,7 +131,13 @@ public class BenutzerMiddleware(RequestDelegate next)
 
             if (benutzer is null)
             {
-                benutzer = new Benutzer { Anmeldename = anmeldename, Name = OhneDomaene(name.Trim()) };
+                var eintrag = verzeichnis.Suchen(anmeldename);
+                benutzer = new Benutzer
+                {
+                    Anmeldename = anmeldename,
+                    Name = Bereinigen(eintrag?.Name, 200) ?? OhneDomaene(name.Trim()),
+                    Email = Bereinigen(eintrag?.Email, 320)?.ToLowerInvariant(),
+                };
                 db.Benutzer.Add(benutzer);
                 try
                 {
@@ -143,6 +166,12 @@ public class BenutzerMiddleware(RequestDelegate next)
         }
 
         await next(context);
+    }
+
+    private static string? Bereinigen(string? text, int laenge)
+    {
+        var bereinigt = text?.Trim();
+        return string.IsNullOrEmpty(bereinigt) || bereinigt.Length > laenge ? null : bereinigt;
     }
 
     private static string OhneDomaene(string name)

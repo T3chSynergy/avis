@@ -1,0 +1,73 @@
+@page "/Meine/{id:int}"
+@model Avis.Web.Pages.Meine.DetailsModel
+@{
+    var a = Model.Auftrag;
+    ViewData["Title"] = $"Auftrag {a.Id}";
+}
+<p class="pfad"><a asp-page="Index">Meine Aufträge</a> · Auftrag @a.Id</p>
+<h1>@a.Betreff</h1>
+
+<div class="zustand">
+    <span class="status status-@a.Status">@a.Status.Text()</span>
+    @if (a.Status == AuftragStatus.InBearbeitung)
+    {
+        <span>bei <strong>@a.Bearbeiter!.Name</strong></span>
+    }
+    else if (a.Status == AuftragStatus.Offen)
+    {
+        <span>Der Auftrag liegt bei der IT und wartet auf einen Bearbeiter.</span>
+    }
+</div>
+
+<div class="spalten">
+    <section aria-labelledby="h-auftrag">
+        <h2 id="h-auftrag">Auftrag</h2>
+        <p class="text">@a.Beschreibung</p>
+        <dl class="angaben">
+            <dt>Erstellt</dt>
+            <dd>@Ortszeit.Anzeigen(a.ErstelltAm)</dd>
+            <dt>Standort</dt>
+            <dd>@(a.Standort?.Name ?? "–")</dd>
+            <dt>Gerät</dt>
+            <dd>@(a.Geraet ?? "–")</dd>
+            @if (a.Termin is not null)
+            {
+                <dt>Termin</dt>
+                <dd>@a.Termin.Value.ToString("dd.MM.yyyy")</dd>
+            }
+        </dl>
+
+        <h2>Verlauf</h2>
+        <ol class="verlauf">
+            @foreach (var v in Model.Verlauf)
+            {
+                <li>
+                    <div class="kopfzeile">
+                        <strong>@DetailsModel.Titel(v.Art)</strong>
+                        <span>@(v.Art == VerlaufArt.AntwortDesKunden ? v.Benutzer.Name : "IT") · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
+                    </div>
+                    @if (DetailsModel.ZeigtText(v.Art) && v.Text is not null)
+                    {
+                        <p class="text">@v.Text</p>
+                    }
+                </li>
+            }
+        </ol>
+    </section>
+
+    <section class="aktionen" aria-labelledby="h-antwort">
+        <h2 id="h-antwort">Antworten</h2>
+        @if (a.Status == AuftragStatus.Abgeschlossen)
+        {
+            <p class="erklaerung">Der Auftrag ist abgeschlossen. Besteht das Problem weiter, bitte die IT-Hotline anrufen oder einen neuen Auftrag stellen.</p>
+        }
+        else
+        {
+            <form method="post">
+                <label for="text">Nachricht an die IT</label>
+                <textarea id="text" name="text" rows="5" required></textarea>
+                <button type="submit" class="haupt">Absenden</button>
+            </form>
+        }
+    </section>
+</div>

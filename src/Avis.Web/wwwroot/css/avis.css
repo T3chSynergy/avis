@@ -201,3 +201,11 @@ ul.auswahl label { margin: 0; font-weight: 400; flex: 1; cursor: pointer; }
 .neukunde { margin-top: 10px; }
 fieldset.kunde:has(#kunde-neu:not(:checked)) .neukunde { display: none; }
 .spalten > .kasten { margin-top: 0; }
+
+/* Seiten für Kunden */
+a.knopf {
+    display: inline-block; padding: 6px 14px; border: 1px solid #8793a1; border-radius: 4px;
+    background: var(--flaeche); color: var(--text); text-decoration: none;
+}
+a.knopf.haupt { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
+a.knopf.haupt:hover { background: #184c87; }

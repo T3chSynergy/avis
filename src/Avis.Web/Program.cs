@@ -3,6 +3,7 @@ using System.Text.Unicode;
 using Avis.Web;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
+using Avis.Web.Mail;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.WebEncoders;
 
@@ -21,12 +22,15 @@ builder.Services.Configure<WebEncoderOptions>(o =>
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<Ortszeit>();
 builder.AddAvisAnmeldung();
+builder.AddAvisVerzeichnis();
+builder.AddAvisMail();
 
 builder.Services.AddRazorPages(o =>
 {
     // Alle Seiten sind für Bearbeiter. Ausnahmen sind hier aufgeführt.
-    o.Conventions.AuthorizeFolder("/", Rollen.Bearbeiter);
     o.Conventions.AuthorizeFolder("/Verwaltung", Rollen.Administrator);
+    o.Conventions.AuthorizeFolder("/Meine", Richtlinien.Angemeldet);
+    o.Conventions.AuthorizePage("/Index", Richtlinien.Angemeldet);
     o.Conventions.AllowAnonymousToPage("/Anmeldung");
     o.Conventions.AllowAnonymousToPage("/Fehler");
     o.Conventions.AllowAnonymousToPage("/Status");

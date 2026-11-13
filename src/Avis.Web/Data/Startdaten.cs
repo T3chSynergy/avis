@@ -48,10 +48,10 @@ public static class Startdaten
         var betreuung = new Gruppe { Name = "Anwenderbetreuung" };
         db.Gruppen.AddRange(netzwerk, systeme, beschaffung, betreuung);
 
-        var anna = new Benutzer { Anmeldename = "anna", Name = "Anna Beispiel", IstBearbeiter = true, IstAdministrator = true };
-        var bernd = new Benutzer { Anmeldename = "bernd", Name = "Bernd Muster", IstBearbeiter = true };
-        var clara = new Benutzer { Anmeldename = "clara", Name = "Clara Probe", IstBearbeiter = true };
-        var dieter = new Benutzer { Anmeldename = "dieter", Name = "Dieter Kunde" };
+        var anna = new Benutzer { Anmeldename = "anna", Name = "Anna Beispiel", Email = "anna.beispiel@example.org", IstBearbeiter = true, IstAdministrator = true };
+        var bernd = new Benutzer { Anmeldename = "bernd", Name = "Bernd Muster", Email = "bernd.muster@example.org", IstBearbeiter = true };
+        var clara = new Benutzer { Anmeldename = "clara", Name = "Clara Probe", Email = "clara.probe@example.org", IstBearbeiter = true };
+        var dieter = new Benutzer { Anmeldename = "dieter", Name = "Dieter Kunde", Email = "dieter.kunde@example.org" };
         db.Benutzer.AddRange(anna, bernd, clara, dieter);
 
         hotline.Mitglieder.Add(anna);
@@ -110,7 +110,10 @@ public static class Startdaten
             kunde1, anna, beschaffung, Eingang.Web, jetzt.AddDays(-1));
         monitor.Uebernehmen(clara, jetzt.AddHours(-20));
 
+        // Zu den Testdaten gehen keine Mails hinaus.
+        db.BenachrichtigungenAnlegen = false;
         db.Auftraege.AddRange(drucker, wlan, monitor);
         await db.SaveChangesAsync();
+        db.BenachrichtigungenAnlegen = true;
     }
 }

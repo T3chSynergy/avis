@@ -4,7 +4,7 @@
     var code = int.Parse((string)RouteData.Values["code"]!);
     var (titel, text) = code switch
     {
-        403 => ("Kein Zugriff", "Dein Konto ist für diese Seite nicht freigeschaltet. AVIS steht derzeit nur Bearbeitern zur Verfügung."),
+        403 => ("Kein Zugriff", "Dieses Konto ist für diese Seite nicht freigeschaltet."),
         404 => ("Nicht gefunden", "Diese Seite oder dieser Auftrag existiert nicht."),
         _ => ("Fehler", $"Die Anfrage konnte nicht verarbeitet werden (Status {code})."),
     };

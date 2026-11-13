@@ -18,17 +18,60 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     public DbSet<Kunde> Kunden => Set<Kunde>();
     public DbSet<Kategorie> Kategorien => Set<Kategorie>();
     public DbSet<Standort> Standorte => Set<Standort>();
+    public DbSet<Benachrichtigung> Benachrichtigungen => Set<Benachrichtigung>();
+
+    /// <summary>
+    /// Ob zu neuen Verlaufseinträgen Mails vorgemerkt werden. Beim Anlegen
+    /// der Testdaten ist das ausgeschaltet.
+    /// </summary>
+    public bool BenachrichtigungenAnlegen { get; set; } = true;
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        BenachrichtigungenVormerken();
         SuchtexteAktualisieren();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
+        BenachrichtigungenVormerken();
         SuchtexteAktualisieren();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    /// <summary>
+    /// Merkt zu jedem neuen Verlaufseintrag, der jemanden betrifft, eine Mail
+    /// vor. Das geschieht hier an einer Stelle, damit keine Seite es
+    /// vergessen kann. Wer die Mail bekommt und was darin steht, entscheidet
+    /// sich beim Versand (siehe Mailtexte).
+    /// </summary>
+    private void BenachrichtigungenVormerken()
+    {
+        if (!BenachrichtigungenAnlegen)
+            return;
+
+        var neu = ChangeTracker.Entries<Verlaufseintrag>()
+            .Where(e => e.State == EntityState.Added)
+            .Select(e => e.Entity)
+            .Where(v => v.Art switch
+            {
+                VerlaufArt.Erfasst or VerlaufArt.NachrichtAnKunden or VerlaufArt.Abgeschlossen => true,
+                VerlaufArt.AntwortDesKunden => true,
+                VerlaufArt.Weitergeleitet => v.Auftrag.BevorzugterBearbeiterId is not null,
+                _ => false,
+            })
+            .ToList();
+
+        foreach (var eintrag in neu)
+        {
+            Benachrichtigungen.Add(new Benachrichtigung
+            {
+                Verlaufseintrag = eintrag,
+                ErstelltAm = eintrag.Zeitpunkt,
+                NaechsterVersuchAm = eintrag.Zeitpunkt,
+            });
+        }
     }
 
     private void SuchtexteAktualisieren()
@@ -107,6 +150,15 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
         });
 
         model.Entity<Verlaufseintrag>(e => e.ToTable("Verlauf"));
+
+        model.Entity<Benachrichtigung>(e =>
+        {
+            e.ToTable("Benachrichtigungen");
+            e.Property(b => b.An).HasMaxLength(320);
+            e.Property(b => b.Betreff).HasMaxLength(300);
+            e.Property(b => b.Hinweis).HasMaxLength(1000);
+            e.HasIndex(b => new { b.Status, b.NaechsterVersuchAm });
+        });
 
         // Nichts wird mitgelöscht. Aufträge und ihr Verlauf bleiben erhalten,
         // Stammdaten werden deaktiviert statt gelöscht.

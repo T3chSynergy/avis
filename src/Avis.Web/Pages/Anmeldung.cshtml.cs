@@ -27,13 +27,22 @@ public class AnmeldungModel(AvisDb db, IOptions<AnmeldungOptionen> optionen) : P
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(string anmeldename, string? returnUrl)
+    public async Task<IActionResult> OnPostAsync(string? anmeldename, string? neu, string? returnUrl)
     {
         if (optionen.Value.Art != AnmeldungOptionen.Entwicklung)
             return NotFound();
 
-        if (!await db.Benutzer.AnyAsync(b => b.Anmeldename == anmeldename && b.Aktiv))
+        if (string.IsNullOrEmpty(anmeldename))
+        {
+            // Ein neues Konto: Es entsteht wie im Betrieb beim ersten Aufruf.
+            anmeldename = neu?.Trim().ToLowerInvariant();
+            if (string.IsNullOrEmpty(anmeldename))
+                return RedirectToPage();
+        }
+        else if (!await db.Benutzer.AnyAsync(b => b.Anmeldename == anmeldename && b.Aktiv))
+        {
             return NotFound();
+        }
 
         var identity = new ClaimsIdentity(
             [new Claim(ClaimTypes.Name, anmeldename)],

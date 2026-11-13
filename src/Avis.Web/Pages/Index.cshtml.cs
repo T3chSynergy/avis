@@ -1,6 +1,7 @@
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,8 +12,12 @@ public class IndexModel(AvisDb db) : PageModel
     public IReadOnlyList<Auftrag> InBearbeitung { get; private set; } = [];
     public IReadOnlyList<Auftrag> FuerMich { get; private set; } = [];
 
-    public async Task OnGetAsync()
+    public async Task<IActionResult> OnGetAsync()
     {
+        // Wer kein Bearbeiter ist, landet bei den eigenen Aufträgen.
+        if (!User.IstBearbeiter())
+            return RedirectToPage("/Meine/Index");
+
         var ich = User.BenutzerId();
 
         InBearbeitung = await db.Auftraege.FuerListe()
@@ -26,5 +31,6 @@ public class IndexModel(AvisDb db) : PageModel
             .Where(a => a.BevorzugterBearbeiterId == ich)
             .NachPrioritaet()
             .ToListAsync();
+        return Page();
     }
 }

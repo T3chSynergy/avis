@@ -1,11 +1,15 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
+using Avis.Web.Mail;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using MimeKit;
 
 namespace Avis.Tests;
 
@@ -14,12 +18,29 @@ public class AvisAnwendung : WebApplicationFactory<Program>
 {
     private readonly string _ordner = Directory.CreateTempSubdirectory("avis-test-").FullName;
 
+    /// <summary>Fängt alle Mails auf, die die Anwendung versendet.</summary>
+    public Postfach Postfach { get; } = new();
+
+    /// <summary>Steht für das Active Directory.</summary>
+    public Testverzeichnis Verzeichnis { get; } = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
         builder.UseSetting("ConnectionStrings:Avis", $"Data Source={Path.Combine(_ordner, "avis.db")};Pooling=False");
         builder.UseSetting("Anmeldung:Art", "Entwicklung");
         builder.UseSetting("Testdaten:Anlegen", "true");
+        builder.UseSetting("Mail:Art", "Ordner");
+        builder.UseSetting("Mail:Ablage", Path.Combine(_ordner, "Mails"));
+        builder.UseSetting("Mail:Absender", "it-hotline@avis.test");
+        builder.UseSetting("Mail:BasisUrl", "https://avis.test/");
+        // Die Tests stoßen den Versand selbst an.
+        builder.UseSetting("Mail:ImHintergrundSenden", "false");
+        builder.ConfigureTestServices(services =>
+        {
+            services.AddSingleton<IMailversand>(Postfach);
+            services.AddSingleton<IVerzeichnis>(Verzeichnis);
+        });
     }
 
     protected override void Dispose(bool disposing)
@@ -37,11 +58,60 @@ public class AvisAnwendung : WebApplicationFactory<Program>
         return client;
     }
 
+    /// <summary>Meldet ein Konto an, das AVIS noch nicht kennt, wie beim ersten Aufruf im Betrieb.</summary>
+    public async Task<HttpClient> AnmeldenAlsNeuAsync(string anmeldename)
+    {
+        var client = CreateClient();
+        var antwort = await client.PostFormularAsync("/Anmeldung", "/Anmeldung", new() { ["anmeldename"] = "", ["neu"] = anmeldename });
+        Assert.Equal(HttpStatusCode.OK, antwort.StatusCode);
+        return client;
+    }
+
+    /// <summary>Versendet alles, was fällig ist, und gibt die dabei gesendeten Mails zurück.</summary>
+    public async Task<List<MimeMessage>> MailsVersendenAsync()
+    {
+        var vorher = Postfach.Mails.Count;
+        using var scope = Services.CreateScope();
+        var versand = scope.ServiceProvider.GetRequiredService<Benachrichtigungsversand>();
+        var db = scope.ServiceProvider.GetRequiredService<AvisDb>();
+        while (true)
+        {
+            await versand.VerarbeitenAsync();
+            var jetzt = DateTime.UtcNow;
+            if (Postfach.Gestoert || !await db.Benachrichtigungen.AnyAsync(b => b.Status == BenachrichtigungStatus.Offen && b.NaechsterVersuchAm <= jetzt))
+                break;
+        }
+        return Postfach.Mails.Skip(vorher).ToList();
+    }
+
     public async Task<T> DatenbankAsync<T>(Func<AvisDb, Task<T>> abfrage)
     {
         using var scope = Services.CreateScope();
         return await abfrage(scope.ServiceProvider.GetRequiredService<AvisDb>());
     }
+}
+
+public class Postfach : IMailversand
+{
+    public List<MimeMessage> Mails { get; } = [];
+
+    /// <summary>Solange gesetzt, schlägt jeder Versand fehl wie bei einem nicht erreichbaren Mailserver.</summary>
+    public bool Gestoert { get; set; }
+
+    public Task SendenAsync(MimeMessage mail, CancellationToken abbruch)
+    {
+        if (Gestoert)
+            throw new IOException("Der Mailserver ist nicht erreichbar.");
+        Mails.Add(mail);
+        return Task.CompletedTask;
+    }
+}
+
+public class Testverzeichnis : IVerzeichnis
+{
+    public Dictionary<string, Verzeichniseintrag> Eintraege { get; } = [];
+
+    public Verzeichniseintrag? Suchen(string anmeldename) => Eintraege.GetValueOrDefault(anmeldename);
 }
 
 public static partial class ClientExtensions

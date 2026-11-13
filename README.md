@@ -6,7 +6,7 @@ Was AVIS können soll und warum, steht im [Konzept](docs/konzept.md).
 
 ## Stand
 
-Ausbaustufe 1 ist begonnen. Vorhanden sind:
+Die Ausbaustufen 1 und 2 sind umgesetzt. Vorhanden sind:
 
 - Datenmodell mit Aufträgen, Verlauf, Gruppen, Benutzern, Kunden, Kategorien und
   Standorten
@@ -20,10 +20,14 @@ Ausbaustufe 1 ist begonnen. Vorhanden sind:
 - Meine Gruppen: selbst beitreten und austreten
 - Verwaltung für Administratoren: Gruppen mit Mitgliedern, Benutzer und Rollen,
   Kategorien, Standorte
+- Seiten für Kunden: eigenen Auftrag stellen, eigene Aufträge mit Stand und
+  Nachrichten sehen, der IT antworten
+- Mails über SMTP: an den Kunden bei Erfassung, Nachricht und Abschluss, an
+  Bearbeiter bei einer Antwort des Kunden und als bevorzugter Bearbeiter
 - Testanmeldung für die Entwicklung, Windows-Anmeldung für den Betrieb
 
-Ausbaustufe 1 ist damit vollständig. Als Nächstes folgt Ausbaustufe 2 mit der
-Kundenseite und den Mails an den Kunden.
+Als Nächstes folgt Ausbaustufe 3 mit Anhängen, Suche, gesperrten Gruppen und
+der Gerätetabelle.
 
 ## Voraussetzungen
 
@@ -41,6 +45,9 @@ Entwicklungsumgebung legt sie beim ersten Start eine SQLite-Datenbank unter
 man den Benutzer auswählt. Wer die Datenbank löscht, bekommt beim nächsten
 Start frische Testdaten.
 
+Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
+`src/Avis.Web/App_Data/Mails` abgelegt. Ein Mailprogramm öffnet sie.
+
 ## Testen
 
 ```bash
@@ -57,7 +64,8 @@ und die Seiten gegen eine laufende Anwendung mit eigener Datenbank
 |---|---|
 | `src/Avis.Web/Domain` | Auftrag, Verlauf und Stammdaten mit ihren Regeln |
 | `src/Avis.Web/Data` | Datenbankzugriff, Migrationen, Start- und Testdaten |
-| `src/Avis.Web/Anmeldung` | Anmeldung und Rollen |
+| `src/Avis.Web/Anmeldung` | Anmeldung, Rollen, Verzeichnisabfrage, Zuordnung von Konto und Kunde |
+| `src/Avis.Web/Mail` | Mailtexte und Versand |
 | `src/Avis.Web/Pages` | Seiten |
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
 | `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen; ohne sie funktioniert alles |
@@ -90,9 +98,30 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 | `Anmeldung:Art` | `Windows` für den Betrieb, `Entwicklung` für die Testanmeldung |
 | `Anmeldung:Administratoren` | Anmeldenamen (`domäne\\name`), die bei der Anmeldung Administrator werden |
 | `Zeitzone` | Zeitzone für die Anzeige, Zeitpunkte werden in UTC gespeichert |
+| `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon und Abteilung neuer Konten aus dem Active Directory, `Keines` lässt das aus |
+| `Mail:Art` | `Smtp` versendet, `Ordner` legt Mails als Dateien ab, `Aus` sendet nichts |
+| `Mail:Server`, `Mail:Port` | Mailserver, Standardport 25 |
+| `Mail:Verschluesselung` | `Auto`, `Keine`, `StartTls` oder `Ssl` |
+| `Mail:Benutzer`, `Mail:Kennwort` | Nur wenn der Mailserver eine Anmeldung verlangt |
+| `Mail:Absender`, `Mail:Absendername` | Absenderadresse und angezeigter Name |
+| `Mail:BasisUrl` | Adresse von AVIS für die Links in den Mails |
 
 Die Testanmeldung und die Testdaten lassen sich nur in der
 Entwicklungsumgebung einschalten. Im Betrieb bricht der Start sonst ab.
+
+Ein Kennwort für den Mailserver gehört nicht in die Datei im Repository. Auf
+dem Server lässt es sich als Umgebungsvariable `Mail__Kennwort` setzen.
+
+## Mails
+
+Jede Mail wird zusammen mit der Aktion vorgemerkt und im Hintergrund
+versendet, alle 15 Sekunden. Ist der Mailserver nicht erreichbar, gelingt die
+Aktion trotzdem. Die Mail wird dann nach 1, 5, 15, 60 und 240 Minuten erneut
+versucht und gilt nach sechs Versuchen als fehlgeschlagen. Unter Verwaltung →
+Mails steht, was gesendet wurde, was wartet und warum etwas entfallen ist.
+Dort lässt sich eine fehlgeschlagene Mail erneut anstoßen.
+
+Die Texte aller Mails stehen in `src/Avis.Web/Mail/Mailtexte.cs`.
 
 ## Betrieb unter IIS
 
@@ -104,3 +133,10 @@ Dieser Teil ist noch nicht auf einem echten Server erprobt.
 - Das Konto des Anwendungspools braucht Schreibrechte auf den Ordner
   `App_Data`.
 - Der erste Administrator wird über `Anmeldung:Administratoren` festgelegt.
+- Der Hintergrundversand läuft nur, solange die Anwendung läuft. Damit IIS sie
+  nicht nach Leerlauf beendet, den Anwendungspool auf „AlwaysRunning" stellen
+  und das Leerlauftimeout abschalten. Sonst gehen wartende Mails erst beim
+  nächsten Aufruf hinaus.
+- Die Abfrage des Active Directory nutzt die Domäne, in der der Server Mitglied
+  ist. Schlägt sie fehl, arbeitet AVIS mit dem Anmeldenamen weiter und schreibt
+  eine Warnung ins Protokoll.

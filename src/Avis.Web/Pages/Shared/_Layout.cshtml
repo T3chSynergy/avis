@@ -24,6 +24,13 @@
                 }
             </nav>
         }
+        else if (User.IstAngemeldet())
+        {
+            <nav aria-label="Hauptnavigation">
+                <a asp-page="/Meine/Index">Meine Aufträge</a>
+                <a asp-page="/Meine/Neu">Neuer Auftrag</a>
+            </nav>
+        }
         @if (User.Identity?.IsAuthenticated == true)
         {
             <div class="konto">
@@ -31,6 +38,7 @@
                 @if (User.IstBearbeiter())
                 {
                     <a asp-page="/Gruppen/Meine">Meine Gruppen</a>
+                    <a asp-page="/Meine/Index">Eigene Aufträge</a>
                 }
                 @if (ViewData["Testanmeldung"] as bool? == true)
                 {
