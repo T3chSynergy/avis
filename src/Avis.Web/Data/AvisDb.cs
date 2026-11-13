@@ -19,6 +19,27 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     public DbSet<Kategorie> Kategorien => Set<Kategorie>();
     public DbSet<Standort> Standorte => Set<Standort>();
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        SuchtexteAktualisieren();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        SuchtexteAktualisieren();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void SuchtexteAktualisieren()
+    {
+        foreach (var eintrag in ChangeTracker.Entries<Kunde>())
+        {
+            if (eintrag.State is EntityState.Added or EntityState.Modified)
+                eintrag.Entity.SuchtextAktualisieren();
+        }
+    }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
         // Zeitpunkte werden in UTC gespeichert. Beim Lesen geht die Angabe

@@ -220,6 +220,10 @@ namespace Avis.Web.Data.Migrations
                     b.Property<int?>("StandortId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Suchtext")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Telefon")
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");

@@ -19,6 +19,15 @@ public static class Startdaten
             await db.SaveChangesAsync();
         }
 
+        // Kunden aus der Zeit vor der Kundensuche bekommen ihren Suchtext.
+        var ohneSuchtext = await db.Kunden.Where(k => k.Suchtext == "").ToListAsync();
+        if (ohneSuchtext.Count > 0)
+        {
+            foreach (var kunde in ohneSuchtext)
+                kunde.SuchtextAktualisieren();
+            await db.SaveChangesAsync();
+        }
+
         if (app.Configuration.GetValue<bool>("Testdaten:Anlegen"))
         {
             if (!app.Environment.IsDevelopment())
@@ -64,7 +73,12 @@ public static class Startdaten
 
         var kunde1 = new Kunde { Name = "Dieter Kunde", Email = "dieter.kunde@example.org", Telefon = "1234", Anmeldename = "dieter", Standort = haupthaus };
         var kunde2 = new Kunde { Name = "Eva Test", Email = "eva.test@example.org", Telefon = "5678", Standort = nebenstelle };
-        db.Kunden.AddRange(kunde1, kunde2);
+        db.Kunden.AddRange(
+            kunde1,
+            kunde2,
+            new Kunde { Name = "Özlem Übung", Email = "oezlem.uebung@example.org", Telefon = "0221 12-34", Organisationseinheit = "Personal", Standort = haupthaus },
+            new Kunde { Name = "Frank Müller", Email = "frank.mueller@example.org", Telefon = "2201", Organisationseinheit = "Finanzen", Standort = haupthaus },
+            new Kunde { Name = "Gabi Müller", Email = "gabi.mueller@example.org", Telefon = "2202", Organisationseinheit = "Personal", Standort = nebenstelle });
 
         await db.SaveChangesAsync();
 

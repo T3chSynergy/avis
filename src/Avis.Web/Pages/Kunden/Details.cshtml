@@ -1,0 +1,46 @@
+@page "/Kunden/{id:int}"
+@model Avis.Web.Pages.Kunden.DetailsModel
+@{
+    var k = Model.Kunde;
+    ViewData["Title"] = k.Name;
+}
+<p class="pfad"><a asp-page="Index">Kunden</a></p>
+<h1>@k.Name</h1>
+
+<div class="spalten">
+    <section aria-labelledby="h-auftraege">
+        <h2 id="h-auftraege">
+            Laufende Aufträge
+            <a class="nebenaktion" asp-page="/Auftraege/Neu" asp-route-kundeId="@k.Id">Auftrag für @k.Name erfassen</a>
+        </h2>
+        <partial name="_Auftragsliste" model="Model.Laufend" />
+
+        <h2>Abgeschlossene Aufträge</h2>
+        <partial name="_Auftragsliste" model="Model.Abgeschlossen" />
+        @if (Model.Gekuerzt)
+        {
+            <p class="erklaerung">Es werden die letzten @DetailsModel.Hoechstzahl abgeschlossenen Aufträge angezeigt.</p>
+        }
+    </section>
+
+    <form method="post" class="kasten">
+        <h3>Angaben</h3>
+        <label for="name">Name</label>
+        <input id="name" name="name" value="@k.Name" maxlength="200" required autocomplete="off" />
+        <label for="email">E-Mail</label>
+        <input id="email" name="email" type="email" value="@k.Email" maxlength="320" autocomplete="off" />
+        <label for="telefon">Telefon</label>
+        <input id="telefon" name="telefon" value="@k.Telefon" maxlength="50" autocomplete="off" />
+        <label for="organisationseinheit">Organisationseinheit</label>
+        <input id="organisationseinheit" name="organisationseinheit" value="@k.Organisationseinheit" maxlength="200" autocomplete="off" />
+        <label for="standortId">Standort</label>
+        <select id="standortId" name="standortId" asp-items="Model.Standorte">
+            <option value="">–</option>
+        </select>
+        @if (k.Anmeldename is not null)
+        {
+            <p class="erklaerung">Anmeldename: @k.Anmeldename</p>
+        }
+        <button type="submit" class="haupt">Speichern</button>
+    </form>
+</div>

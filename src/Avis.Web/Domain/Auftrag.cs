@@ -175,6 +175,19 @@ public class Auftrag
         return true;
     }
 
+    /// <summary>Ordnet den Auftrag einem anderen Kunden zu.</summary>
+    public void KundeAendern(Kunde kunde, Benutzer durch, DateTime jetzt)
+    {
+        NichtAbgeschlossen();
+        if (kunde.Id == KundeId)
+            throw new AuftragException($"{kunde.Name} ist bereits der Kunde dieses Auftrags.");
+
+        var beschreibung = $"Kunde: {Kunde?.Name ?? "–"} → {kunde.Name}";
+        Kunde = kunde;
+        KundeId = kunde.Id;
+        Eintragen(VerlaufArt.Geaendert, durch, jetzt, beschreibung);
+    }
+
     /// <summary>Jeder Bearbeiter darf übernehmen, auch von einem anderen Bearbeiter.</summary>
     public void Uebernehmen(Benutzer bearbeiter, DateTime jetzt)
     {

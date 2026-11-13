@@ -12,17 +12,18 @@ Ausbaustufe 1 ist begonnen. Vorhanden sind:
   Standorten
 - Aufträge erfassen, übernehmen, weiterleiten, intern kommentieren, Nachricht
   an den Kunden, abschließen und wieder öffnen
-- Angaben eines Auftrags nachträglich ändern, mit den bisherigen Werten im
-  Verlauf
+- Angaben und Kunde eines Auftrags nachträglich ändern, mit den bisherigen
+  Werten im Verlauf
+- Kunden suchen, anlegen und pflegen, mit den Aufträgen eines Kunden; beim
+  Erfassen erscheinen Treffer schon während des Tippens
 - Listen: Meine Aufträge, offene Aufträge meiner Gruppen, alle Aufträge
 - Meine Gruppen: selbst beitreten und austreten
 - Verwaltung für Administratoren: Gruppen mit Mitgliedern, Benutzer und Rollen,
   Kategorien, Standorte
 - Testanmeldung für die Entwicklung, Windows-Anmeldung für den Betrieb
 
-Noch offen in Ausbaustufe 1:
-
-- Kunden suchen beim Erfassen (bisher Zuordnung über die E-Mail-Adresse)
+Ausbaustufe 1 ist damit vollständig. Als Nächstes folgt Ausbaustufe 2 mit der
+Kundenseite und den Mails an den Kunden.
 
 ## Voraussetzungen
 
@@ -59,6 +60,7 @@ und die Seiten gegen eine laufende Anwendung mit eigener Datenbank
 | `src/Avis.Web/Anmeldung` | Anmeldung und Rollen |
 | `src/Avis.Web/Pages` | Seiten |
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
+| `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen; ohne sie funktioniert alles |
 | `tests/Avis.Tests` | Tests |
 
 Bezeichner im Code sind deutsch und folgen den Begriffen des Konzepts, Umlaute

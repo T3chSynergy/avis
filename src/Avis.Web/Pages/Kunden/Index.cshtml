@@ -1,0 +1,62 @@
+@page
+@model Avis.Web.Pages.Kunden.IndexModel
+@{
+    ViewData["Title"] = "Kunden";
+}
+<h1>Kunden</h1>
+
+<form method="get" class="suchzeile" role="search">
+    <div class="feld">
+        <label for="q">Suche nach Name, E-Mail, Telefon oder Organisationseinheit</label>
+        <input id="q" name="q" value="@Model.Q" type="search" autocomplete="off" />
+    </div>
+    <button type="submit" class="haupt">Suchen</button>
+</form>
+
+@if (Model.Kunden.Count == 0)
+{
+    <p class="leer">Keine Kunden gefunden.</p>
+}
+else
+{
+    <table class="liste">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">E-Mail</th>
+                <th scope="col">Telefon</th>
+                <th scope="col">Organisationseinheit</th>
+                <th scope="col">Standort</th>
+                <th scope="col">Laufende Aufträge</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var k in Model.Kunden)
+            {
+                <tr>
+                    <td><a asp-page="Details" asp-route-id="@k.Id">@k.Name</a></td>
+                    <td>@k.Email</td>
+                    <td>@k.Telefon</td>
+                    <td>@k.Organisationseinheit</td>
+                    <td>@k.Standort</td>
+                    <td>@k.Laufend</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @if (Model.Gekuerzt)
+    {
+        <p class="erklaerung">Es werden die ersten @IndexModel.Hoechstzahl Kunden angezeigt. Gib mehr ein, um die Suche einzugrenzen.</p>
+    }
+}
+
+<form method="post" class="kasten">
+    <h3>Kunde anlegen</h3>
+    <label for="neu-name">Name</label>
+    <input id="neu-name" name="name" maxlength="200" required autocomplete="off" />
+    <label for="neu-email">E-Mail (optional)</label>
+    <input id="neu-email" name="email" type="email" maxlength="320" autocomplete="off" />
+    <label for="neu-telefon">Telefon (optional)</label>
+    <input id="neu-telefon" name="telefon" maxlength="50" autocomplete="off" />
+    <button type="submit" class="haupt">Anlegen</button>
+</form>

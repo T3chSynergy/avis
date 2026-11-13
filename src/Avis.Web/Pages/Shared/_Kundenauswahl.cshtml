@@ -1,0 +1,12 @@
+@model Avis.Web.Pages.Kunden.Kundenauswahl
+<div class="kundensuche">
+    <div class="feld">
+        <label for="kundensuche">Kunde suchen</label>
+        <input id="kundensuche" name="suche" value="@Model.Suche" autocomplete="off" type="search" />
+    </div>
+    <button type="submit" formaction="?handler=Suchen" formnovalidate>Suchen</button>
+</div>
+<div id="kundentreffer" aria-live="polite"
+     data-url="@Url.Page("/Kunden/Treffer", new { neu = Model.NeuErlaubt })">
+    <partial name="_Kundentreffer" model="Model" />
+</div>

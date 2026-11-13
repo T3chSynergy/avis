@@ -17,6 +17,7 @@
                 <a asp-page="/Gruppen/Index">Gruppen</a>
                 <a asp-page="/Auftraege/Index">Alle Aufträge</a>
                 <a asp-page="/Auftraege/Neu">Auftrag erfassen</a>
+                <a asp-page="/Kunden/Index">Kunden</a>
                 @if (User.IstAdministrator())
                 {
                     <a asp-page="/Verwaltung/Gruppen">Verwaltung</a>
@@ -49,5 +50,6 @@
         }
         @RenderBody()
     </main>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

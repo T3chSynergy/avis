@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
+using Avis.Web.Pages.Kunden;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,7 +14,6 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
 {
     public class Formular
     {
-        [Required(ErrorMessage = "Bitte den Namen des Kunden angeben.")]
         [StringLength(200)]
         public string? KundeName { get; set; }
 
@@ -34,11 +34,20 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
     [BindProperty]
     public Formular Eingabe { get; set; } = new();
 
+    /// <summary>Der gewählte Kunde. Leer, wenn ein neuer Kunde angelegt wird.</summary>
+    [BindProperty]
+    public int? KundeId { get; set; }
+
+    [BindProperty]
+    public string? Suche { get; set; }
+
     public List<SelectListItem> Gruppen { get; private set; } = [];
     public AuftragAuswahl Auswahl { get; private set; } = null!;
+    public Kundenauswahl Kundenauswahl { get; private set; } = null!;
 
-    public async Task OnGetAsync()
+    public async Task OnGetAsync(int? kundeId)
     {
+        KundeId = kundeId;
         await ListenLadenAsync();
         Eingabe.GruppeId = await db.Gruppen
             .Where(g => g.IstEingangsgruppe && g.Aktiv)
@@ -46,8 +55,41 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
             .FirstOrDefaultAsync();
     }
 
+    /// <summary>Sucht Kunden und zeigt das Formular mit allen Eingaben wieder an.</summary>
+    public async Task<IActionResult> OnPostSuchenAsync()
+    {
+        ModelState.Clear();
+        await ListenLadenAsync();
+        return Page();
+    }
+
     public async Task<IActionResult> OnPostAsync()
     {
+        var neuerName = Eingabe.KundeName?.Trim() ?? "";
+
+        // Eingabetaste im Suchfeld ohne Skript: Das ist eine Suche, kein Erfassen.
+        if (KundeId is null && neuerName.Length == 0 && !string.IsNullOrWhiteSpace(Suche))
+            return await OnPostSuchenAsync();
+
+        Kunde? kunde = null;
+        if (KundeId is not null)
+        {
+            // Die Felder für einen neuen Kunden spielen dann keine Rolle.
+            foreach (var feld in new[] { nameof(Formular.KundeName), nameof(Formular.KundeEmail), nameof(Formular.KundeTelefon) })
+                ModelState.Remove($"{nameof(Eingabe)}.{feld}");
+
+            kunde = await db.Kunden.FirstOrDefaultAsync(k => k.Id == KundeId);
+            if (kunde is null)
+            {
+                ModelState.AddModelError(nameof(KundeId), "Dieser Kunde wurde nicht gefunden.");
+                KundeId = null;
+            }
+        }
+        else if (neuerName.Length == 0)
+        {
+            ModelState.AddModelError(nameof(KundeId), "Bitte einen Kunden auswählen oder den Namen eines neuen Kunden angeben.");
+        }
+
         var gruppe = await db.Gruppen.FirstOrDefaultAsync(g => g.Id == Eingabe.GruppeId && g.Aktiv);
         if (gruppe is null)
             ModelState.AddModelError("Eingabe.GruppeId", "Bitte eine Gruppe wählen.");
@@ -61,7 +103,7 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
 
         var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
         var jetzt = uhr.GetUtcNow().UtcDateTime;
-        var kunde = await KundeFindenOderAnlegenAsync();
+        kunde ??= await KundeFindenOderAnlegenAsync();
 
         var auftrag = Auftrag.Erfassen(angaben, kunde, ich, gruppe, Eingabe.Eingang, jetzt);
         if (Eingabe.SofortUebernehmen)
@@ -99,5 +141,6 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
             .Select(g => new SelectListItem(g.Name, g.Id.ToString()))
             .ToListAsync();
         Auswahl = await AuftragAuswahl.LadenAsync(db);
+        Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, neuErlaubt: true);
     }
 }

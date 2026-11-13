@@ -28,8 +28,8 @@ Leitsatz: Was das alte AVIS nicht brauchte, braucht das neue auch nicht.
 | Rolle | Darf |
 |---|---|
 | Kunde | eigene Aufträge erstellen, eigene Aufträge und deren Stand sehen, Rückfragen beantworten |
-| Bearbeiter | Aufträge erfassen, alle Aufträge sehen (außer gesperrte Gruppen), übernehmen, weiterleiten, abschließen, sich selbst Gruppen zuordnen |
-| Administrator | Gruppen, Kategorien, Standorte, Kunden und Geräte pflegen, Mitglieder gesperrter Gruppen zuordnen, Rollen vergeben |
+| Bearbeiter | Aufträge erfassen, alle Aufträge sehen (außer gesperrte Gruppen), übernehmen, weiterleiten, abschließen, sich selbst Gruppen zuordnen, Kunden anlegen und pflegen |
+| Administrator | Gruppen, Kategorien, Standorte und Geräte pflegen, Mitglieder gesperrter Gruppen zuordnen, Rollen vergeben |
 
 „Kunde" ist der Anwender, für den ein Auftrag bearbeitet wird.
 
@@ -148,7 +148,9 @@ können, ohne dass sich am Auftrag etwas ändert.
 - Jeder Auftrag verweist auf einen Kunden.
 - Meldet sich ein Kunde an oder schreibt eine Mail, wird er über Anmeldename
   bzw. Mailadresse zugeordnet. Gibt es ihn noch nicht, wird er angelegt.
-- Die Hotline kann am Telefon einen Kunden suchen oder neu anlegen.
+- Die Hotline kann am Telefon einen Kunden suchen oder neu anlegen. Gesucht
+  wird über Name, E-Mail, Telefon und Organisationseinheit.
+- Eine E-Mail-Adresse gehört zu genau einem Kunden.
 - Am Kunden sind seine bisherigen Aufträge sichtbar.
 
 ### Gerätetabelle
@@ -188,7 +190,7 @@ passenden Geräteeintrag erfassen.
 
 **Administrator**
 
-- Gruppen, Kategorien, Standorte, Kunden, Geräte, Rollen
+- Gruppen, Kategorien, Standorte, Geräte, Rollen
 
 ## 7. E-Mail
 
@@ -217,7 +219,9 @@ Mailsystem ist Exchange.
 Grundsätze:
 
 - Seiten werden auf dem Server erzeugt. Es gibt kein separates
-  JavaScript-Frontend mit eigener Build-Kette und API-Schicht.
+  JavaScript-Frontend mit eigener Build-Kette und API-Schicht. Einzelne kleine
+  Skripte machen Seiten bequemer, etwa die Kundensuche während des Tippens.
+  Ohne sie funktioniert alles.
 - AVIS bringt keine fremden Oberflächenbibliotheken mit, das Stylesheet ist
   selbst geschrieben.
 - Anhänge liegen im Dateisystem, nicht in der Datenbank.

@@ -33,9 +33,13 @@
         <dl class="angaben">
             <dt>Kunde</dt>
             <dd>
-                @a.Kunde.Name
+                <a asp-page="/Kunden/Details" asp-route-id="@a.KundeId">@a.Kunde.Name</a>
                 @if (a.Kunde.Email is not null) {<text> · <a href="mailto:@a.Kunde.Email">@a.Kunde.Email</a></text>}
                 @if (a.Kunde.Telefon is not null) {<text> · Tel. @a.Kunde.Telefon</text>}
+                @if (a.Status != AuftragStatus.Abgeschlossen)
+                {
+                    <a class="nebenaktion" asp-page="KundeAendern" asp-route-id="@a.Id">Kunde ändern</a>
+                }
             </dd>
             <dt>Dringlichkeit</dt>
             <dd>@a.Dringlichkeit.Text()</dd>

@@ -137,7 +137,7 @@ ol.verlauf p { margin: 4px 0 0; }
 
 label { display: block; font-weight: 600; margin: 8px 0 3px; }
 h3 + label { margin-top: 0; }
-input:not([type="checkbox"]):not([type="hidden"]), select, textarea {
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea {
     width: 100%; padding: 6px 8px; font: inherit; color: inherit;
     background: #fff; border: 1px solid #8793a1; border-radius: 4px;
 }
@@ -186,3 +186,18 @@ table.liste.schmal td { vertical-align: middle; }
 /* Auftrag bearbeiten */
 .nebenaktion { margin-left: 10px; font-size: 14px; font-weight: 400; }
 ol.verlauf p.text { margin: 4px 0 0; }
+
+/* Kunden */
+.kundensuche, .suchzeile { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 12px; }
+.kundensuche .feld, .suchzeile .feld { flex: 1 1 260px; max-width: 520px; }
+.kundensuche button, .suchzeile button { margin-top: 0; }
+.suchzeile { margin-bottom: 16px; }
+ul.auswahl { list-style: none; margin: 10px 0 0; padding: 0; }
+ul.auswahl li { display: flex; align-items: baseline; gap: 8px; padding: 5px 8px; border-top: 1px solid var(--linie); }
+ul.auswahl li:last-child { border-bottom: 1px solid var(--linie); }
+ul.auswahl li:has(input:checked) { background: #e8f0fa; }
+ul.auswahl label { margin: 0; font-weight: 400; flex: 1; cursor: pointer; }
+#kundentreffer .erklaerung { margin: 10px 0 0; }
+.neukunde { margin-top: 10px; }
+fieldset.kunde:has(#kunde-neu:not(:checked)) .neukunde { display: none; }
+.spalten > .kasten { margin-top: 0; }

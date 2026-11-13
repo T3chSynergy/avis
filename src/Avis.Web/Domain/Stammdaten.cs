@@ -50,6 +50,20 @@ public class Kunde
 
     /// <summary>Name des externen Systems, aus dem der Eintrag stammt.</summary>
     public string? Quelle { get; set; }
+
+    /// <summary>
+    /// Alles, wonach man einen Kunden sucht, in Kleinbuchstaben. Die Suche
+    /// vergleicht nur mit diesem Feld und verhält sich dadurch in jeder
+    /// Datenbank gleich, auch bei Umlauten. Wird beim Speichern gesetzt.
+    /// </summary>
+    public string Suchtext { get; private set; } = "";
+
+    public void SuchtextAktualisieren()
+    {
+        var ziffern = new string((Telefon ?? "").Where(char.IsDigit).ToArray());
+        var teile = new[] { Name, Email, Telefon, ziffern, Organisationseinheit, Anmeldename };
+        Suchtext = string.Join(' ', teile.Where(t => !string.IsNullOrWhiteSpace(t))).ToLowerInvariant();
+    }
 }
 
 /// <summary>Eintrag einer Auswahlliste, die der Administrator pflegt.</summary>

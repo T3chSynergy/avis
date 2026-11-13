@@ -22,6 +22,20 @@ public static class Abfragen
             .ThenBy(a => a.Termin)
             .ThenBy(a => a.Id);
 
+    /// <summary>
+    /// Kunden, bei denen jedes Wort der Suche in Name, E-Mail, Telefon,
+    /// Organisationseinheit oder Anmeldename vorkommt.
+    /// </summary>
+    public static IQueryable<Kunde> Suchen(this IQueryable<Kunde> kunden, string? suche)
+    {
+        foreach (var wort in Suchworte(suche))
+            kunden = kunden.Where(k => k.Suchtext.Contains(wort));
+        return kunden;
+    }
+
+    public static string[] Suchworte(string? suche) =>
+        (suche ?? "").ToLowerInvariant().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+
     public static IQueryable<Auftrag> Offen(this IQueryable<Auftrag> auftraege) =>
         auftraege.Where(a => a.AbgeschlossenAm == null && a.BearbeiterId == null);
 
