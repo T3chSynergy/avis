@@ -336,7 +336,8 @@ public class HtmlMailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
         // Die Mail an die Bearbeiterin nennt das Bild beim Namen statt mit dem Verweis.
         var hinweis = Assert.Single(await app.MailsVersendenAsync());
-        Assert.Contains("So sieht es *jetzt* aus:\n[Bild: Aktuell]", hinweis.TextBody);
+        // Die Mail-Bibliothek gibt den Text mit den Zeilenenden des Rechners zurück.
+        Assert.Contains("So sieht es *jetzt* aus:\n[Bild: Aktuell]", hinweis.TextBody?.ReplaceLineEndings("\n"));
         Assert.DoesNotContain("anhang:", hinweis.TextBody);
     }
 
@@ -409,8 +410,12 @@ public class HtmlMailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
     private async Task<Maileingang> AnnehmenAsync(MimeMessage mail)
     {
+        // Wie nach dem Abruf: Die Mail wird einmal in ihre Rohform und zurück gewandelt,
+        // mit den Zeilenenden, die eine Mail unterwegs immer hat – auf jedem Rechner.
+        var unterwegs = FormatOptions.Default.Clone();
+        unterwegs.NewLineFormat = NewLineFormat.Dos;
         using var roh = new MemoryStream();
-        await mail.WriteToAsync(roh);
+        await mail.WriteToAsync(unterwegs, roh);
         roh.Position = 0;
         var gelesen = await MimeMessage.LoadAsync(roh);
 
