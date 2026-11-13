@@ -29,7 +29,7 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     [InlineData("/Kunden")]
     [InlineData("/Kunden?q=müller")]
     [InlineData("/Kunden/1")]
-    [InlineData("/Kunden/Treffer?q=müller&neu=true")]
+    [InlineData("/Kunden/Treffer?q=müller&leer=neu")]
     [InlineData("/Auftraege/1/Kunde")]
     public async Task Seiten_antworten(string pfad)
     {
@@ -44,14 +44,14 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var anna = await app.AnmeldenAlsAsync("anna");
         var dieter = await KundeIdAsync("Dieter Kunde");
 
-        var treffer = await anna.GetStringAsync($"/Kunden/Treffer?q=müller&gewaehlt={dieter}&neu=true");
+        var treffer = await anna.GetStringAsync($"/Kunden/Treffer?q=müller&gewaehlt={dieter}&leer=neu");
 
         Assert.DoesNotContain("<html", treffer);
         Assert.Contains("Frank Müller", treffer);
         Assert.Contains("Gabi Müller", treffer);
         Assert.Contains($"id=\"kunde-{dieter}\" value=\"{dieter}\" checked", treffer);
         Assert.Contains("Neuer Kunde", treffer);
-        Assert.DoesNotContain("Neuer Kunde", await anna.GetStringAsync("/Kunden/Treffer?q=müller&neu=false"));
+        Assert.DoesNotContain("Neuer Kunde", await anna.GetStringAsync("/Kunden/Treffer?q=müller"));
     }
 
     [Fact]

@@ -29,6 +29,7 @@ builder.Services.AddRazorPages(o =>
 {
     // Alle Seiten sind für Bearbeiter. Ausnahmen sind hier aufgeführt.
     o.Conventions.AuthorizeFolder("/Verwaltung", Rollen.Administrator);
+    o.Conventions.AuthorizePage("/Geraete/Bearbeiten", Rollen.Administrator);
     o.Conventions.AuthorizeFolder("/Meine", Richtlinien.Angemeldet);
     o.Conventions.AuthorizePage("/Index", Richtlinien.Angemeldet);
     o.Conventions.AllowAnonymousToPage("/Anmeldung");

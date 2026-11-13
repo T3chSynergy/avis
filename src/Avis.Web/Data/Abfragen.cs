@@ -60,9 +60,18 @@ public static class Abfragen
                 a.Id == nummer
                 || a.Suchtext.Contains(wort)
                 || a.Kunde.Suchtext.Contains(wort)
+                || a.Inventargeraet!.Suchtext.Contains(wort)
                 || a.Verlauf.Any(v => v.Suchtext != null && v.Suchtext.Contains(wort)));
         }
         return auftraege;
+    }
+
+    /// <summary>Geräte, bei denen jedes Wort der Suche in Inventarnummer, Bezeichnung, Typ oder beim Nutzer vorkommt.</summary>
+    public static IQueryable<Inventargeraet> Suchen(this IQueryable<Inventargeraet> geraete, string? suche)
+    {
+        foreach (var wort in Suchworte(suche))
+            geraete = geraete.Where(g => g.Suchtext.Contains(wort) || g.Kunde!.Suchtext.Contains(wort));
+        return geraete;
     }
 
     /// <summary>Liest "123" oder "#123" als Auftragsnummer.</summary>

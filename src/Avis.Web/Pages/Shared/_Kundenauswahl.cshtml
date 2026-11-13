@@ -7,6 +7,6 @@
     <button type="submit" formaction="?handler=Suchen" formnovalidate>Suchen</button>
 </div>
 <div id="kundentreffer" aria-live="polite"
-     data-url="@Url.Page("/Kunden/Treffer", new { neu = Model.NeuErlaubt })">
+     data-url="@Url.Page("/Kunden/Treffer", new { leer = Model.Leer })">
     <partial name="_Kundentreffer" model="Model" />
 </div>

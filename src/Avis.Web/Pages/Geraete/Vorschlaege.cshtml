@@ -1,0 +1,9 @@
+@page
+@model Avis.Web.Pages.Geraete.VorschlaegeModel
+@{
+    Layout = null;
+}
+@foreach (var g in Model.Geraete)
+{
+    <option value="@g.Inventarnummer">@g.Bezeichnung@(g.Standort is null ? "" : " · " + g.Standort.Name)@(g.Kunde is null ? "" : " · " + g.Kunde.Name)</option>
+}

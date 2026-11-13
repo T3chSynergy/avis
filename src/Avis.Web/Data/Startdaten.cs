@@ -89,12 +89,20 @@ public static class Startdaten
             new Kunde { Name = "Frank Müller", Email = "frank.mueller@example.org", Telefon = "2201", Organisationseinheit = "Finanzen", Standort = haupthaus },
             new Kunde { Name = "Gabi Müller", Email = "gabi.mueller@example.org", Telefon = "2202", Organisationseinheit = "Personal", Standort = nebenstelle });
 
+        var flurdrucker = new Inventargeraet { Inventarnummer = "DR-0042", Bezeichnung = "Laserdrucker Flur 2. OG", Typ = "Drucker", Standort = haupthaus };
+        db.Geraete.AddRange(
+            flurdrucker,
+            new Inventargeraet { Inventarnummer = "NB-1017", Bezeichnung = "Notebook 14 Zoll", Typ = "Notebook", Standort = haupthaus, Kunde = kunde1 },
+            new Inventargeraet { Inventarnummer = "NB-1018", Bezeichnung = "Notebook 14 Zoll", Typ = "Notebook", Standort = nebenstelle, Kunde = kunde2 },
+            new Inventargeraet { Inventarnummer = "MO-2203", Bezeichnung = "Monitor 27 Zoll", Typ = "Monitor", Standort = haupthaus, Kunde = kunde1 });
+
         await db.SaveChangesAsync();
 
         var drucker = Auftrag.Erfassen(
             new("Drucker im Flur druckt nicht", "Seit heute Morgen bleibt jeder Druckauftrag in der Warteschlange hängen.")
             {
                 Geraet = "Drucker 2. OG Flur",
+                Inventargeraet = flurdrucker,
                 Standort = haupthaus,
             },
             kunde1, anna, hotline, Eingang.Telefon, jetzt.AddHours(-5));

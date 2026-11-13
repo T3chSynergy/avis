@@ -26,6 +26,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr) : PageModel
             .Include(a => a.BevorzugterBearbeiter)
             .Include(a => a.Kategorie)
             .Include(a => a.Standort)
+            .Include(a => a.Inventargeraet)
             .Include(a => a.Verlauf).ThenInclude(v => v.Benutzer)
             .FirstOrDefaultAsync(a => a.Id == id);
         if (auftrag is null)

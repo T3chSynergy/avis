@@ -52,7 +52,14 @@
             <dt>Standort</dt>
             <dd>@(a.Standort?.Name ?? "–")</dd>
             <dt>Gerät</dt>
-            <dd>@(a.Geraet ?? "–")</dd>
+            <dd>
+                @if (a.Inventargeraet is not null)
+                {
+                    <a asp-page="/Geraete/Details" asp-route-id="@a.InventargeraetId">@a.Inventargeraet.Inventarnummer</a><text> · @a.Inventargeraet.Bezeichnung</text>
+                    @if (a.Geraet is not null) {<text> · </text>}
+                }
+                @(a.Geraet ?? (a.Inventargeraet is null ? "–" : ""))
+            </dd>
             <dt>Eingang</dt>
             <dd>@a.Eingang.Text(), erfasst von @a.ErfasstVon.Name am @Ortszeit.Anzeigen(a.ErstelltAm)</dd>
         </dl>

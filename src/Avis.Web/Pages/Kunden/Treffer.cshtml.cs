@@ -8,6 +8,6 @@ public class TrefferModel(AvisDb db) : PageModel
 {
     public Kundenauswahl Auswahl { get; private set; } = null!;
 
-    public async Task OnGetAsync(string? q, int? gewaehlt, bool neu) =>
-        Auswahl = await Kundenauswahl.LadenAsync(db, q, gewaehlt, neu);
+    public async Task OnGetAsync(string? q, int? gewaehlt, string? leer) =>
+        Auswahl = await Kundenauswahl.LadenAsync(db, q, gewaehlt, leer);
 }

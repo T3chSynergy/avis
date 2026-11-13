@@ -33,6 +33,9 @@ public record AuftragAngaben(string Betreff, string Beschreibung)
     /// <summary>Freitext, z. B. eine Inventarnummer.</summary>
     public string? Geraet { get; init; }
 
+    /// <summary>Verknüpfung mit einem Gerät aus dem Inventar, zusätzlich zum Freitext.</summary>
+    public Inventargeraet? Inventargeraet { get; init; }
+
     public Stufe Dringlichkeit { get; init; } = Stufe.Mittel;
     public Stufe Wichtigkeit { get; init; } = Stufe.Mittel;
     public DateOnly? Termin { get; init; }
@@ -75,6 +78,9 @@ public class Auftrag
 
     /// <summary>Freitext, z. B. eine Inventarnummer.</summary>
     public string? Geraet { get; private set; }
+
+    public int? InventargeraetId { get; private set; }
+    public Inventargeraet? Inventargeraet { get; private set; }
 
     public Stufe Dringlichkeit { get; private set; } = Stufe.Mittel;
     public Stufe Wichtigkeit { get; private set; } = Stufe.Mittel;
@@ -162,6 +168,7 @@ public class Auftrag
         Vergleichen("Kategorie", Kategorie?.Name, neu.Kategorie?.Name, KategorieId != neu.Kategorie?.Id);
         Vergleichen("Standort", Standort?.Name, neu.Standort?.Name, StandortId != neu.Standort?.Id);
         Vergleichen("Gerät", Geraet, neu.Geraet, Geraet != neu.Geraet);
+        Vergleichen("Gerät aus dem Inventar", Inventargeraet?.Inventarnummer, neu.Inventargeraet?.Inventarnummer, InventargeraetId != neu.Inventargeraet?.Id);
         Vergleichen("Dringlichkeit", Dringlichkeit.Text(), neu.Dringlichkeit.Text(), Dringlichkeit != neu.Dringlichkeit);
         Vergleichen("Wichtigkeit", Wichtigkeit.Text(), neu.Wichtigkeit.Text(), Wichtigkeit != neu.Wichtigkeit);
         Vergleichen("Termin", Termin?.ToString("dd.MM.yyyy"), neu.Termin?.ToString("dd.MM.yyyy"), Termin != neu.Termin);
@@ -289,6 +296,8 @@ public class Auftrag
         Standort = angaben.Standort;
         StandortId = angaben.Standort?.Id;
         Geraet = angaben.Geraet;
+        Inventargeraet = angaben.Inventargeraet;
+        InventargeraetId = angaben.Inventargeraet?.Id;
         Dringlichkeit = angaben.Dringlichkeit;
         Wichtigkeit = angaben.Wichtigkeit;
         Termin = angaben.Termin;

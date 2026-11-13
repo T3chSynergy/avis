@@ -141,6 +141,6 @@ public class NeuModel(AvisDb db, TimeProvider uhr) : PageModel
             .Select(g => new SelectListItem(g.Name, g.Id.ToString()))
             .ToListAsync();
         Auswahl = await AuftragAuswahl.LadenAsync(db);
-        Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, neuErlaubt: true);
+        Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "neu");
     }
 }

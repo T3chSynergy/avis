@@ -75,7 +75,7 @@ public class KundeAendernModel(AvisDb db, TimeProvider uhr) : PageModel
         Id = auftrag.Id;
         Version = version;
         Bisher = auftrag.Kunde.Name;
-        Kundenauswahl = await Kundenauswahl.LadenAsync(db, suche, kundeId, neuErlaubt: false);
+        Kundenauswahl = await Kundenauswahl.LadenAsync(db, suche, kundeId);
         return Page();
     }
 

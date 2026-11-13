@@ -216,3 +216,7 @@ a.knopf.haupt:hover { background: #184c87; }
 .suchzeile .feld { flex: 0 1 190px; }
 .suchzeile .feld.breit { flex: 1 1 300px; max-width: 520px; }
 .suchzeile > a { padding-bottom: 7px; }
+
+/* Geräte */
+.spalten > section.kasten { margin-top: 0; }
+.spalten > section.kasten dl.angaben { grid-template-columns: 130px minmax(0, 1fr); }

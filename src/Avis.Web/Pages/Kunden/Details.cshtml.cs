@@ -17,6 +17,7 @@ public class DetailsModel(AvisDb db) : PageModel
     public IReadOnlyList<Auftrag> Abgeschlossen { get; private set; } = [];
     public bool Gekuerzt { get; private set; }
     public List<SelectListItem> Standorte { get; private set; } = [];
+    public IReadOnlyList<Inventargeraet> Geraete { get; private set; } = [];
 
     public async Task<IActionResult> OnGetAsync(int id)
     {
@@ -37,6 +38,11 @@ public class DetailsModel(AvisDb db) : PageModel
             .ToListAsync();
         Gekuerzt = abgeschlossen.Count > Hoechstzahl;
         Abgeschlossen = abgeschlossen.Take(Hoechstzahl).ToList();
+
+        Geraete = await db.Geraete.AsNoTracking()
+            .Where(g => g.KundeId == id && g.Aktiv)
+            .OrderBy(g => g.Inventarnummer)
+            .ToListAsync();
 
         Standorte = await db.Standorte.AsNoTracking()
             .Where(s => s.Aktiv || s.Id == kunde.StandortId)

@@ -63,6 +63,9 @@ namespace Avis.Web.Data.Migrations
                     b.Property<int>("GruppeId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("InventargeraetId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("KategorieId")
                         .HasColumnType("INTEGER");
 
@@ -91,6 +94,8 @@ namespace Avis.Web.Data.Migrations
                     b.HasIndex("BevorzugterBearbeiterId");
 
                     b.HasIndex("ErfasstVonId");
+
+                    b.HasIndex("InventargeraetId");
 
                     b.HasIndex("KategorieId");
 
@@ -217,6 +222,64 @@ namespace Avis.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Gruppen", (string)null);
+                });
+
+            modelBuilder.Entity("Avis.Web.Domain.Inventargeraet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Aktiv")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Bezeichnung")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExterneKennung")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Inventarnummer")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("KundeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Nummernschluessel")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Quelle")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("StandortId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Suchtext")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Typ")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KundeId");
+
+                    b.HasIndex("Nummernschluessel")
+                        .IsUnique();
+
+                    b.HasIndex("StandortId");
+
+                    b.ToTable("Geraete", (string)null);
                 });
 
             modelBuilder.Entity("Avis.Web.Domain.Kategorie", b =>
@@ -385,6 +448,11 @@ namespace Avis.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Avis.Web.Domain.Inventargeraet", "Inventargeraet")
+                        .WithMany()
+                        .HasForeignKey("InventargeraetId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Avis.Web.Domain.Kategorie", "Kategorie")
                         .WithMany()
                         .HasForeignKey("KategorieId")
@@ -409,6 +477,8 @@ namespace Avis.Web.Data.Migrations
 
                     b.Navigation("Gruppe");
 
+                    b.Navigation("Inventargeraet");
+
                     b.Navigation("Kategorie");
 
                     b.Navigation("Kunde");
@@ -425,6 +495,23 @@ namespace Avis.Web.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Verlaufseintrag");
+                });
+
+            modelBuilder.Entity("Avis.Web.Domain.Inventargeraet", b =>
+                {
+                    b.HasOne("Avis.Web.Domain.Kunde", "Kunde")
+                        .WithMany()
+                        .HasForeignKey("KundeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Avis.Web.Domain.Standort", "Standort")
+                        .WithMany()
+                        .HasForeignKey("StandortId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Kunde");
+
+                    b.Navigation("Standort");
                 });
 
             modelBuilder.Entity("Avis.Web.Domain.Kunde", b =>

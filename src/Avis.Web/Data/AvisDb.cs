@@ -19,6 +19,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     public DbSet<Kategorie> Kategorien => Set<Kategorie>();
     public DbSet<Standort> Standorte => Set<Standort>();
     public DbSet<Benachrichtigung> Benachrichtigungen => Set<Benachrichtigung>();
+    public DbSet<Inventargeraet> Geraete => Set<Inventargeraet>();
 
     /// <summary>
     /// Ob zu neuen Verlaufseinträgen Mails vorgemerkt werden. Beim Anlegen
@@ -77,6 +78,12 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     private void SuchtexteAktualisieren()
     {
         foreach (var eintrag in ChangeTracker.Entries<Kunde>())
+        {
+            if (eintrag.State is EntityState.Added or EntityState.Modified)
+                eintrag.Entity.SuchtextAktualisieren();
+        }
+
+        foreach (var eintrag in ChangeTracker.Entries<Inventargeraet>())
         {
             if (eintrag.State is EntityState.Added or EntityState.Modified)
                 eintrag.Entity.SuchtextAktualisieren();
@@ -150,6 +157,18 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
         });
 
         model.Entity<Verlaufseintrag>(e => e.ToTable("Verlauf"));
+
+        model.Entity<Inventargeraet>(e =>
+        {
+            e.ToTable("Geraete");
+            e.Property(g => g.Inventarnummer).HasMaxLength(50);
+            e.Property(g => g.Nummernschluessel).HasMaxLength(50);
+            e.Property(g => g.Bezeichnung).HasMaxLength(200);
+            e.Property(g => g.Typ).HasMaxLength(100);
+            e.Property(g => g.ExterneKennung).HasMaxLength(200);
+            e.Property(g => g.Quelle).HasMaxLength(100);
+            e.HasIndex(g => g.Nummernschluessel).IsUnique();
+        });
 
         model.Entity<Benachrichtigung>(e =>
         {

@@ -27,8 +27,16 @@
         </select>
         <span asp-validation-for="StandortId" class="feldfehler"></span>
     </div>
+</div>
+<div class="reihe">
     <div class="feld">
-        <label asp-for="Geraet">Gerät</label>
+        <label asp-for="Inventarnummer">Gerät aus dem Inventar (Inventarnummer)</label>
+        <input asp-for="Inventarnummer" list="geraetevorschlaege" autocomplete="off" />
+        <datalist id="geraetevorschlaege" data-url="@Url.Page("/Geraete/Vorschlaege")"></datalist>
+        <span asp-validation-for="Inventarnummer" class="feldfehler"></span>
+    </div>
+    <div class="feld">
+        <label asp-for="Geraet">Gerät (Freitext)</label>
         <input asp-for="Geraet" />
         <span asp-validation-for="Geraet" class="feldfehler"></span>
     </div>

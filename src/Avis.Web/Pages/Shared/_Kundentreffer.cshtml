@@ -22,11 +22,11 @@ else if (!Model.Gesucht && Model.Treffer.Count == 0)
             </label>
         </li>
     }
-    @if (Model.NeuErlaubt)
+    @if (Model.Leertext is not null)
     {
         <li>
             <input type="radio" name="kundeId" id="kunde-neu" value="" checked="@(Model.GewaehltId is null)" />
-            <label for="kunde-neu">Neuer Kunde</label>
+            <label for="kunde-neu">@Model.Leertext</label>
         </li>
     }
 </ul>

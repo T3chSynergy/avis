@@ -21,6 +21,17 @@
         {
             <p class="erklaerung">Es werden die letzten @DetailsModel.Hoechstzahl abgeschlossenen Aufträge angezeigt.</p>
         }
+
+        @if (Model.Geraete.Count > 0)
+        {
+            <h2>Geräte</h2>
+            <ul>
+                @foreach (var g in Model.Geraete)
+                {
+                    <li><a asp-page="/Geraete/Details" asp-route-id="@g.Id">@g.Inventarnummer</a> · @g.Bezeichnung</li>
+                }
+            </ul>
+        }
     </section>
 
     <form method="post" class="kasten">

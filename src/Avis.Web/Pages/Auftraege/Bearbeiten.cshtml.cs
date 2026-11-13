@@ -88,5 +88,6 @@ public class BearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
         db.AuftraegeFuer(User.BenutzerId())
             .Include(a => a.Kategorie)
             .Include(a => a.Standort)
+            .Include(a => a.Inventargeraet)
             .FirstOrDefaultAsync(a => a.Id == id);
 }

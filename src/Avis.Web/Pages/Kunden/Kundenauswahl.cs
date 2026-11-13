@@ -16,14 +16,24 @@ public class Kundenauswahl
     public string? Suche { get; private init; }
     public int? GewaehltId { get; private init; }
 
-    /// <summary>Ob neben den Treffern auch "Neuer Kunde" zur Wahl steht.</summary>
-    public bool NeuErlaubt { get; private init; }
+    /// <summary>
+    /// Die Wahl ohne Kunden, die neben den Treffern steht: "neu" für einen
+    /// neuen Kunden, "kein" für keinen Kunden, sonst gibt es keine.
+    /// </summary>
+    public string? Leer { get; private init; }
+
+    public string? Leertext => Leer switch
+    {
+        "neu" => "Neuer Kunde",
+        "kein" => "Kein Kunde",
+        _ => null,
+    };
 
     public IReadOnlyList<Kunde> Treffer { get; private init; } = [];
     public bool Mehr { get; private init; }
     public bool Gesucht { get; private init; }
 
-    public static async Task<Kundenauswahl> LadenAsync(AvisDb db, string? suche, int? gewaehltId, bool neuErlaubt)
+    public static async Task<Kundenauswahl> LadenAsync(AvisDb db, string? suche, int? gewaehltId, string? leer = null)
     {
         var begriff = suche?.Trim() ?? "";
         var gesucht = begriff.Length >= Mindestlaenge;
@@ -55,7 +65,7 @@ public class Kundenauswahl
         {
             Suche = begriff,
             GewaehltId = gewaehltId,
-            NeuErlaubt = neuErlaubt,
+            Leer = leer,
             Treffer = treffer,
             Mehr = mehr,
             Gesucht = gesucht,
