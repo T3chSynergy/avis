@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -109,7 +110,7 @@ public class Benachrichtigungsversand(
         // Abwesenheitsnotizen und andere automatische Antworten sollen ausbleiben.
         nachricht.Headers.Add("Auto-Submitted", "auto-generated");
         nachricht.Headers.Add("X-Auto-Response-Suppress", "All");
-        nachricht.Headers.Add("X-AVIS-Auftrag", benachrichtigung.Verlaufseintrag.AuftragId.ToString());
+        nachricht.Headers.Add("X-AVIS-Auftrag", benachrichtigung.Verlaufseintrag.AuftragId.ToString(CultureInfo.InvariantCulture));
         return nachricht;
     }
 

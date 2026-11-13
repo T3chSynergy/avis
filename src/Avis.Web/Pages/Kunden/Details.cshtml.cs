@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -47,7 +48,7 @@ public class DetailsModel(AvisDb db) : PageModel
         Standorte = await db.Standorte.AsNoTracking()
             .Where(s => s.Aktiv || s.Id == kunde.StandortId)
             .OrderBy(s => s.Name)
-            .Select(s => new SelectListItem(s.Name, s.Id.ToString(), s.Id == kunde.StandortId))
+            .Select(s => new SelectListItem(s.Name, s.Id.ToString(CultureInfo.InvariantCulture), s.Id == kunde.StandortId))
             .ToListAsync();
         return Page();
     }

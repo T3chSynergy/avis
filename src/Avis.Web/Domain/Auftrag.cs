@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Avis.Web.Domain;
 
 public enum Stufe
@@ -184,7 +186,7 @@ public class Auftrag
         Vergleichen("Gerät aus dem Inventar", Inventargeraet?.Inventarnummer, neu.Inventargeraet?.Inventarnummer, InventargeraetId != neu.Inventargeraet?.Id);
         Vergleichen("Dringlichkeit", Dringlichkeit.Text(), neu.Dringlichkeit.Text(), Dringlichkeit != neu.Dringlichkeit);
         Vergleichen("Wichtigkeit", Wichtigkeit.Text(), neu.Wichtigkeit.Text(), Wichtigkeit != neu.Wichtigkeit);
-        Vergleichen("Termin", Termin?.ToString("dd.MM.yyyy"), neu.Termin?.ToString("dd.MM.yyyy"), Termin != neu.Termin);
+        Vergleichen("Termin", Termin?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), neu.Termin?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), Termin != neu.Termin);
 
         // Der alte Text der Beschreibung bleibt im Verlauf erhalten.
         string? bisherigeBeschreibung = null;

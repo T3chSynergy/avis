@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -68,12 +69,12 @@ public class IndexModel(AvisDb db) : PageModel
         Gruppen = await db.Gruppen.AsNoTracking()
             .Where(g => g.Aktiv)
             .OrderBy(g => g.Name)
-            .Select(g => new SelectListItem(g.Name, g.Id.ToString()))
+            .Select(g => new SelectListItem(g.Name, g.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         Bearbeiterliste = await db.Benutzer.AsNoTracking()
             .Where(b => b.Aktiv && b.IstBearbeiter)
             .OrderBy(b => b.Name)
-            .Select(b => new SelectListItem(b.Name, b.Id.ToString()))
+            .Select(b => new SelectListItem(b.Name, b.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         return Page();
     }

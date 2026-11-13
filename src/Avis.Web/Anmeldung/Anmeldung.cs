@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Claims;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -90,7 +91,7 @@ public static class AnmeldungExtensions
     /// <summary>Die Id des angemeldeten Benutzers in der Benutzertabelle.</summary>
     public static int BenutzerId(this ClaimsPrincipal user) =>
         int.Parse(user.FindFirstValue(BenutzerIdClaim)
-            ?? throw new InvalidOperationException("Kein angemeldeter Benutzer."));
+            ?? throw new InvalidOperationException("Kein angemeldeter Benutzer."), CultureInfo.InvariantCulture);
 
     public static string Anzeigename(this ClaimsPrincipal user) =>
         user.FindFirstValue("avis:name") ?? user.Identity?.Name ?? "";
@@ -105,7 +106,7 @@ public static class AnmeldungExtensions
     internal static ClaimsIdentity AlsIdentity(Benutzer benutzer)
     {
         var identity = new ClaimsIdentity("Avis");
-        identity.AddClaim(new Claim(BenutzerIdClaim, benutzer.Id.ToString()));
+        identity.AddClaim(new Claim(BenutzerIdClaim, benutzer.Id.ToString(CultureInfo.InvariantCulture)));
         identity.AddClaim(new Claim("avis:name", benutzer.Name));
         if (benutzer.IstBearbeiter)
             identity.AddClaim(new Claim(ClaimTypes.Role, Rollen.Bearbeiter));

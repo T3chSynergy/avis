@@ -44,7 +44,8 @@ public class VerwaltungTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var doppelt = await anna.PostFormularAsync("/Verwaltung/Gruppen", "/Verwaltung/Gruppen", new() { ["name"] = "telefonie" });
 
         Assert.Contains("gibt es schon", await doppelt.Content.ReadAsStringAsync());
-        Assert.Equal(1, await app.DatenbankAsync(db => db.Gruppen.CountAsync(g => g.Name.ToLower() == "telefonie")));
+        var gruppen = await app.DatenbankAsync(db => db.Gruppen.Select(g => g.Name).ToListAsync());
+        Assert.Single(gruppen, n => n.Equals("telefonie", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -142,7 +143,8 @@ public class VerwaltungTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var antwort = await anna.PostFormularAsync(seite, $"{seite}?handler=Anlegen", new() { ["name"] = "haupthaus" });
 
         Assert.Contains("gibt es schon", await antwort.Content.ReadAsStringAsync());
-        Assert.Equal(1, await app.DatenbankAsync(db => db.Standorte.CountAsync(s => s.Name.ToLower() == "haupthaus")));
+        var standorte = await app.DatenbankAsync(db => db.Standorte.Select(s => s.Name).ToListAsync());
+        Assert.Single(standorte, n => n.Equals("haupthaus", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avis.Web.Domain;
 using Microsoft.Data.Sqlite;
 
@@ -29,10 +30,10 @@ public class Ortszeit(IConfiguration konfiguration)
         TimeZoneInfo.FindSystemTimeZoneById(konfiguration["Zeitzone"] ?? "Europe/Berlin");
 
     public string Anzeigen(DateTime utc) =>
-        TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), _zone).ToString("dd.MM.yyyy HH:mm");
+        TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), _zone).ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture);
 
     public string Datum(DateTime utc) =>
-        TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), _zone).ToString("dd.MM.yyyy");
+        TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), _zone).ToString("dd.MM.yyyy", CultureInfo.InvariantCulture);
 
     /// <summary>Das heutige Datum in der eingestellten Zeitzone.</summary>
     public DateOnly Heute(TimeProvider uhr) =>

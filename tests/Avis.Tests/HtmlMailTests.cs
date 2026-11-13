@@ -294,7 +294,7 @@ public class HtmlMailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var bildImText = $"<a href=\"/Anhaenge/{bild.Id}?bild=true\"";
         Assert.Contains(bildImText, seite);
         Assert.Contains($"<img src=\"/Anhaenge/{bild.Id}?bild=true\" alt=\"Fehlermeldung\" />", seite);
-        Assert.True(seite.IndexOf("diese Meldung") < seite.IndexOf(bildImText) && seite.IndexOf(bildImText) < seite.IndexOf("Danach geht nichts mehr."));
+        Assert.True(seite.IndexOf("diese Meldung", StringComparison.Ordinal) < seite.IndexOf(bildImText, StringComparison.Ordinal) && seite.IndexOf(bildImText, StringComparison.Ordinal) < seite.IndexOf("Danach geht nichts mehr.", StringComparison.Ordinal));
         Assert.DoesNotContain("<ul class=\"bilder\">", seite);
         Assert.DoesNotContain("cid:", seite);
 

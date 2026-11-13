@@ -140,7 +140,7 @@ public class MarkdownTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var anna = await app.AnmeldenAlsAsync("anna");
         var id = await ErfassenAsync(anna, "Mit Bildschirmfoto", ("Bildschirmfoto 2026-11-13.png", Png), ("foto.jpg", Jpeg), ("protokoll.txt", "Fehler\n"u8.ToArray()));
         var anhaenge = await AnhaengeAsync(id);
-        var bild = anhaenge.Single(a => a.Dateiname.EndsWith(".png"));
+        var bild = anhaenge.Single(a => a.Dateiname.EndsWith(".png", StringComparison.Ordinal));
         var text = anhaenge.Single(a => a.Dateiname == "protokoll.txt");
         Assert.Equal(("image/png", "image/jpeg", null), (bild.Bildtyp, anhaenge.Single(a => a.Dateiname == "foto.jpg").Bildtyp, text.Bildtyp));
 

@@ -1,0 +1,34 @@
+# Regeln für Formatierung und Codeanalyse. Editoren, `dotnet format` und der
+# Build lesen diese Datei.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.{cs,cshtml}]
+indent_size = 4
+
+[*.cs]
+# Regeln der Codeanalyse, die zu AVIS nicht passen:
+# Der Ordner Pages/Shared ist bei Razor Pages so vorgegeben.
+dotnet_diagnostic.CA1716.severity = none
+# Parameter heißen auch in überschriebenen Methoden deutsch.
+dotnet_diagnostic.CA1725.severity = none
+# Bei der Menge an Protokollzeilen lohnt es nicht, das Protokollieren zu beschleunigen.
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
+
+# Migrationen erzeugt `dotnet ef`; sie werden nicht geprüft und nicht formatiert.
+[src/Avis.Web/Data/Migrations/*.cs]
+generated_code = true
+
+[tests/**.cs]
+# Testnamen sind Sätze mit Unterstrichen.
+dotnet_diagnostic.CA1707.severity = none
+# Tests schreiben ganze Zahlen als Formularwerte und lesen sie aus Adressen;
+# die sehen in jeder Sprache gleich aus.
+dotnet_diagnostic.CA1305.severity = none
