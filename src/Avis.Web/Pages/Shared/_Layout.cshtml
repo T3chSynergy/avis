@@ -21,17 +21,17 @@
             {
                 <form method="get" asp-page="/Auftraege/Index" class="schnellsuche" role="search">
                     <label class="unsichtbar" for="schnellsuche">Aufträge suchen</label>
-                    <input id="schnellsuche" name="q" type="search" placeholder="Auftragsnummer oder Suchbegriff" autocomplete="off" />
+                    <input id="schnellsuche" name="q" type="search" placeholder="Auftragsnummer oder Suchbegriff" autocomplete="off" title="Tastenkürzel: Alt+S" />
                 </form>
             }
             <div class="kopf-rechts">
                 @if (User.IstBearbeiter())
                 {
-                    <a class="neu" asp-page="/Auftraege/Neu" aria-current="@Aktuell("/Auftraege/Neu")"><span aria-hidden="true">+</span> Auftrag erfassen</a>
+                    <a class="neu" asp-page="/Auftraege/Neu" aria-current="@Aktuell("/Auftraege/Neu")" title="Tastenkürzel: Alt+N"><span aria-hidden="true">+</span> Auftrag erfassen</a>
                 }
                 else if (User.IstAngemeldet())
                 {
-                    <a class="neu" asp-page="/Meine/Neu" aria-current="@Aktuell("/Meine/Neu")"><span aria-hidden="true">+</span> Neuer Auftrag</a>
+                    <a class="neu" asp-page="/Meine/Neu" aria-current="@Aktuell("/Meine/Neu")" title="Tastenkürzel: Alt+N"><span aria-hidden="true">+</span> Neuer Auftrag</a>
                 }
                 @if (User.Identity?.IsAuthenticated == true)
                 {

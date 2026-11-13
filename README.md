@@ -52,6 +52,18 @@ Start frische Testdaten.
 Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
 `src/Avis.Web/App_Data/Mails` abgelegt. Ein Mailprogramm öffnet sie.
 
+## Bedienung
+
+- Alt+N öffnet auf jeder Seite „Auftrag erfassen", für Kunden „Neuer Auftrag".
+- Alt+S springt in das Suchfeld im Kopf.
+- Strg+Eingabe sendet auf der Auftragsseite das Formular ab, in dem man gerade
+  schreibt.
+
+Die Tastenkürzel brauchen JavaScript. Ohne funktioniert alles andere genauso.
+
+Blau steht in der Oberfläche für alles, was man anklicken kann: Schaltflächen
+und Links. Der Kopf und Markierungen nutzen es nicht.
+
 ## Testen
 
 ```bash

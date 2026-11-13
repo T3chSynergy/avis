@@ -19,64 +19,64 @@
     }
 </div>
 
-<div class="spalten">
-    <section aria-labelledby="h-auftrag">
-        <h2 id="h-auftrag">Auftrag</h2>
-        <p class="text">@a.Beschreibung</p>
-        <dl class="angaben">
-            <dt>Erstellt</dt>
-            <dd>@Ortszeit.Anzeigen(a.ErstelltAm)</dd>
-            <dt>Standort</dt>
-            <dd>@(a.Standort?.Name ?? "–")</dd>
-            <dt>Gerät</dt>
-            <dd>@(a.Geraet ?? "–")</dd>
-            @if (a.Termin is not null)
-            {
-                <dt>Termin</dt>
-                <dd>@a.Termin.Value.ToString("dd.MM.yyyy")</dd>
-            }
-        </dl>
-
-        <h2>Verlauf</h2>
-        <ol class="verlauf">
-            @foreach (var v in Model.Verlauf)
-            {
-                <li>
-                    <div class="kopfzeile">
-                        <strong>@DetailsModel.Titel(v.Art)</strong>
-                        <span>@(!DetailsModel.VomKunden(v.Art) ? "IT" : v.Benutzer.Anmeldename == Avis.Web.Posteingang.Mailannahme.Systemkonto ? "per E-Mail" : v.Benutzer.Name) · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
-                    </div>
-                    @if (DetailsModel.ZeigtText(v.Art) && v.Text is not null)
-                    {
-                        <p class="text">@v.Text</p>
-                    }
-                    <partial name="_Anhaenge" model="v.Anhaenge" />
-                </li>
-            }
-        </ol>
-    </section>
-
-    <section class="aktionen" aria-labelledby="h-antwort">
-        @if (a.Status == AuftragStatus.Abgeschlossen)
+<section aria-labelledby="h-auftrag">
+    <h2 id="h-auftrag">Auftrag</h2>
+    <p class="text">@a.Beschreibung</p>
+    <dl class="angaben">
+        <dt>Erstellt</dt>
+        <dd>@Ortszeit.Anzeigen(a.ErstelltAm)</dd>
+        <dt>Standort</dt>
+        <dd>@(a.Standort?.Name ?? "–")</dd>
+        <dt>Gerät</dt>
+        <dd>@(a.Geraet ?? "–")</dd>
+        @if (a.Termin is not null)
         {
-            <h2 id="h-antwort">Wieder öffnen</h2>
-            <form method="post" enctype="multipart/form-data">
-                <p class="erklaerung">Der Auftrag ist abgeschlossen. Besteht das Problem weiter, lässt er sich hier wieder öffnen.</p>
-                <label for="text">Was ist noch offen?</label>
-                <textarea id="text" name="text" rows="5"></textarea>
-                <partial name="_Dateifeld" model='"dateien"' />
-                <button type="submit" class="haupt">Auftrag wieder öffnen</button>
-            </form>
+            <dt>Termin</dt>
+            <dd>@a.Termin.Value.ToString("dd.MM.yyyy")</dd>
         }
-        else
+    </dl>
+</section>
+
+<section aria-labelledby="h-verlauf">
+    <h2 id="h-verlauf">Verlauf</h2>
+    <ol class="verlauf">
+        @foreach (var v in Model.Verlauf)
         {
-            <h2 id="h-antwort">Antworten</h2>
-            <form method="post" enctype="multipart/form-data">
-                <label for="text">Nachricht an die IT</label>
-                <textarea id="text" name="text" rows="5"></textarea>
-                <partial name="_Dateifeld" model='"dateien"' />
-                <button type="submit" class="haupt">Absenden</button>
-            </form>
+            <li>
+                <div class="kopfzeile">
+                    <strong>@DetailsModel.Titel(v.Art)</strong>
+                    <span>@(!DetailsModel.VomKunden(v.Art) ? "IT" : v.Benutzer.Anmeldename == Avis.Web.Posteingang.Mailannahme.Systemkonto ? "per E-Mail" : v.Benutzer.Name) · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
+                </div>
+                @if (DetailsModel.ZeigtText(v.Art) && v.Text is not null)
+                {
+                    <p class="text">@v.Text</p>
+                }
+                <partial name="_Anhaenge" model="v.Anhaenge" />
+            </li>
         }
-    </section>
-</div>
+    </ol>
+</section>
+
+<section class="kasten breit" aria-labelledby="h-antwort">
+    @if (a.Status == AuftragStatus.Abgeschlossen)
+    {
+        <h2 id="h-antwort">Wieder öffnen</h2>
+        <form method="post" enctype="multipart/form-data">
+            <p class="erklaerung">Der Auftrag ist abgeschlossen. Besteht das Problem weiter, lässt er sich hier wieder öffnen.</p>
+            <label for="text">Was ist noch offen?</label>
+            <textarea id="text" name="text" rows="6">@Model.Entwurf</textarea>
+            <partial name="_Dateifeld" model='"dateien"' />
+            <button type="submit" class="haupt">Auftrag wieder öffnen</button>
+        </form>
+    }
+    else
+    {
+        <h2 id="h-antwort">Antworten</h2>
+        <form method="post" enctype="multipart/form-data">
+            <label for="text">Nachricht an die IT</label>
+            <textarea id="text" name="text" rows="6">@Model.Entwurf</textarea>
+            <partial name="_Dateifeld" model='"dateien"' />
+            <button type="submit" class="haupt">Absenden</button>
+        </form>
+    }
+</section>

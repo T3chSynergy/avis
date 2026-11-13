@@ -100,6 +100,13 @@ public class Auftrag
     public DateTime? AbgeschlossenAm { get; private set; }
 
     /// <summary>
+    /// Seit wann der Kunde auf eine Reaktion wartet: gesetzt, wenn er antwortet
+    /// oder den Auftrag wieder öffnet, und geleert, sobald die IT ihm schreibt
+    /// oder den Auftrag abschließt.
+    /// </summary>
+    public DateTime? KundeWartetSeit { get; private set; }
+
+    /// <summary>
     /// Zählt hoch, wenn sich Gruppe, Bearbeiter, Abschluss oder Angaben
     /// ändern. Damit fällt auf, wenn jemand auf einem veralteten Stand der
     /// Seite eine Aktion auslöst. Kommentare zählen nicht.
@@ -253,6 +260,7 @@ public class Auftrag
     {
         NichtAbgeschlossen();
         TextOderAnhang(text, anhaenge);
+        KundeWartetSeit = null;
         Eintragen(VerlaufArt.NachrichtAnKunden, durch, jetzt, null, text, aendertDenStand: false, anhaenge);
     }
 
@@ -261,6 +269,7 @@ public class Auftrag
     {
         NichtAbgeschlossen();
         TextOderAnhang(text, anhaenge);
+        KundeWartetSeit ??= jetzt;
         Eintragen(VerlaufArt.AntwortDesKunden, durch, jetzt, null, text, aendertDenStand: false, anhaenge);
     }
 
@@ -272,6 +281,7 @@ public class Auftrag
             throw new AuftragException("Nur der zuständige Bearbeiter kann abschließen. Übernimm den Auftrag zuerst.");
 
         AbgeschlossenAm = jetzt;
+        KundeWartetSeit = null;
         Eintragen(VerlaufArt.Abgeschlossen, durch, jetzt, null, abschlusstext);
     }
 
@@ -304,6 +314,7 @@ public class Auftrag
             beschreibung += $", bevorzugt an {bisher.Name}";
 
         AbgeschlossenAm = null;
+        KundeWartetSeit = jetzt;
         Bearbeiter = null;
         BearbeiterId = null;
         BevorzugterBearbeiter = bisher;

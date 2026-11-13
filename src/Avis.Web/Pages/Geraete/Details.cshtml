@@ -10,10 +10,10 @@
 <div class="spalten">
     <section aria-labelledby="h-auftraege">
         <h2 id="h-auftraege">Laufende Aufträge</h2>
-        <partial name="_Auftragsliste" model="Model.Laufend" />
+        <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Laufend)" />
 
         <h2>Abgeschlossene Aufträge</h2>
-        <partial name="_Auftragsliste" model="Model.Abgeschlossen" />
+        <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Abgeschlossen)" />
         @if (Model.Gekuerzt)
         {
             <p class="erklaerung">Es werden die letzten @DetailsModel.Hoechstzahl abgeschlossenen Aufträge angezeigt.</p>

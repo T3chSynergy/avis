@@ -1,10 +1,14 @@
 @page "/Auftraege/{id:int}"
 @model Avis.Web.Pages.Auftraege.DetailsModel
+@inject TimeProvider Uhr
 @{
     var a = Model.Auftrag;
     ViewData["Title"] = $"Auftrag {a.Id}";
     var ich = User.BenutzerId();
     var meiner = a.BearbeiterId == ich;
+    var laeuft = a.Status != AuftragStatus.Abgeschlossen;
+    var heute = Ortszeit.Heute(Uhr);
+    string? Entwurf(string aktion) => Model.OffeneAktion == aktion ? Model.Entwurf : null;
 }
 <p class="pfad">Auftrag @a.Id</p>
 <h1>@a.Betreff</h1>
@@ -18,35 +22,181 @@
         @if (a.Status == AuftragStatus.Offen && a.BevorzugterBearbeiter is not null)
         {<text>, bevorzugt an <strong>@a.BevorzugterBearbeiter.Name</strong></text>}
     </span>
+    @if (a.KundeWartetSeit is not null && laeuft)
+    {
+        <span class="marke-wartet" title="seit @Ortszeit.Anzeigen(a.KundeWartetSeit.Value)">Kunde wartet seit @Anzeige.Dauer(Uhr.GetUtcNow().UtcDateTime - a.KundeWartetSeit.Value)</span>
+    }
 </div>
 
 <div class="spalten">
-    <section aria-labelledby="h-auftrag">
-        <h2 id="h-auftrag">
-            Auftrag
-            @if (a.Status != AuftragStatus.Abgeschlossen)
+    <div>
+        <section aria-labelledby="h-beschreibung">
+            <h2 id="h-beschreibung">Beschreibung</h2>
+            <p class="text">@a.Beschreibung</p>
+        </section>
+
+        @* Die Schaltflächen wählen, welches Formular darunter aufgeht. Das geht ohne Skript. *@
+        <section class="aktionen" aria-labelledby="h-aktionen">
+            <h2 id="h-aktionen" class="unsichtbar">Aktionen</h2>
+            <div class="leiste">
+                @if (!laeuft)
+                {
+                    <label class="knopf wahl haupt"><input type="radio" name="aktion" value="oeffnen" class="unsichtbar" checked="@(Model.OffeneAktion == "oeffnen")" /> Wieder öffnen</label>
+                }
+                else
+                {
+                    @if (meiner)
+                    {
+                        <label class="knopf wahl haupt"><input type="radio" name="aktion" value="abschliessen" class="unsichtbar" checked="@(Model.OffeneAktion == "abschliessen")" /> Abschließen</label>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="Uebernehmen">
+                            <input type="hidden" name="version" value="@a.Version" />
+                            <button type="submit" class="haupt">@(a.Status == AuftragStatus.Offen ? "Übernehmen" : $"Von {a.Bearbeiter!.Name} übernehmen")</button>
+                        </form>
+                    }
+                    <label class="knopf wahl"><input type="radio" name="aktion" value="nachricht" class="unsichtbar" checked="@(Model.OffeneAktion == "nachricht")" /> Nachricht an den Kunden</label>
+                }
+                <label class="knopf wahl intern"><input type="radio" name="aktion" value="intern" class="unsichtbar" checked="@(Model.OffeneAktion == "intern")" /> Interner Kommentar</label>
+                @if (laeuft)
+                {
+                    <label class="knopf wahl"><input type="radio" name="aktion" value="weiterleiten" class="unsichtbar" checked="@(Model.OffeneAktion == "weiterleiten")" /> Weiterleiten</label>
+                }
+            </div>
+
+            @if (!laeuft)
             {
-                <a class="nebenaktion" asp-page="Bearbeiten" asp-route-id="@a.Id">Bearbeiten</a>
+                <div class="panel" data-aktion="oeffnen">
+                    <div class="panelkopf">
+                        <h3>Wieder öffnen</h3>
+                        <label class="schliessen"><input type="radio" name="aktion" value="" class="unsichtbar" /> Schließen</label>
+                    </div>
+                    <form method="post" asp-page-handler="WiederOeffnen">
+                        <input type="hidden" name="version" value="@a.Version" />
+                        <label for="oeffnen-text">Grund (intern, optional)</label>
+                        <textarea id="oeffnen-text" name="text" rows="3">@Entwurf("oeffnen")</textarea>
+                        <button type="submit" class="haupt">Wieder öffnen</button>
+                    </form>
+                </div>
             }
-        </h2>
-        <p class="text">@a.Beschreibung</p>
+            else
+            {
+                @if (meiner)
+                {
+                    <div class="panel" data-aktion="abschliessen">
+                        <div class="panelkopf">
+                            <h3>Abschließen</h3>
+                            <label class="schliessen"><input type="radio" name="aktion" value="" class="unsichtbar" /> Schließen</label>
+                        </div>
+                        <form method="post" asp-page-handler="Abschliessen">
+                            <input type="hidden" name="version" value="@a.Version" />
+                            <label for="abschluss-text">Abschlusstext. Der Kunde bekommt ihn per Mail.</label>
+                            <textarea id="abschluss-text" name="text" rows="6" required>@Entwurf("abschliessen")</textarea>
+                            <button type="submit" class="haupt">Auftrag abschließen</button>
+                        </form>
+                    </div>
+                }
+
+                <div class="panel" data-aktion="nachricht">
+                    <div class="panelkopf">
+                        <h3>Nachricht an den Kunden</h3>
+                        <label class="schliessen"><input type="radio" name="aktion" value="" class="unsichtbar" /> Schließen</label>
+                    </div>
+                    <form method="post" asp-page-handler="NachrichtAnKunden" enctype="multipart/form-data">
+                        <input type="hidden" name="version" value="@a.Version" />
+                        <label for="kunde-text">@a.Kunde.Name sieht diesen Text und die Anhänge und bekommt eine Mail.</label>
+                        <textarea id="kunde-text" name="text" rows="8">@Entwurf("nachricht")</textarea>
+                        <partial name="_Dateifeld" model='"kunde-dateien"' />
+                        <button type="submit" class="haupt">An den Kunden senden</button>
+                    </form>
+                </div>
+
+                <div class="panel" data-aktion="weiterleiten">
+                    <div class="panelkopf">
+                        <h3>Weiterleiten</h3>
+                        <label class="schliessen"><input type="radio" name="aktion" value="" class="unsichtbar" /> Schließen</label>
+                    </div>
+                    <form method="post" asp-page-handler="Weiterleiten">
+                        <input type="hidden" name="version" value="@a.Version" />
+                        <div class="reihe">
+                            <div class="feld">
+                                <label for="ziel">An Gruppe</label>
+                                <select id="ziel" name="gruppeId" asp-items="Model.Gruppen" required>
+                                    <option value="">Bitte wählen</option>
+                                </select>
+                            </div>
+                            <div class="feld">
+                                <label for="bevorzugt">Bevorzugter Bearbeiter (optional)</label>
+                                <select id="bevorzugt" name="bevorzugtId" asp-items="Model.Bearbeiter">
+                                    <option value="">–</option>
+                                </select>
+                            </div>
+                        </div>
+                        <label for="weiter-text">Hinweis an die Gruppe (intern, optional)</label>
+                        <textarea id="weiter-text" name="text" rows="4">@Entwurf("weiterleiten")</textarea>
+                        @if (a.Gruppe.Gesperrt)
+                        {
+                            <p class="erklaerung">Außerhalb der gesperrten Gruppe @a.Gruppe.Name sehen alle Bearbeiter den Auftrag mit seinem ganzen Verlauf.</p>
+                        }
+                        <button type="submit" class="haupt">Weiterleiten</button>
+                    </form>
+                </div>
+            }
+
+            <div class="panel intern" data-aktion="intern">
+                <div class="panelkopf">
+                    <h3>Interner Kommentar</h3>
+                    <label class="schliessen"><input type="radio" name="aktion" value="" class="unsichtbar" /> Schließen</label>
+                </div>
+                <form method="post" asp-page-handler="InternerKommentar" enctype="multipart/form-data">
+                    <input type="hidden" name="version" value="@a.Version" />
+                    <label for="intern-text">Der Kunde sieht weder diesen Text noch die Anhänge.</label>
+                    <textarea id="intern-text" name="text" rows="8">@Entwurf("intern")</textarea>
+                    <partial name="_Dateifeld" model='"intern-dateien"' />
+                    <button type="submit" class="haupt">Intern speichern</button>
+                </form>
+            </div>
+        </section>
+
+        <section aria-labelledby="h-verlauf">
+            <h2 id="h-verlauf">Verlauf <span class="nebenaktion">neueste Einträge zuerst</span></h2>
+            <ol class="verlauf">
+                @foreach (var v in a.Verlauf.OrderByDescending(v => v.Zeitpunkt).ThenByDescending(v => v.Id))
+                {
+                    <li class="@(v.FuerKundenSichtbar ? "" : "intern")">
+                        <div class="kopfzeile">
+                            <strong>@v.Art.Text()</strong>
+                            <span>@v.Benutzer.Name · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
+                            @if (!v.FuerKundenSichtbar) { <span class="hinweis">intern</span> }
+                        </div>
+                        @if (v.Beschreibung is not null) { <p class="text">@v.Beschreibung</p> }
+                        @if (v.Text is not null) { <p class="text">@v.Text</p> }
+                        <partial name="_Anhaenge" model="v.Anhaenge" />
+                    </li>
+                }
+            </ol>
+        </section>
+    </div>
+
+    <aside class="kasten" aria-labelledby="h-angaben">
+        <h2 id="h-angaben">Angaben</h2>
         <dl class="angaben">
             <dt>Kunde</dt>
             <dd>
                 <a asp-page="/Kunden/Details" asp-route-id="@a.KundeId">@a.Kunde.Name</a>
-                @if (a.Kunde.Email is not null) {<text> · <a href="mailto:@a.Kunde.Email">@a.Kunde.Email</a></text>}
-                @if (a.Kunde.Telefon is not null) {<text> · Tel. @a.Kunde.Telefon</text>}
-                @if (a.Status != AuftragStatus.Abgeschlossen)
-                {
-                    <a class="nebenaktion" asp-page="KundeAendern" asp-route-id="@a.Id">Kunde ändern</a>
-                }
+                @if (a.Kunde.Email is not null) {<br /><a href="mailto:@a.Kunde.Email">@a.Kunde.Email</a>}
+                @if (a.Kunde.Telefon is not null) {<br /><text>Tel. @a.Kunde.Telefon</text>}
             </dd>
-            <dt>Dringlichkeit</dt>
-            <dd>@a.Dringlichkeit.Text()</dd>
-            <dt>Wichtigkeit</dt>
-            <dd>@a.Wichtigkeit.Text()</dd>
+            <dt>Priorität</dt>
+            <dd>P@(a.Prioritaet) · Dringlichkeit @a.Dringlichkeit.Text(), Wichtigkeit @a.Wichtigkeit.Text()</dd>
             <dt>Termin</dt>
-            <dd>@(a.Termin?.ToString("dd.MM.yyyy") ?? "–")</dd>
+            <dd>
+                @if (a.Termin is not { } termin) {<text>–</text>}
+                else if (laeuft && termin < heute) { <span class="termin ueberfaellig">@termin.ToString("dd.MM.yyyy") <strong>überfällig</strong></span> }
+                else if (laeuft && termin == heute) { <span class="termin heute">@termin.ToString("dd.MM.yyyy") <strong>heute</strong></span> }
+                else {<text>@termin.ToString("dd.MM.yyyy")</text>}
+            </dd>
             <dt>Kategorie</dt>
             <dd>@(a.Kategorie?.Name ?? "–")</dd>
             <dt>Standort</dt>
@@ -56,105 +206,25 @@
                 @if (a.Inventargeraet is not null)
                 {
                     <a asp-page="/Geraete/Details" asp-route-id="@a.InventargeraetId">@a.Inventargeraet.Inventarnummer</a><text> · @a.Inventargeraet.Bezeichnung</text>
-                    @if (a.Geraet is not null) {<text> · </text>}
+                    @if (a.Geraet is not null) {<br />}
                 }
                 @(a.Geraet ?? (a.Inventargeraet is null ? "–" : ""))
             </dd>
             <dt>Eingang</dt>
-            <dd>@a.Eingang.Text(), erfasst von @a.ErfasstVon.Name am @Ortszeit.Anzeigen(a.ErstelltAm)</dd>
+            <dd>@a.Eingang.Text(), erfasst von @a.ErfasstVon.Name</dd>
+            <dt>Erstellt</dt>
+            <dd>@Ortszeit.Anzeigen(a.ErstelltAm)</dd>
         </dl>
-
-        <h2>Verlauf</h2>
-        <ol class="verlauf">
-            @foreach (var v in a.Verlauf.OrderBy(v => v.Zeitpunkt).ThenBy(v => v.Id))
-            {
-                <li class="@(v.FuerKundenSichtbar ? "" : "intern")">
-                    <div class="kopfzeile">
-                        <strong>@v.Art.Text()</strong>
-                        <span>@v.Benutzer.Name · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
-                        @if (!v.FuerKundenSichtbar) { <span class="hinweis">intern</span> }
-                    </div>
-                    @if (v.Beschreibung is not null) { <p class="text">@v.Beschreibung</p> }
-                    @if (v.Text is not null) { <p class="text">@v.Text</p> }
-                    <partial name="_Anhaenge" model="v.Anhaenge" />
-                </li>
-            }
-        </ol>
-    </section>
-
-    <section class="aktionen" aria-labelledby="h-aktionen">
-        <h2 id="h-aktionen">Aktionen</h2>
-
-        @if (a.Status == AuftragStatus.Abgeschlossen)
+        @if (laeuft)
         {
-            <form method="post" asp-page-handler="WiederOeffnen">
-                <input type="hidden" name="version" value="@a.Version" />
-                <h3>Wieder öffnen</h3>
-                <label for="oeffnen-text">Grund (optional)</label>
-                <textarea id="oeffnen-text" name="text" rows="2"></textarea>
-                <button type="submit">Wieder öffnen</button>
-            </form>
+            <p class="nebenlinks">
+                <a asp-page="Bearbeiten" asp-route-id="@a.Id">Angaben bearbeiten</a>
+                <a asp-page="KundeAendern" asp-route-id="@a.Id">Kunde ändern</a>
+            </p>
         }
-        else
-        {
-            @if (!meiner)
-            {
-                <form method="post" asp-page-handler="Uebernehmen">
-                    <input type="hidden" name="version" value="@a.Version" />
-                    <button type="submit" class="haupt">
-                        @(a.Status == AuftragStatus.Offen ? "Übernehmen" : $"Von {a.Bearbeiter!.Name} übernehmen")
-                    </button>
-                </form>
-            }
-
-            <form method="post" asp-page-handler="Weiterleiten">
-                <input type="hidden" name="version" value="@a.Version" />
-                <h3>Weiterleiten</h3>
-                <label for="ziel">An Gruppe</label>
-                <select id="ziel" name="gruppeId" asp-items="Model.Gruppen" required>
-                    <option value="">Bitte wählen</option>
-                </select>
-                <label for="bevorzugt">Bevorzugter Bearbeiter (optional)</label>
-                <select id="bevorzugt" name="bevorzugtId" asp-items="Model.Bearbeiter">
-                    <option value="">–</option>
-                </select>
-                <label for="weiter-text">Hinweis an die Gruppe (intern, optional)</label>
-                <textarea id="weiter-text" name="text" rows="2"></textarea>
-                @if (a.Gruppe.Gesperrt)
-                {
-                    <p class="erklaerung">Außerhalb der gesperrten Gruppe @a.Gruppe.Name sehen alle Bearbeiter den Auftrag mit seinem ganzen Verlauf.</p>
-                }
-                <button type="submit">Weiterleiten</button>
-            </form>
-
-            <form method="post" asp-page-handler="NachrichtAnKunden" enctype="multipart/form-data">
-                <input type="hidden" name="version" value="@a.Version" />
-                <h3>Nachricht an den Kunden</h3>
-                <label for="kunde-text">Der Kunde sieht diesen Text und die Anhänge.</label>
-                <textarea id="kunde-text" name="text" rows="3"></textarea>
-                <partial name="_Dateifeld" model='"kunde-dateien"' />
-                <button type="submit">An den Kunden senden</button>
-            </form>
-
-            @if (meiner)
-            {
-                <form method="post" asp-page-handler="Abschliessen">
-                    <input type="hidden" name="version" value="@a.Version" />
-                    <h3>Abschließen</h3>
-                    <label for="abschluss-text">Abschlusstext für den Kunden</label>
-                    <textarea id="abschluss-text" name="text" rows="3" required></textarea>
-                    <button type="submit" class="haupt">Abschließen</button>
-                </form>
-            }
-        }
-
-        <form method="post" asp-page-handler="InternerKommentar" class="intern" enctype="multipart/form-data">
-            <input type="hidden" name="version" value="@a.Version" />
-            <h3>Interner Kommentar</h3>
-            <label for="intern-text">Der Kunde sieht weder diesen Text noch die Anhänge.</label>
-            <textarea id="intern-text" name="text" rows="3"></textarea>
-            <partial name="_Dateifeld" model='"intern-dateien"' />
-            <button type="submit">Intern speichern</button>
-        </form>
-    </section>
+    </aside>
 </div>
+
+@section Scripts {
+    <script src="~/js/auftrag.js" asp-append-version="true"></script>
+}

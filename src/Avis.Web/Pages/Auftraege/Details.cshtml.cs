@@ -18,6 +18,13 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
     public List<SelectListItem> Gruppen { get; private set; } = [];
     public List<SelectListItem> Bearbeiter { get; private set; } = [];
 
+    /// <summary>
+    /// Nach einem Fehler: welches Formular wieder aufgeht und was darin
+    /// stand, damit ein geschriebener Text nicht verloren geht.
+    /// </summary>
+    public string? OffeneAktion { get; private set; }
+    public string? Entwurf { get; private set; }
+
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var auftrag = await db.AuftraegeFuer(User.BenutzerId())
@@ -38,6 +45,8 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
             return NotFound();
 
         Auftrag = auftrag;
+        OffeneAktion = TempData["Aktion"] as string;
+        Entwurf = TempData["Entwurf"] as string;
         Gruppen = await db.Gruppen.AsNoTracking()
             .Where(g => g.Aktiv)
             .OrderBy(g => g.Name)
@@ -68,17 +77,17 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
                 && !await db.Gruppen.AnyAsync(g => g.Id == ziel.Id && g.Mitglieder.Any(m => m.Id == bevorzugt.Id)))
                 throw new AuftragException($"{bevorzugt.Name} ist kein Mitglied der gesperrten Gruppe {ziel.Name}.");
             auftrag.Weiterleiten(ziel, ich, jetzt, bevorzugt, text);
-        });
+        }, formular: "weiterleiten", entwurf: text);
 
     public Task<IActionResult> OnPostInternerKommentarAsync(int id, int version, string? text, List<IFormFile> dateien) =>
         AusfuehrenAsync(id, version, "Der interne Kommentar wurde gespeichert.",
             async (auftrag, ich, jetzt) => auftrag.InternKommentieren(ich, text, jetzt, await AnhaengeSpeichernAsync(dateien)),
-            versionPruefen: false);
+            versionPruefen: false, formular: "intern", entwurf: text);
 
     public Task<IActionResult> OnPostNachrichtAnKundenAsync(int id, int version, string? text, List<IFormFile> dateien) =>
         AusfuehrenAsync(id, version, "Die Nachricht an den Kunden wurde gespeichert.",
             async (auftrag, ich, jetzt) => auftrag.NachrichtAnKunden(ich, text, jetzt, await AnhaengeSpeichernAsync(dateien)),
-            versionPruefen: false);
+            versionPruefen: false, formular: "nachricht", entwurf: text);
 
     private async Task<List<Anhang>> AnhaengeSpeichernAsync(List<IFormFile> dateien)
     {
@@ -89,23 +98,27 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
 
     public Task<IActionResult> OnPostAbschliessenAsync(int id, int version, string? text) =>
         AusfuehrenAsync(id, version, "Der Auftrag wurde abgeschlossen.",
-            (auftrag, ich, jetzt) => auftrag.Abschliessen(ich, Pflichttext(text), jetzt));
+            (auftrag, ich, jetzt) => auftrag.Abschliessen(ich, Pflichttext(text), jetzt),
+            formular: "abschliessen", entwurf: text);
 
     public Task<IActionResult> OnPostWiederOeffnenAsync(int id, int version, string? text) =>
         AusfuehrenAsync(id, version, "Der Auftrag wurde wieder geöffnet.",
-            (auftrag, ich, jetzt) => auftrag.WiederOeffnen(ich, jetzt, text));
+            (auftrag, ich, jetzt) => auftrag.WiederOeffnen(ich, jetzt, text),
+            formular: "oeffnen", entwurf: text);
 
     private Task<IActionResult> AusfuehrenAsync(
         int id,
         int version,
         string meldung,
         Action<Auftrag, Benutzer, DateTime> aktion,
-        bool versionPruefen = true) =>
+        bool versionPruefen = true,
+        string? formular = null,
+        string? entwurf = null) =>
         AusfuehrenAsync(id, version, meldung, (auftrag, ich, jetzt) =>
         {
             aktion(auftrag, ich, jetzt);
             return Task.CompletedTask;
-        }, versionPruefen);
+        }, versionPruefen, formular, entwurf);
 
     /// <summary>
     /// Lädt den Auftrag, führt die Aktion aus und speichert. Aktionen, die
@@ -117,7 +130,9 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
         int version,
         string meldung,
         Func<Auftrag, Benutzer, DateTime, Task> aktion,
-        bool versionPruefen = true)
+        bool versionPruefen = true,
+        string? formular = null,
+        string? entwurf = null)
     {
         var auftrag = await db.AuftraegeFuer(User.BenutzerId())
             .Include(a => a.Gruppe)
@@ -139,13 +154,23 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
         }
         catch (AuftragException ex)
         {
-            ablage.Verwerfen(_neueAnhaenge);
-            TempData["Fehler"] = ex.Message;
+            Gescheitert(ex.Message);
         }
         catch (DbUpdateConcurrencyException)
         {
+            Gescheitert(veraltet);
+        }
+
+        void Gescheitert(string fehler)
+        {
             ablage.Verwerfen(_neueAnhaenge);
-            TempData["Fehler"] = veraltet;
+            TempData["Fehler"] = fehler;
+            // Das Formular geht mit dem geschriebenen Text wieder auf.
+            if (formular is not null)
+            {
+                TempData["Aktion"] = formular;
+                TempData["Entwurf"] = entwurf;
+            }
         }
 
         // Nach dem Weiterleiten an eine gesperrte Gruppe kann der Auftrag außer Sicht sein.

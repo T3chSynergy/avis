@@ -105,6 +105,9 @@ namespace Avis.Web.Data.Migrations
                     b.Property<int>("KundeId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("KundeWartetSeit")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("StandortId")
                         .HasColumnType("INTEGER");
 

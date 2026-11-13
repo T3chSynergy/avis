@@ -18,6 +18,9 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
     public Auftrag Auftrag { get; private set; } = null!;
     public IReadOnlyList<Verlaufseintrag> Verlauf { get; private set; } = [];
 
+    /// <summary>Nach einem Fehler: der geschriebene Text, damit er nicht verloren geht.</summary>
+    public string? Entwurf { get; private set; }
+
     public static string Titel(VerlaufArt art) => art switch
     {
         VerlaufArt.Erfasst => "Auftrag eingegangen",
@@ -54,6 +57,7 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
             return NotFound();
 
         Auftrag = auftrag;
+        Entwurf = TempData["Entwurf"] as string;
         Verlauf = auftrag.Verlauf
             .Where(v => v.FuerKundenSichtbar)
             .OrderBy(v => v.Zeitpunkt).ThenBy(v => v.Id)
@@ -94,6 +98,7 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
             ablage.Verwerfen(anhaenge);
             TempData.Remove("Meldung");
             TempData["Fehler"] = ex.Message;
+            TempData["Entwurf"] = text;
         }
 
         return RedirectToPage(new { id });

@@ -36,7 +36,7 @@
     <a asp-page="Index">Zurücksetzen</a>
 </form>
 
-<partial name="_Auftragsliste" model="Model.Auftraege" />
+<partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Auftraege)" />
 @if (Model.Gekuerzt)
 {
     <p class="erklaerung">Es werden die ersten @IndexModel.Hoechstzahl Aufträge angezeigt. Grenze die Suche ein, um weitere zu finden.</p>

@@ -2,6 +2,8 @@
 @model Avis.Web.Pages.Auftraege.NeuModel
 @{
     ViewData["Title"] = "Auftrag erfassen";
+    // Am Telefon tippt man zuerst den Namen des Anrufers.
+    ViewData["Autofokus"] = "kundensuche";
 }
 <h1>Auftrag erfassen</h1>
 
@@ -60,15 +62,12 @@
                 <label asp-for="Eingabe.GruppeId">Gruppe</label>
                 <select asp-for="Eingabe.GruppeId" asp-items="Model.Gruppen"></select>
             </div>
-            <div class="feld ankreuz">
-                <input asp-for="Eingabe.SofortUebernehmen" />
-                <label asp-for="Eingabe.SofortUebernehmen">Ich übernehme den Auftrag sofort</label>
-            </div>
         </div>
     </fieldset>
 
     <div class="knoepfe">
         <button type="submit" class="haupt">Auftrag erfassen</button>
+        <button type="submit" name="Eingabe.SofortUebernehmen" value="true">Erfassen und selbst übernehmen</button>
         <a asp-page="/Index">Abbrechen</a>
     </div>
 </form>

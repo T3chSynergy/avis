@@ -195,7 +195,7 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
         var gruppen = await clara.GetStringAsync("/Gruppen");
 
-        Assert.Contains("class=\"neu\" href=\"/Auftraege/Neu\"", gruppen);
+        Assert.Matches("<a class=\"neu\"[^>]*href=\"/Auftraege/Neu\"", gruppen);
         Assert.Contains("<a aria-current=\"page\" href=\"/Gruppen\">Gruppen", gruppen);
         Assert.DoesNotContain("<a aria-current=\"page\" href=\"/\">Meine Aufträge", gruppen);
         // Clara bearbeitet aus den Testdaten den Auftrag zum Monitor.
@@ -213,11 +213,120 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
         var seite = await dieter.GetStringAsync("/Meine");
 
-        Assert.Contains("class=\"neu\" href=\"/Meine/Neu\"", seite);
+        Assert.Matches("<a class=\"neu\"[^>]*href=\"/Meine/Neu\"", seite);
         Assert.Contains("<a aria-current=\"page\" href=\"/Meine\">Meine Aufträge</a>", seite);
         Assert.DoesNotContain("schnellsuche", seite);
         Assert.DoesNotContain("href=\"/Gruppen\"", seite);
         Assert.DoesNotContain("href=\"/Kunden\"", seite);
+    }
+
+    [Fact]
+    public async Task Listen_zeigen_wartende_Kunden_ueberfaellige_Termine_und_das_Alter()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var dieter = await app.AnmeldenAlsAsync("dieter");
+        var gestellt = await dieter.PostFormularAsync("/Meine/Neu", "/Meine/Neu", new()
+        {
+            ["Eingabe.Betreff"] = "Listenprüfung Wartemarke",
+            ["Eingabe.Beschreibung"] = "Für einen Test.",
+        });
+        var id = int.Parse(gestellt.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
+        var seite = $"/Auftraege/{id}";
+        var zeile = new System.Text.RegularExpressions.Regex($"<tr>\\s*<td>{id}</td>.*?</tr>", System.Text.RegularExpressions.RegexOptions.Singleline);
+        async Task<string> ZeileAsync() => zeile.Match(await anna.GetStringAsync("/Auftraege?q=Wartemarke&status=alle")).Value;
+
+        // Ein neuer Auftrag gilt nicht als wartend, zeigt aber sein Alter.
+        Assert.DoesNotContain("Kunde wartet", await ZeileAsync());
+        Assert.Matches("gerade eben|\\d+ Min\\.", await ZeileAsync());
+
+        // Ein Termin in der Vergangenheit ist überfällig.
+        await anna.PostFormularAsync($"{seite}/Bearbeiten", $"{seite}/Bearbeiten", new()
+        {
+            ["Version"] = "1",
+            ["Felder.Betreff"] = "Listenprüfung Wartemarke",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.Termin"] = "2020-01-31",
+        });
+        Assert.Contains("31.01.2020 <strong>überfällig</strong>", await ZeileAsync());
+
+        // Antwortet der Kunde, wartet er, bis die IT ihm schreibt. Ein interner Kommentar ändert daran nichts.
+        await dieter.PostFormularAsync($"/Meine/{id}", $"/Meine/{id}", new() { ["text"] = "Wann geht es weiter?" });
+        Assert.Contains("Kunde wartet", await ZeileAsync());
+        Assert.Contains("Kunde wartet seit", await anna.GetStringAsync(seite));
+        await AktionAsync(anna, seite, "InternerKommentar", 2, new() { ["text"] = "Noch keine Zeit." });
+        Assert.Contains("Kunde wartet", await ZeileAsync());
+        await AktionAsync(anna, seite, "NachrichtAnKunden", 2, new() { ["text"] = "Morgen früh." });
+        Assert.DoesNotContain("Kunde wartet", await ZeileAsync());
+
+        // Nach dem Abschluss wartet niemand und nichts ist überfällig.
+        await dieter.PostFormularAsync($"/Meine/{id}", $"/Meine/{id}", new() { ["text"] = "Danke." });
+        await AktionAsync(anna, seite, "Uebernehmen", 2);
+        await AktionAsync(anna, seite, "Abschliessen", 3, new() { ["text"] = "Erledigt." });
+        var abgeschlossen = await ZeileAsync();
+        Assert.DoesNotContain("Kunde wartet", abgeschlossen);
+        Assert.DoesNotContain("überfällig", abgeschlossen);
+        Assert.Contains("abgeschlossen ", abgeschlossen);
+    }
+
+    [Fact]
+    public async Task Listen_lassen_Spalten_weg_die_ueberall_dasselbe_zeigen()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var kunde = await app.DatenbankAsync(db => db.Kunden.Where(k => k.Name == "Dieter Kunde").Select(k => k.Id).FirstAsync());
+
+        static string[] Spalten(string seite) => System.Text.RegularExpressions.Regex
+            .Matches(seite[..seite.IndexOf("</thead>")], "<th scope=\"col\">([^<]+)</th>").Select(m => m.Groups[1].Value).ToArray();
+
+        Assert.Equal(["Nr.", "Prio", "Betreff", "Kunde", "Gruppe", "Bearbeiter", "Termin", "Alter"], Spalten(await anna.GetStringAsync("/Auftraege")));
+        Assert.Equal(["Nr.", "Prio", "Betreff", "Kunde", "Termin", "Alter"], Spalten(await anna.GetStringAsync("/Gruppen")));
+        Assert.Equal(["Nr.", "Prio", "Betreff", "Gruppe", "Bearbeiter", "Termin", "Alter"], Spalten(await anna.GetStringAsync($"/Kunden/{kunde}")));
+
+        var clara = await app.AnmeldenAlsAsync("clara");
+        Assert.Equal(["Nr.", "Prio", "Betreff", "Kunde", "Gruppe", "Termin", "Alter"], Spalten(await clara.GetStringAsync("/")));
+    }
+
+    [Fact]
+    public async Task Nach_einem_Fehler_geht_das_Formular_mit_dem_geschriebenen_Text_wieder_auf()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var bernd = await app.AnmeldenAlsAsync("bernd");
+        var id = await ErfassenAsync(anna, "Entwurf bleibt erhalten");
+        var seite = $"/Auftraege/{id}";
+        var netzwerk = await app.DatenbankAsync(db => db.Gruppen.Where(g => g.Name == "Netzwerk").Select(g => g.Id).FirstAsync());
+
+        // Bernd übernimmt, während Anna noch ihren Hinweis zum Weiterleiten schreibt.
+        await AktionAsync(bernd, seite, "Uebernehmen", 1);
+        var antwort = await AktionAsync(anna, seite, "Weiterleiten", 1, new() { ["gruppeId"] = netzwerk.ToString(), ["text"] = "Ein langer, mühsam geschriebener Hinweis." });
+
+        var text = await antwort.Content.ReadAsStringAsync();
+        Assert.Contains("inzwischen von jemand anderem geändert", text);
+        Assert.Contains("name=\"aktion\" value=\"weiterleiten\" class=\"unsichtbar\" checked", text);
+        Assert.Contains(">Ein langer, mühsam geschriebener Hinweis.</textarea>", text);
+        // Beim nächsten Aufruf ist der Entwurf weg.
+        Assert.DoesNotContain("mühsam geschriebener", await anna.GetStringAsync(seite));
+    }
+
+    [Fact]
+    public async Task Erfassen_und_selbst_uebernehmen_geht_in_einem_Schritt()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+
+        var antwort = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        {
+            ["Eingabe.KundeName"] = "Test Kunde",
+            ["Eingabe.Felder.Betreff"] = "Gleich selbst erledigen",
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.FirstAsync(g => g.IstEingangsgruppe))).Id.ToString(),
+            ["Eingabe.SofortUebernehmen"] = "true",
+        });
+
+        var id = int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
+        var auftrag = await LadenAsync(id);
+        Assert.Equal((AuftragStatus.InBearbeitung, "Anna Beispiel"), (auftrag.Status, auftrag.Bearbeiter!.Name));
+        // Wer den Auftrag hat, bekommt als Hauptaktion das Abschließen angeboten.
+        var seite = await antwort.Content.ReadAsStringAsync();
+        Assert.Contains("value=\"abschliessen\"", seite);
+        Assert.DoesNotContain("handler=Uebernehmen", seite);
     }
 
     [Fact]

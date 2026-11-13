@@ -2,7 +2,7 @@
 <div class="kundensuche">
     <div class="feld">
         <label for="kundensuche">Kunde suchen</label>
-        <input id="kundensuche" name="suche" value="@Model.Suche" autocomplete="off" type="search" />
+        <input id="kundensuche" name="suche" value="@Model.Suche" autocomplete="off" type="search" autofocus="@(ViewData["Autofokus"] as string == "kundensuche")" />
     </div>
     <button type="submit" formaction="?handler=Suchen" formnovalidate>Suchen</button>
 </div>

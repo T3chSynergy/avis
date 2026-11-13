@@ -27,10 +27,14 @@ public static class Abfragen
             .Include(a => a.Bearbeiter)
             .Include(a => a.BevorzugterBearbeiter);
 
-    /// <summary>Höchste Priorität zuerst, dann nach Termin, dann die ältesten.</summary>
+    /// <summary>
+    /// Höchste Priorität zuerst. Bei gleicher Priorität stehen Aufträge vorn,
+    /// bei denen der Kunde auf eine Reaktion wartet, dann zählen Termin und Alter.
+    /// </summary>
     public static IOrderedQueryable<Auftrag> NachPrioritaet(this IQueryable<Auftrag> auftraege) =>
         auftraege
             .OrderByDescending(a => (int)a.Dringlichkeit + (int)a.Wichtigkeit)
+            .ThenBy(a => a.KundeWartetSeit == null)
             .ThenBy(a => a.Termin == null)
             .ThenBy(a => a.Termin)
             .ThenBy(a => a.Id);

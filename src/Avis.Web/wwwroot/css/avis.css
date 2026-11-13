@@ -4,8 +4,12 @@
     --text: #1b2430;
     --gedaempft: #5a6675;
     --linie: #d8dde4;
-    --akzent: #1f5fa8;
+    /* Blau steht für alles, was man anklicken kann: Schaltflächen und Links.
+       Reine Gestaltung wie der Kopf oder Markierungen nutzt es nicht. */
+    --akzent: #1565c0;
+    --akzent-dunkel: #0e4f9c;
     --akzent-text: #ffffff;
+    --kopf: #25303d;
     --intern: #fff6dc;
     --intern-linie: #d9b84a;
     --gut: #e6f3ea;
@@ -41,8 +45,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     align-items: center;
     gap: 8px 20px;
     padding: 10px 24px;
-    background: var(--akzent);
-    color: var(--akzent-text);
+    background: var(--kopf);
+    color: #fff;
 }
 .kopf .marke { color: var(--akzent-text); text-decoration: none; font-weight: 700; font-size: 20px; letter-spacing: 1px; }
 .kopf-rechts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin-left: auto; }
@@ -52,11 +56,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 /* Die wichtigste Aktion der Seite. */
 .kopf a.neu {
-    display: inline-block; padding: 6px 14px; border-radius: 4px;
-    background: #fff; color: var(--akzent); font-weight: 700; text-decoration: none; white-space: nowrap;
+    display: inline-block; padding: 7px 16px; border-radius: 6px; border: 1px solid #6ea4ea;
+    background: var(--akzent); color: #fff; font-weight: 700; text-decoration: none; white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
-.kopf a.neu:hover { background: #e8f0fa; }
-.kopf a.neu[aria-current="page"] { background: #d9e8fa; }
+.kopf a.neu:hover, .kopf a.neu[aria-current="page"] { background: var(--akzent-dunkel); }
 .kopf a.neu span { font-size: 18px; line-height: 1; margin-right: 2px; }
 
 /* Konto mit Menü. Öffnet und schließt ohne Skript, das Skript schließt es zusätzlich bei Klick daneben. */
@@ -79,13 +83,13 @@ details.konto .menue a:hover, details.konto .menue a[aria-current="page"] { back
     color: var(--text); text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap;
 }
 .bereiche a:hover { background: #eef1f5; }
-.bereiche a[aria-current="page"] { border-bottom-color: var(--akzent); color: var(--akzent); font-weight: 600; }
+.bereiche a[aria-current="page"] { border-bottom-color: var(--kopf); font-weight: 700; }
 .bereiche .trenner { width: 1px; margin: 10px 8px; background: var(--linie); }
 .bereiche .zahl {
     min-width: 22px; padding: 0 6px; border-radius: 11px; background: #e3e8ee; color: var(--gedaempft);
     font-size: 12px; font-weight: 600; text-align: center; line-height: 20px;
 }
-.bereiche .zahl.voll { background: var(--akzent); color: var(--akzent-text); }
+.bereiche .zahl.voll { background: var(--kopf); color: #fff; }
 
 main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
 
@@ -131,7 +135,7 @@ table.liste form { margin: 0; }
     display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px;
     font-size: 12px; background: #e3e8ee; color: #2c3a4a; white-space: nowrap;
 }
-.hinweis.mich { background: var(--akzent); color: var(--akzent-text); }
+.hinweis.mich { background: var(--kopf); color: #fff; }
 .status { color: var(--gedaempft); }
 
 .filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
@@ -139,7 +143,7 @@ table.liste form { margin: 0; }
     padding: 4px 12px; border: 1px solid var(--linie); border-radius: 16px;
     background: var(--flaeche); text-decoration: none;
 }
-.filter a[aria-current="page"] { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
+.filter a[aria-current="page"] { background: var(--kopf); border-color: var(--kopf); color: #fff; }
 
 .zustand { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 8px; }
 .zustand .status {
@@ -159,7 +163,7 @@ dl.angaben dd { margin: 0; overflow-wrap: anywhere; }
 
 ol.verlauf { list-style: none; margin: 0; padding: 0; }
 ol.verlauf > li {
-    background: var(--flaeche); border: 1px solid var(--linie); border-left: 4px solid var(--akzent);
+    background: var(--flaeche); border: 1px solid var(--linie); border-left: 4px solid #9aa7b6;
     padding: 8px 12px; margin-bottom: 8px;
 }
 ol.verlauf > li.intern { background: var(--intern); border-left-color: var(--intern-linie); }
@@ -167,11 +171,9 @@ ol.verlauf .kopfzeile { display: flex; flex-wrap: wrap; gap: 4px 12px; align-ite
 ol.verlauf .kopfzeile span { color: var(--gedaempft); font-size: 13px; }
 ol.verlauf p { margin: 4px 0 0; }
 
-.aktionen form, form.formular fieldset {
+form.formular fieldset {
     background: var(--flaeche); border: 1px solid var(--linie); padding: 12px 14px; margin: 0 0 12px;
 }
-.aktionen form.intern { background: var(--intern); border-color: var(--intern-linie); }
-.aktionen h2 { margin-top: 0; }
 
 label { display: block; font-weight: 600; margin: 8px 0 3px; }
 h3 + label { margin-top: 0; }
@@ -181,16 +183,19 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, t
 }
 textarea { resize: vertical; }
 
-button {
-    font: inherit; padding: 6px 14px; margin-top: 10px; cursor: pointer;
-    background: var(--flaeche); color: var(--text); border: 1px solid #8793a1; border-radius: 4px;
+/* Schaltflächen: Rahmen, runde Ecken und ein leichter Schatten. So sieht nur aus, was man drücken kann. */
+button, a.knopf, label.knopf {
+    display: inline-block; font: inherit; font-weight: 600; line-height: 1.4; padding: 7px 16px; cursor: pointer;
+    background: #fff; color: var(--text); border: 1px solid #7b8794; border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.14); text-decoration: none; white-space: nowrap;
 }
-button:hover { background: #eef1f5; }
-button.haupt { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
-button.haupt:hover { background: #184c87; }
+button { margin-top: 10px; }
+label.knopf { margin: 0; }
+button:hover, a.knopf:hover, label.knopf:hover { background: #eef1f5; border-color: #5a6675; }
+button:active, a.knopf:active, label.knopf:active { box-shadow: none; transform: translateY(1px); }
+button.haupt, a.knopf.haupt, label.knopf.haupt { background: var(--akzent); border-color: var(--akzent-dunkel); color: #fff; }
+button.haupt:hover, a.knopf.haupt:hover, label.knopf.haupt:hover { background: var(--akzent-dunkel); border-color: var(--akzent-dunkel); }
 table.liste button { margin-top: 0; }
-.aktionen form:has(> button:only-of-type):not(:has(h3)) { border: 0; background: none; padding: 0; }
-.aktionen form:not(:has(h3)) button { margin-top: 0; width: 100%; padding: 9px 14px; }
 
 form.formular { max-width: 900px; }
 form.formular legend { font-weight: 700; padding: 0 6px; }
@@ -241,15 +246,10 @@ fieldset.kunde:has(#kunde-neu:not(:checked)) .neukunde { display: none; }
 .spalten > .kasten { margin-top: 0; }
 
 /* Seiten für Kunden */
-a.knopf {
-    display: inline-block; padding: 6px 14px; border: 1px solid #8793a1; border-radius: 4px;
-    background: var(--flaeche); color: var(--text); text-decoration: none;
-}
-a.knopf.haupt { background: var(--akzent); border-color: var(--akzent); color: var(--akzent-text); }
-a.knopf.haupt:hover { background: #184c87; }
+
 
 /* Suche */
-.suchzeile .feld { flex: 0 1 190px; }
+.suchzeile .feld { flex: 0 1 240px; }
 .suchzeile .feld.breit { flex: 1 1 300px; max-width: 520px; }
 .suchzeile > a { padding-bottom: 7px; }
 
@@ -263,3 +263,57 @@ ul.anhaenge li { padding: 1px 0 1px 18px; position: relative; overflow-wrap: any
 ul.anhaenge li::before { content: "↓"; position: absolute; left: 2px; color: var(--gedaempft); }
 ul.anhaenge span { color: var(--gedaempft); font-size: 13px; white-space: nowrap; }
 input[type="file"] { padding: 4px; background: #fff; }
+
+/* Auftragsseite: Schaltflächen wählen, welches Formular darunter aufgeht. */
+.aktionen { margin: 24px 0 8px; }
+.aktionen .leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.aktionen .leiste form { margin: 0; }
+.aktionen .leiste button { margin-top: 0; }
+label.wahl:has(input:checked) { background: #e3e8ee; border-color: #5a6675; box-shadow: inset 0 1px 3px rgba(16, 24, 40, 0.25); }
+label.wahl.haupt:has(input:checked) { background: var(--akzent-dunkel); }
+label.wahl.intern { background: var(--intern); border-color: #b3922e; }
+label.wahl.intern:hover { background: #fbeab5; }
+label.wahl.intern:has(input:checked) { background: #f3dc94; }
+label:has(input.unsichtbar:focus-visible) { outline: 3px solid #f0a000; outline-offset: 2px; }
+
+.panel {
+    display: none; margin-top: 12px; padding: 14px 16px;
+    background: var(--flaeche); border: 1px solid #9aa7b6; border-radius: 6px;
+}
+.panel.intern { background: var(--intern); border-color: var(--intern-linie); }
+.aktionen:has(.leiste input[value="oeffnen"]:checked) .panel[data-aktion="oeffnen"],
+.aktionen:has(.leiste input[value="abschliessen"]:checked) .panel[data-aktion="abschliessen"],
+.aktionen:has(.leiste input[value="nachricht"]:checked) .panel[data-aktion="nachricht"],
+.aktionen:has(.leiste input[value="weiterleiten"]:checked) .panel[data-aktion="weiterleiten"],
+.aktionen:has(.leiste input[value="intern"]:checked) .panel[data-aktion="intern"] { display: block; }
+/* Ältere Browser ohne :has() zeigen alle Formulare untereinander. */
+@supports not selector(:has(*)) { .aktionen .panel { display: block; } }
+
+.panelkopf { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.panelkopf h3 { margin: 0 0 4px; font-size: 16px; }
+label.schliessen { margin: 0; font-weight: 400; color: var(--akzent); text-decoration: underline; cursor: pointer; }
+.panel form { margin: 0; }
+.panel textarea { min-height: 96px; }
+
+/* Angaben zum Auftrag in der Seitenspalte. */
+.spalten > aside.kasten { margin-top: 0; max-width: none; }
+aside.kasten h2 { margin: 0 0 8px; font-size: 16px; }
+aside.kasten dl.angaben { grid-template-columns: 84px minmax(0, 1fr); gap: 6px 12px; }
+.nebenlinks { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 14px 0 0; }
+h2 .nebenaktion { color: var(--gedaempft); }
+.kasten.breit { max-width: none; margin-top: 24px; }
+.kasten.breit h2 { margin-top: 0; }
+
+/* Markierungen in Listen. */
+.marke-wartet {
+    display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 10px; white-space: nowrap;
+    background: #fde4c8; color: #7a3b00; border: 1px solid #e59a4c; font-size: 12px; font-weight: 600;
+}
+.zustand .marke-wartet { margin-left: 0; font-size: 13px; }
+.termin strong { font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+.termin.ueberfaellig { color: #a3261a; font-weight: 600; }
+.termin.heute { color: #8a5a00; font-weight: 600; }
+
+/* Selten gebrauchte Felder beim Erfassen. */
+details.weitere { margin-top: 10px; }
+details.weitere summary { cursor: pointer; font-weight: 600; color: var(--akzent); padding: 4px 0; }

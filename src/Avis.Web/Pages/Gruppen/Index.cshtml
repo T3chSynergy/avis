@@ -12,5 +12,5 @@
 @foreach (var gruppe in Model.Gruppen)
 {
     <h2>@gruppe.Name <span class="anzahl">@Model.Offen[gruppe.Id].Count</span></h2>
-    <partial name="_Auftragsliste" model="Model.Offen[gruppe.Id]" />
+    <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Offen[gruppe.Id], OhneGruppe: true, OhneBearbeiter: true)" />
 }

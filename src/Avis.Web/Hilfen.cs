@@ -30,10 +30,29 @@ public class Ortszeit(IConfiguration konfiguration)
 
     public string Anzeigen(DateTime utc) =>
         TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), _zone).ToString("dd.MM.yyyy HH:mm");
+
+    public string Datum(DateTime utc) =>
+        TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), _zone).ToString("dd.MM.yyyy");
+
+    /// <summary>Das heutige Datum in der eingestellten Zeitzone.</summary>
+    public DateOnly Heute(TimeProvider uhr) =>
+        DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(uhr.GetUtcNow().UtcDateTime, _zone));
 }
 
 public static class Anzeige
 {
+    /// <summary>Wie lange etwas her ist, in einer groben Einheit: "12 Min.", "5 Std.", "3 Tage".</summary>
+    public static string Dauer(TimeSpan dauer) => dauer switch
+    {
+        { TotalMinutes: < 1 } => "gerade eben",
+        { TotalMinutes: < 60 } => $"{(int)dauer.TotalMinutes} Min.",
+        { TotalHours: < 24 } => $"{(int)dauer.TotalHours} Std.",
+        { TotalDays: < 2 } => "1 Tag",
+        { TotalDays: < 14 } => $"{(int)dauer.TotalDays} Tage",
+        { TotalDays: < 60 } => $"{(int)(dauer.TotalDays / 7)} Wochen",
+        _ => $"{(int)(dauer.TotalDays / 30)} Monate",
+    };
+
     private static readonly System.Globalization.CultureInfo Deutsch = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
 
     /// <summary>Immer in deutscher Schreibweise, auch im Hintergrund außerhalb einer Seitenanfrage.</summary>

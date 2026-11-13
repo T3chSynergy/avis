@@ -13,10 +13,10 @@
             Laufende Aufträge
             <a class="nebenaktion" asp-page="/Auftraege/Neu" asp-route-kundeId="@k.Id">Auftrag für @k.Name erfassen</a>
         </h2>
-        <partial name="_Auftragsliste" model="Model.Laufend" />
+        <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Laufend, OhneKunde: true)" />
 
         <h2>Abgeschlossene Aufträge</h2>
-        <partial name="_Auftragsliste" model="Model.Abgeschlossen" />
+        <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Abgeschlossen, OhneKunde: true)" />
         @if (Model.Gekuerzt)
         {
             <p class="erklaerung">Es werden die letzten @DetailsModel.Hoechstzahl abgeschlossenen Aufträge angezeigt.</p>

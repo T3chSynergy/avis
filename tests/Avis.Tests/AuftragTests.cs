@@ -181,6 +181,31 @@ public class AuftragTests
     }
 
     [Fact]
+    public void Der_Kunde_wartet_von_seiner_Antwort_bis_die_IT_ihm_schreibt_oder_abschliesst()
+    {
+        var auftrag = Neu();
+        Assert.Null(auftrag.KundeWartetSeit);
+
+        auftrag.KundeAntwortet(_anna, "Erste Frage.", Jetzt);
+        auftrag.KundeAntwortet(_anna, "Zweite Frage.", Jetzt.AddHours(1));
+        Assert.Equal(Jetzt, auftrag.KundeWartetSeit);
+
+        auftrag.InternKommentieren(_anna, "Intern.", Jetzt.AddHours(2));
+        auftrag.Uebernehmen(_anna, Jetzt.AddHours(2));
+        Assert.Equal(Jetzt, auftrag.KundeWartetSeit);
+
+        auftrag.NachrichtAnKunden(_anna, "Antwort.", Jetzt.AddHours(3));
+        Assert.Null(auftrag.KundeWartetSeit);
+
+        auftrag.KundeAntwortet(_anna, "Danke.", Jetzt.AddHours(4));
+        auftrag.Abschliessen(_anna, "Erledigt.", Jetzt.AddHours(5));
+        Assert.Null(auftrag.KundeWartetSeit);
+
+        auftrag.KundeOeffnetWieder(_anna, "Doch nicht.", Jetzt.AddHours(6));
+        Assert.Equal(Jetzt.AddHours(6), auftrag.KundeWartetSeit);
+    }
+
+    [Fact]
     public void Wieder_oeffnen_geht_nur_bei_abgeschlossenen_Auftraegen()
     {
         Assert.Throws<AuftragException>(() => Neu().WiederOeffnen(_anna, Jetzt));
