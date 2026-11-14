@@ -167,6 +167,14 @@ ol.verlauf > li {
     padding: 8px 12px; margin-bottom: 8px;
 }
 ol.verlauf > li.intern { background: var(--intern); border-left-color: var(--intern-linie); }
+/* Was nur festhält, dass etwas geschehen ist (erfasst, übernommen, weitergeleitet ohne Hinweis),
+   steht als schmale Zeile zwischen den Einträgen mit Text. */
+ol.verlauf > li.ereignis {
+    display: flex; flex-wrap: wrap; gap: 0 12px; align-items: baseline;
+    background: none; border: 0; border-left: 4px solid var(--linie); padding: 0 12px;
+    font-size: 13px; color: var(--gedaempft);
+}
+ol.verlauf > li.ereignis .was { color: var(--text); overflow-wrap: anywhere; }
 ol.verlauf .kopfzeile { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
 ol.verlauf .kopfzeile span { color: var(--gedaempft); font-size: 13px; }
 ol.verlauf .kopfzeile a { font-size: 13px; }
