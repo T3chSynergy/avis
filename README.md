@@ -29,6 +29,7 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 - Gesperrte Gruppen, deren Aufträge nur ihre Mitglieder sehen
 - Suche über alle Aufträge mit Filtern nach Status, Gruppe und Bearbeiter
 - Gerätetabelle, mit der Aufträge über die Inventarnummer verknüpft werden
+- Abgleich der Kunden mit dem Active Directory und der Geräte mit Snipe-IT
 - Anhänge an Aufträgen, Kommentaren, Nachrichten und Antworten
 - E-Mail-Eingang über IMAP: Mails an die Hotline werden Aufträge, Antworten
   mit Auftragsnummer im Betreff landen im Auftrag
@@ -55,7 +56,9 @@ die Anhänge und beginnt die Zählung von vorn.
 Zu den Testdaten gehören Kunden, die für Konten aus dem Active Directory
 stehen (Hanna Verzeichnis, Igor Abgleich und die inaktive Jana Ehemals), und
 ein von Hand stillgelegter Kunde (Karl Ruhestand). An ihnen lässt sich ohne
-Verzeichnis ansehen, wie abgeglichene und inaktive Kunden aussehen.
+Verzeichnis ansehen, wie abgeglichene und inaktive Kunden aussehen. Ebenso
+stehen drei Geräte für Assets aus Snipe-IT (TB-3001, BE-3002 und das
+ausgemusterte TB-2990).
 
 Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
 `src/Avis.Web/App_Data/Mails` abgelegt. Ein Mailprogramm öffnet sie. Den
@@ -184,6 +187,10 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 | `Kundenabgleich:Filter` | LDAP-Filter, der bestimmt, wer Kunde ist, zum Beispiel `(department=*)` |
 | `Kundenabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird, zum Beispiel `OU=Mitarbeiter,DC=example,DC=org`. Leer: in der ganzen Domäne |
 | `Kundenabgleich:AbstandMinuten` | Abstand zwischen zwei Abgleichen, Standard 60, mindestens 5 |
+| `Geraeteabgleich:Art` | `SnipeIt` gleicht die Geräte mit Snipe-IT ab, `Aus` lässt das aus |
+| `Geraeteabgleich:Adresse` | Adresse der Installation von Snipe-IT, zum Beispiel `https://inventar.example.org` |
+| `Geraeteabgleich:Schluessel` | Zugangsschlüssel (API-Token) eines Benutzers in Snipe-IT |
+| `Geraeteabgleich:AbstandMinuten` | Abstand zwischen zwei Abgleichen, Standard 60, mindestens 5 |
 | `Mail:Art` | `Smtp` versendet, `Ordner` legt Mails als Dateien ab, `Aus` sendet nichts |
 | `Mail:Server`, `Mail:Port` | Mailserver, Standardport 25 |
 | `Mail:Verschluesselung` | `Auto`, `Keine`, `StartTls` oder `Ssl` |
@@ -205,9 +212,9 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 Die Testanmeldung und die Testdaten lassen sich nur in der
 Entwicklungsumgebung einschalten. Im Betrieb bricht der Start sonst ab.
 
-Kennwörter gehören nicht in die Datei im Repository. Auf dem Server lassen sie
-sich als Umgebungsvariablen `Mail__Kennwort` und `Posteingang__Kennwort`
-setzen.
+Kennwörter und Schlüssel gehören nicht in die Datei im Repository. Auf dem
+Server lassen sie sich als Umgebungsvariablen `Mail__Kennwort`,
+`Posteingang__Kennwort` und `Geraeteabgleich__Schluessel` setzen.
 
 ## Mails
 
@@ -286,8 +293,10 @@ zählen und deaktivierte Konten nicht, ergänzt AVIS selbst. Beispiele:
 Mit `Kundenabgleich:Suchbasis` lässt sich die Suche auf einen Teil des
 Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
 
-- Das Verzeichnis gewinnt: Name, E-Mail, Telefon und Organisationseinheit
-  werden überschrieben und lassen sich in AVIS nicht ändern.
+- Das Verzeichnis gewinnt: Name, E-Mail, Telefon, Organisationseinheit und
+  Raum werden überschrieben und lassen sich in AVIS nicht ändern. Der Raum
+  ist das Attribut `physicalDeliveryOfficeName` (in der Verwaltung des
+  Verzeichnisses „Büro“), zum Beispiel `A 105`.
 - Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
   wiedererkannt und übernommen.
 - Auf wen der Filter nicht mehr passt oder wessen Konto deaktiviert ist, der
@@ -302,6 +311,56 @@ Gelesen wird mit dem Konto, unter dem AVIS läuft, aus der Domäne des Servers.
 Ein fehlerhafter Filter lässt den Abgleich scheitern, ohne dass sich etwas
 ändert; die Meldung steht in der Verwaltung. Der Abgleich ist noch nicht an
 einem echten Verzeichnis erprobt.
+
+## Geräteabgleich
+
+Mit `Geraeteabgleich:Art = SnipeIt` kommen die Geräte aus Snipe-IT. AVIS liest
+nur: Es fragt die Assets über die Schnittstelle von Snipe-IT ab und schreibt
+dort nichts. Gelesen wird zwei Minuten nach dem Start und dann im
+eingestellten Abstand; unter Verwaltung → Geräteabgleich steht, was der letzte
+Lauf getan hat, und er lässt sich dort sofort anstoßen.
+
+| Snipe-IT | AVIS |
+|---|---|
+| Asset Tag | Inventarnummer |
+| Name des Assets, sonst der Name des Modells | Bezeichnung |
+| Kategorie | Typ |
+| Standort, sonst der Standardstandort | Raum |
+| Mailadresse des Benutzers, an den das Asset ausgegeben ist | Nutzer: der Kunde mit dieser Adresse |
+
+- Snipe-IT gewinnt: Diese Angaben werden überschrieben und lassen sich in AVIS
+  nicht ändern. Nur der Standort eines Geräts gehört weiter AVIS.
+- Ein Gerät, das schon mit derselben Inventarnummer in AVIS steht, wird
+  übernommen, nicht verdoppelt.
+- Der Nutzer wird nur gesetzt, wenn es in AVIS einen Kunden mit der
+  Mailadresse gibt. Kunden legt der Geräteabgleich nicht an. Ist ein Asset an
+  einen Standort oder ein anderes Asset ausgegeben, bleibt der Nutzer leer.
+- Was Snipe-IT nicht mehr liefert, etwa archivierte oder gelöschte Assets,
+  wird ausgemustert. Es bleibt mit seinen Aufträgen erhalten und lässt sich
+  nur nicht mehr neu verknüpfen.
+- Geräte, die nur in AVIS angelegt wurden, bleiben unberührt.
+- Assets ohne Asset Tag werden übergangen. Kommt eine Inventarnummer mehrfach
+  vor oder gehört sie in AVIS schon einem anderen Gerät der Quelle, wird das
+  Asset ausgelassen und in der Verwaltung genannt.
+- Liefert Snipe-IT kein einziges Gerät, lehnt es den Schlüssel ab oder ist es
+  nicht erreichbar, ändert sich nichts.
+
+Der Schlüssel gehört zu einem Benutzer in Snipe-IT, der Assets ansehen darf.
+Darf er keine Benutzer ansehen, liefert Snipe-IT keine Mailadressen, und die
+Geräte bleiben ohne Nutzer. `Geraeteabgleich:Adresse` ist die Adresse, unter
+der Snipe-IT im Browser erreichbar ist, ohne `/api/v1`.
+
+Die Abfrage ist nach dem Quelltext von Snipe-IT geschrieben und mit
+nachgestellten Antworten geprüft, aber noch nicht an einer echten Installation
+erprobt.
+
+## Raum
+
+Kunden und Geräte tragen einen Raum, zum Beispiel `A 105`. Bei abgeglichenen
+Einträgen kommt er aus der Quelle, bei den übrigen wird er von Hand
+eingetragen. Er steht in den Listen, am Auftrag beim Kunden und wird von der
+Suche nach Kunden und Geräten gefunden. Der Standort bleibt daneben die
+Auswahlliste, die der Administrator pflegt.
 
 ## Anhänge
 

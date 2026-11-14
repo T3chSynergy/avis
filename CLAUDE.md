@@ -52,6 +52,10 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Kunden aus dem AD:** AVIS zieht selbst, keine API. Ein LDAP-Filter bestimmt, wer Kunde ist (keine
   Gruppe: eine dynamische Verteilergruppe führt keine Mitglieder). Das AD gewinnt; wer fehlt, wird
   inaktiv, nie gelöscht. Der Kern (`Kundenabgleich`) kennt die Quelle nicht.
+- **Geräte aus Snipe-IT:** nach demselben Muster (`Geraeteabgleich`), nur lesend; AVIS schreibt nie nach
+  Snipe-IT. Der Nutzer eines Geräts wird über die Mailadresse einem vorhandenen Kunden zugeordnet.
+- **Raum** (etwa „A 105“) ist freier Text an Kunde und Gerät und kommt aus der Quelle. Der Standort
+  bleibt die Auswahlliste von AVIS und wird von keinem Abgleich angefasst.
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.
   Ausnahmen in `Startdaten`: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt
@@ -97,6 +101,7 @@ In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert
 
 - Windows-Anmeldung (`Anmeldung:Art = Windows`) unter IIS
 - Abgleich mit Active Directory (`ActiveDirectoryVerzeichnis`, `ActiveDirectoryKundenquelle`)
+- Abgleich mit Snipe-IT (`SnipeItGeraetequelle`): nach dessen Quelltext geschrieben, nie dagegen gelaufen
 - SMTP und IMAP gegen Exchange – IMAP lief bisher nur gegen einen lokalen Dovecot-Server
   (Test mit der Umgebungsvariable `AVIS_TEST_IMAP`)
 - HTML-Mails aus dem echten Outlook

@@ -12,7 +12,7 @@ public class IndexModel(AvisDb db) : PageModel
 {
     public const int Hoechstzahl = 50;
 
-    public record Zeile(int Id, string Name, string? Email, string? Telefon, string? Organisationseinheit, string? Standort, int Laufend, bool Aktiv);
+    public record Zeile(int Id, string Name, string? Email, string? Telefon, string? Organisationseinheit, string? Raum, string? Standort, int Laufend, bool Aktiv);
 
     [BindProperty(SupportsGet = true)]
     public string? Q { get; set; }
@@ -33,6 +33,7 @@ public class IndexModel(AvisDb db) : PageModel
                 k.Email,
                 k.Telefon,
                 k.Organisationseinheit,
+                k.Raum,
                 k.Standort!.Name,
                 sichtbar.Count(a => a.KundeId == k.Id && a.AbgeschlossenAm == null),
                 k.Aktiv))
@@ -66,8 +67,11 @@ internal static class KundeRegeln
     /// Fehler die Meldung zurück und ändert dann nichts.
     /// </summary>
     public static async Task<string?> UebernehmenAsync(
-        AvisDb db, Kunde kunde, string? name, string? email, string? telefon, string? organisationseinheit, int? standortId)
+        AvisDb db, Kunde kunde, string? name, string? email, string? telefon, string? organisationseinheit, int? standortId, string? raum = null)
     {
+        var zimmer = Bereinigen(raum);
+        if (zimmer?.Length > 100)
+            return "Der Raum darf höchstens 100 Zeichen lang sein.";
         var bereinigterName = name?.Trim() ?? "";
         var adresse = Bereinigen(email)?.ToLowerInvariant();
         var nummer = Bereinigen(telefon);
@@ -98,6 +102,7 @@ internal static class KundeRegeln
         kunde.Email = adresse;
         kunde.Telefon = nummer;
         kunde.Organisationseinheit = einheit;
+        kunde.Raum = zimmer;
         kunde.StandortId = standortId;
         return null;
     }

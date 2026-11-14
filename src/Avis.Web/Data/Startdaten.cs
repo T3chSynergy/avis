@@ -177,25 +177,28 @@ public static class Startdaten
 
         // Kunden, wie sie der Abgleich mit dem Active Directory anlegt: mit der Kennung des Verzeichnisses und dem
         // Anmeldenamen samt Domäne. Ihre Angaben pflegt das Verzeichnis. Jana steht dort nicht mehr und ist inaktiv.
-        const string verzeichnis = Avis.Web.Kundenabgleich.KundenabgleichOptionen.ActiveDirectory;
+        const string verzeichnis = Avis.Web.Abgleich.KundenabgleichOptionen.ActiveDirectory;
+        var hanna = new Kunde
+        {
+            Name = "Hanna Verzeichnis",
+            Email = "hanna.verzeichnis@example.org",
+            Telefon = "3101",
+            Organisationseinheit = "Bauamt",
+            Raum = "A 105",
+            Anmeldename = @"avis\hanna",
+            Quelle = verzeichnis,
+            ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b01",
+            Standort = haupthaus,
+        };
         db.Kunden.AddRange(
-            new Kunde
-            {
-                Name = "Hanna Verzeichnis",
-                Email = "hanna.verzeichnis@example.org",
-                Telefon = "3101",
-                Organisationseinheit = "Bauamt",
-                Anmeldename = @"avis\hanna",
-                Quelle = verzeichnis,
-                ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b01",
-                Standort = haupthaus,
-            },
+            hanna,
             new Kunde
             {
                 Name = "Igor Abgleich",
                 Email = "igor.abgleich@example.org",
                 Telefon = "3102",
                 Organisationseinheit = "Kämmerei",
+                Raum = "B 012",
                 Anmeldename = @"avis\igor",
                 Quelle = verzeichnis,
                 ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b02",
@@ -206,6 +209,7 @@ public static class Startdaten
                 Email = "jana.ehemals@example.org",
                 Telefon = "3103",
                 Organisationseinheit = "Bauamt",
+                Raum = "A 107",
                 Anmeldename = @"avis\jana",
                 Quelle = verzeichnis,
                 ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b03",
@@ -219,6 +223,15 @@ public static class Startdaten
             new Inventargeraet { Inventarnummer = "NB-1018", Bezeichnung = "Notebook 14 Zoll", Typ = "Notebook", Standort = nebenstelle, Kunde = kunde2 },
             new Inventargeraet { Inventarnummer = "MO-2203", Bezeichnung = "Monitor 27 Zoll", Typ = "Monitor", Standort = haupthaus, Kunde = kunde1 });
 
+        await db.SaveChangesAsync();
+
+        // Geräte, wie sie der Abgleich mit Snipe-IT anlegt: mit der Nummer des Assets dort und dem Raum als Standort.
+        // Der Nutzer ist der Kunde mit der Adresse, an die das Asset ausgegeben ist. Das dritte steht dort nicht mehr.
+        const string inventar = Avis.Web.Abgleich.GeraeteabgleichOptionen.SnipeIt;
+        db.Geraete.AddRange(
+            new Inventargeraet { Inventarnummer = "TB-3001", Bezeichnung = "Tablet 11 Zoll", Typ = "Tablet", Raum = "A 105", Kunde = hanna, Quelle = inventar, ExterneKennung = "9001" },
+            new Inventargeraet { Inventarnummer = "BE-3002", Bezeichnung = "Beamer Sitzungssaal", Typ = "Beamer", Raum = "B 0.01", Quelle = inventar, ExterneKennung = "9002" },
+            new Inventargeraet { Inventarnummer = "TB-2990", Bezeichnung = "Tablet 10 Zoll", Typ = "Tablet", Raum = "A 107", Quelle = inventar, ExterneKennung = "9003", Aktiv = false });
         await db.SaveChangesAsync();
 
         var drucker = Auftrag.Erfassen(

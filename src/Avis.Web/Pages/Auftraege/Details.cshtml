@@ -217,6 +217,7 @@
                 <a asp-page="/Kunden/Details" asp-route-id="@a.KundeId">@a.Kunde.Name</a>
                 @if (a.Kunde.Email is not null) {<br /><a href="mailto:@a.Kunde.Email">@a.Kunde.Email</a>}
                 @if (a.Kunde.Telefon is not null) {<br /><text>Tel. @a.Kunde.Telefon</text>}
+                @if (a.Kunde.Raum is not null) {<br /><text>Raum @a.Kunde.Raum</text>}
             </dd>
             <dt>Priorität</dt>
             <dd>P@(a.Prioritaet) · Dringlichkeit @a.Dringlichkeit.Text(), Wichtigkeit @a.Wichtigkeit.Text()</dd>

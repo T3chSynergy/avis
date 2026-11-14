@@ -2,7 +2,7 @@ using System.DirectoryServices;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Options;
 
-namespace Avis.Web.Kundenabgleich;
+namespace Avis.Web.Abgleich;
 
 /// <summary>
 /// Liest die Kunden mit einem LDAP-Filter aus dem Active Directory der
@@ -33,7 +33,7 @@ public class ActiveDirectoryKundenquelle(IOptions<KundenabgleichOptionen> option
         if (wurzel is not null)
             suche.SearchRoot = wurzel;
         suche.PropertiesToLoad.AddRange(
-            ["objectGUID", "sAMAccountName", "msDS-PrincipalName", "displayName", "name", "mail", "telephoneNumber", "department"]);
+            ["objectGUID", "sAMAccountName", "msDS-PrincipalName", "displayName", "name", "mail", "telephoneNumber", "department", "physicalDeliveryOfficeName"]);
 
         var kunden = new List<Quellkunde>();
         using var treffer = suche.FindAll();
@@ -48,7 +48,9 @@ public class ActiveDirectoryKundenquelle(IOptions<KundenabgleichOptionen> option
                 Text(eintrag, "displayName") ?? Text(eintrag, "name"),
                 Text(eintrag, "mail"),
                 Text(eintrag, "telephoneNumber"),
-                Text(eintrag, "department")));
+                Text(eintrag, "department"),
+                // Das Feld "Büro" des Kontos: die Raumnummer.
+                Text(eintrag, "physicalDeliveryOfficeName")));
         }
         return kunden;
     }

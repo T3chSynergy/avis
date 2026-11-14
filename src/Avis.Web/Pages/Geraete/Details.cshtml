@@ -29,6 +29,8 @@
             <dd>@g.Bezeichnung</dd>
             <dt>Typ</dt>
             <dd>@(g.Typ ?? "–")</dd>
+            <dt>Raum</dt>
+            <dd>@(g.Raum ?? "–")</dd>
             <dt>Standort</dt>
             <dd>@(g.Standort?.Name ?? "–")</dd>
             <dt>Nutzer</dt>
@@ -38,6 +40,11 @@
             </dd>
             <dt>Status</dt>
             <dd>@(g.Aktiv ? "in Betrieb" : "ausgemustert")</dd>
+            @if (g.AusQuelle)
+            {
+                <dt>Quelle</dt>
+                <dd>@g.Quelle</dd>
+            }
         </dl>
         @if (User.IstAdministrator())
         {

@@ -193,6 +193,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.Property(k => k.Telefon).HasMaxLength(50);
             e.Property(k => k.Organisationseinheit).HasMaxLength(200);
             e.Property(k => k.Anmeldename).HasMaxLength(200);
+            e.Property(k => k.Raum).HasMaxLength(100);
             e.Property(k => k.ExterneKennung).HasMaxLength(200);
             e.Property(k => k.Quelle).HasMaxLength(100);
             e.HasIndex(k => k.Email);
@@ -254,6 +255,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.Property(g => g.Nummernschluessel).HasMaxLength(50);
             e.Property(g => g.Bezeichnung).HasMaxLength(200);
             e.Property(g => g.Typ).HasMaxLength(100);
+            e.Property(g => g.Raum).HasMaxLength(100);
             e.Property(g => g.ExterneKennung).HasMaxLength(200);
             e.Property(g => g.Quelle).HasMaxLength(100);
             e.HasIndex(g => g.Nummernschluessel).IsUnique();

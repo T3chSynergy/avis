@@ -159,7 +159,7 @@ können, ohne dass sich am Auftrag etwas ändert.
 
 ### Kundentabelle
 
-- Name, E-Mail, Telefon, Standort, Organisationseinheit, Anmeldename
+- Name, E-Mail, Telefon, Standort, Raum, Organisationseinheit, Anmeldename
 - Jeder Auftrag verweist auf einen Kunden.
 - Meldet sich ein Kunde an oder schreibt eine Mail, wird er über Anmeldename
   bzw. Mailadresse zugeordnet. Gibt es ihn noch nicht, wird er angelegt.
@@ -167,7 +167,7 @@ können, ohne dass sich am Auftrag etwas ändert.
   Administrator, nie von der Person selbst. So kann sich niemand die Aufträge
   eines anderen zuordnen.
 - Die Hotline kann am Telefon einen Kunden suchen oder neu anlegen. Gesucht
-  wird über Name, E-Mail, Telefon und Organisationseinheit.
+  wird über Name, E-Mail, Telefon, Organisationseinheit und Raum.
 - Eine E-Mail-Adresse gehört zu genau einem Kunden.
 - Am Kunden sind seine bisherigen Aufträge sichtbar.
 - Ein Kunde lässt sich als inaktiv markieren. Er bleibt mit seinen Aufträgen
@@ -180,8 +180,8 @@ können, ohne dass sich am Auftrag etwas ändert.
   Schnittstelle nach außen.
 - Ein LDAP-Filter in den Einstellungen bestimmt, wer Kunde ist. Er kann eine
   Gruppe nennen, muss es aber nicht. Deaktivierte Konten zählen nie.
-- Das Verzeichnis gewinnt: Name, E-Mail, Telefon und Organisationseinheit
-  werden überschrieben und lassen sich in AVIS nicht ändern. Der Standort
+- Das Verzeichnis gewinnt: Name, E-Mail, Telefon, Organisationseinheit und
+  Raum werden überschrieben und lassen sich in AVIS nicht ändern. Der Standort
   gehört weiter AVIS.
 - Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
   wiedererkannt und übernommen, nicht verdoppelt.
@@ -196,21 +196,46 @@ können, ohne dass sich am Auftrag etwas ändert.
 
 ### Gerätetabelle
 
-- Inventarnummer, Bezeichnung, Typ, Standort, optional der Kunde, der das Gerät
-  nutzt
+- Inventarnummer, Bezeichnung, Typ, Standort, Raum, optional der Kunde, der das
+  Gerät nutzt
 - Ein Auftrag kann über die Inventarnummer mit einem Gerät verknüpft werden,
   muss aber nicht. Das Freitextfeld bleibt daneben bestehen.
 - Ausgemusterte Geräte bleiben an ihren Aufträgen, lassen sich aber nicht mehr
   neu verknüpfen.
 - Am Gerät sind seine bisherigen Aufträge sichtbar.
 
-### Vorbereitung für externe Quellen
+### Abgleich der Geräte mit Snipe-IT
+
+- AVIS holt die Geräte selbst aus Snipe-IT und schreibt dort nichts,
+  regelmäßig im Hintergrund und auf Wunsch aus der Verwaltung.
+- Snipe-IT gewinnt: Inventarnummer, Bezeichnung, Typ, Raum und Nutzer werden
+  überschrieben und lassen sich in AVIS nicht ändern. Der Standort gehört
+  weiter AVIS.
+- Der Nutzer ist der Kunde mit der Mailadresse des Benutzers, an den das
+  Gerät ausgegeben ist. Gibt es ihn in AVIS nicht, bleibt der Nutzer leer;
+  Kunden kommen nur aus dem Kundenabgleich.
+- Ein Gerät, das schon mit derselben Inventarnummer in AVIS steht, wird
+  übernommen, nicht verdoppelt.
+- Was die Quelle nicht mehr liefert, wird nicht gelöscht, sondern
+  ausgemustert, und wieder in Betrieb genommen, sobald es wieder geliefert
+  wird.
+- Geräte, die nur in AVIS angelegt wurden, fasst der Abgleich nicht an.
+- Liefert die Quelle nichts oder ist sie nicht erreichbar, ändert sich nichts.
+- Der Abgleich selbst kennt die Quelle nicht. Eine andere Quelle könnte
+  dieselbe Liste liefern.
+
+### Raum
+
+Kunden und Geräte tragen neben dem Standort einen Raum als freien Text, zum
+Beispiel „A 105“. Bei abgeglichenen Einträgen liefert ihn die Quelle, sonst
+wird er von Hand eingetragen. Der Standort bleibt die von AVIS gepflegte
+Auswahlliste.
+
+### Externe Quellen
 
 Kunden und Geräte tragen je eine externe Kennung und die Angabe ihrer Quelle.
-Die Kunden lassen sich damit aus dem Active Directory abgleichen (siehe oben).
-Die Gerätetabelle wird noch in AVIS gepflegt. Später können auch ihre Einträge
-aus einem externen System abgeglichen oder die Verknüpfung auf externe Objekte
-umgestellt werden.
+Damit lassen sich die Kunden aus dem Active Directory und die Geräte aus
+Snipe-IT abgleichen (siehe oben).
 
 Die Verknüpfung ist nie Pflicht: Ein Auftrag lässt sich immer auch ohne
 passenden Geräteeintrag erfassen.
@@ -327,3 +352,5 @@ Ein Wechsel ist möglich und vorbereitet:
 - Die Abfrage des Active Directory für Name, E-Mail, Telefon und Abteilung
   neuer Konten ist eingebaut, aber noch nicht an einem echten Verzeichnis
   erprobt.
+- Der Abgleich der Kunden mit dem Active Directory und der Geräte mit
+  Snipe-IT ist noch nicht an den echten Systemen erprobt.

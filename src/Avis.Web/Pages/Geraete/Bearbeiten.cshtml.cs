@@ -26,11 +26,20 @@ public class BearbeitenModel(AvisDb db) : PageModel
         [StringLength(100, ErrorMessage = "Höchstens 100 Zeichen.")]
         public string? Typ { get; set; }
 
+        [StringLength(100, ErrorMessage = "Höchstens 100 Zeichen.")]
+        public string? Raum { get; set; }
+
         public int? StandortId { get; set; }
         public bool Aktiv { get; set; } = true;
     }
 
     public int? Id { get; private set; }
+
+    /// <summary>Gesetzt, wenn das Gerät aus einem externen System stammt. Dann lässt sich nur der Standort ändern.</summary>
+    public string? Quelle { get; private set; }
+
+    /// <summary>Der Nutzer eines Geräts aus einem externen System, zur Anzeige.</summary>
+    public string? Nutzer { get; private set; }
 
     [BindProperty]
     public Formular Eingabe { get; set; } = new();
@@ -59,6 +68,7 @@ public class BearbeitenModel(AvisDb db) : PageModel
                 Inventarnummer = geraet.Inventarnummer,
                 Bezeichnung = geraet.Bezeichnung,
                 Typ = geraet.Typ,
+                Raum = geraet.Raum,
                 StandortId = geraet.StandortId,
                 Aktiv = geraet.Aktiv,
             };
@@ -80,6 +90,22 @@ public class BearbeitenModel(AvisDb db) : PageModel
         var geraet = await LadenAsync(id);
         if (id is not null && geraet is null)
             return NotFound();
+
+        // Was aus einem externen System stammt, wird dort gepflegt. Hier ändert sich dann nur der Standort.
+        if (geraet is { AusQuelle: true })
+        {
+            Eingabe = new Formular
+            {
+                Inventarnummer = geraet.Inventarnummer,
+                Bezeichnung = geraet.Bezeichnung,
+                Typ = geraet.Typ,
+                Raum = geraet.Raum,
+                StandortId = Eingabe.StandortId,
+                Aktiv = geraet.Aktiv,
+            };
+            KundeId = geraet.KundeId;
+            ModelState.Clear();
+        }
 
         if (ModelState.IsValid)
         {
@@ -107,6 +133,7 @@ public class BearbeitenModel(AvisDb db) : PageModel
         geraet.Inventarnummer = Eingabe.Inventarnummer!.Trim();
         geraet.Bezeichnung = Eingabe.Bezeichnung!.Trim();
         geraet.Typ = string.IsNullOrWhiteSpace(Eingabe.Typ) ? null : Eingabe.Typ.Trim();
+        geraet.Raum = string.IsNullOrWhiteSpace(Eingabe.Raum) ? null : Eingabe.Raum.Trim();
         geraet.StandortId = Eingabe.StandortId;
         geraet.KundeId = KundeId;
         geraet.Aktiv = Eingabe.Aktiv;
@@ -129,6 +156,9 @@ public class BearbeitenModel(AvisDb db) : PageModel
             .Select(s => new SelectListItem(s.Name, s.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "kein");
+        Quelle = geraet?.Quelle;
+        if (geraet is { AusQuelle: true, KundeId: not null })
+            Nutzer = await db.Kunden.Where(k => k.Id == geraet.KundeId).Select(k => k.Name).FirstOrDefaultAsync();
         return Page();
     }
 }
