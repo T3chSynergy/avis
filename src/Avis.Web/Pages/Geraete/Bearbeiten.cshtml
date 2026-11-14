@@ -6,7 +6,8 @@
 <p class="pfad"><a asp-page="Index">Geräte</a></p>
 <h1>@ViewData["Title"]</h1>
 
-<form method="post" class="formular">
+@* Das Ziel steht ausdrücklich da: Nach "Suchen" enthält die Adresse der Seite "?handler=Suchen", und ohne Ziel ginge auch das Speichern dorthin. *@
+<form method="post" asp-page="Bearbeiten" asp-route-id="@Model.Id" class="formular">
     <button type="submit" class="unsichtbar" tabindex="-1" aria-hidden="true">Speichern</button>
     <div asp-validation-summary="ModelOnly" class="meldung fehler"></div>
 

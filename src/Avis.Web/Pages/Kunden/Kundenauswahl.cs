@@ -33,6 +33,9 @@ public class Kundenauswahl
     public bool Mehr { get; private init; }
     public bool Gesucht { get; private init; }
 
+    /// <summary>Ob die Suche selbst nichts fand. Der gewählte Kunde steht auch dann in den Treffern.</summary>
+    public bool NichtsGefunden { get; private init; }
+
     public static async Task<Kundenauswahl> LadenAsync(AvisDb db, string? suche, int? gewaehltId, string? leer = null)
     {
         var begriff = suche?.Trim() ?? "";
@@ -49,6 +52,7 @@ public class Kundenauswahl
                 .ToListAsync();
         }
         var mehr = treffer.Count > Hoechstzahl;
+        var nichtsGefunden = gesucht && treffer.Count == 0;
         treffer = treffer.Take(Hoechstzahl).ToList();
 
         // Der gewählte Kunde bleibt sichtbar, auch wenn die Suche ihn nicht mehr trifft.
@@ -69,6 +73,7 @@ public class Kundenauswahl
             Treffer = treffer,
             Mehr = mehr,
             Gesucht = gesucht,
+            NichtsGefunden = nichtsGefunden,
         };
     }
 }

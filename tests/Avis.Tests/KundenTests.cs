@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -69,6 +70,44 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains("Frank Müller", text);
         Assert.Contains("Schon getippter Betreff", text);
         Assert.DoesNotContain("field-validation-error", text);
+    }
+
+    /// <summary>
+    /// Nach der Suche über die Schaltfläche steht "?handler=Suchen" in der
+    /// Adresse. Ein Formular ohne eigenes Ziel schickt der Browser an diese
+    /// Adresse: Dann sucht auch "Auftrag erfassen" nur noch.
+    /// </summary>
+    [Theory]
+    [InlineData("/Auftraege/Neu")]
+    [InlineData("/Auftraege/1/Kunde")]
+    [InlineData("/Geraete/Bearbeiten")]
+    [InlineData("/Geraete/Bearbeiten/1")]
+    public async Task Nach_der_Suche_ueber_die_Schaltflaeche_geht_das_Formular_wieder_an_die_Seite(string seite)
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+
+        var antwort = await anna.PostFormularAsync(seite, $"{seite}?handler=Suchen", new() { ["suche"] = "müller", ["version"] = "1" });
+
+        var text = await antwort.Content.ReadAsStringAsync();
+        Assert.Contains("Frank Müller", text);
+        var formular = Regex.Match(text, "<form[^>]*class=\"formular\"[^>]*>").Value;
+        Assert.NotEmpty(formular);
+        var ziel = Regex.Match(formular, "action=\"([^\"]*)\"");
+        Assert.Equal(seite, ziel.Success ? ziel.Groups[1].Value : antwort.RequestMessage!.RequestUri!.PathAndQuery);
+    }
+
+    [Fact]
+    public async Task Findet_die_Suche_nur_den_gewaehlten_Kunden_gilt_er_als_gefunden()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var frank = await KundeIdAsync("Frank Müller");
+
+        var gefunden = await anna.GetStringAsync($"/Kunden/Treffer?q=frank.mueller@&gewaehlt={frank}&leer=neu");
+        var daneben = await anna.GetStringAsync($"/Kunden/Treffer?q=gibtesnicht&gewaehlt={frank}&leer=neu");
+
+        Assert.DoesNotContain("Keine Kunden gefunden.", gefunden);
+        Assert.Contains("Keine Kunden gefunden.", daneben);
+        Assert.Contains($"id=\"kunde-{frank}\" value=\"{frank}\" checked", daneben);
     }
 
     [Fact]
