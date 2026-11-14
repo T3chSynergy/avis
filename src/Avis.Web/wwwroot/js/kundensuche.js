@@ -8,6 +8,17 @@
     let wartend;
     let laufend = 0;
 
+    // Beim Erfassen: Wer keinen Kunden wählt, legt einen neuen an und muss dessen
+    // Namen nennen. Das prüft der Browser vor dem Absenden, damit das Formular nicht
+    // mit einem Fehler zurückkommt und dabei die gewählten Anhänge verliert.
+    const neuerName = document.querySelector('.neukunde input[name$=".KundeName"]');
+    function pflicht() {
+        const neu = treffer.querySelector('#kunde-neu');
+        if (neuerName) neuerName.required = !!neu && neu.checked;
+    }
+    treffer.addEventListener('change', pflicht);
+    pflicht();
+
     function suchen() {
         const gewaehlt = treffer.querySelector('input[name="kundeId"]:checked');
         const url = new URL(treffer.dataset.url, location.href);
@@ -19,7 +30,9 @@
             .then(antwort => antwort.ok ? antwort.text() : Promise.reject())
             .then(html => {
                 // Nur die Antwort auf die letzte Eingabe zählt.
-                if (nummer === laufend) treffer.innerHTML = html;
+                if (nummer !== laufend) return;
+                treffer.innerHTML = html;
+                pflicht();
             })
             .catch(() => { });
     }

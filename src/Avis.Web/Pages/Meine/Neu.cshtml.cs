@@ -69,6 +69,7 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
 
         if (!ModelState.IsValid || eingang is null)
         {
+            DateienVerloren();
             await SeiteVorbereitenAsync(kunde);
             return Page();
         }
@@ -80,7 +81,7 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
         }
         catch (AuftragException ex)
         {
-            ModelState.AddModelError(nameof(Dateien), ex.Message);
+            DateienVerloren(ex.Message);
             await SeiteVorbereitenAsync(kunde);
             return Page();
         }
@@ -118,5 +119,16 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
             .OrderBy(s => s.Name)
             .Select(s => new SelectListItem(s.Name, s.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
+    }
+
+    /// <summary>
+    /// Sagt am Dateifeld, dass die Dateien noch einmal anzuhängen sind, und
+    /// davor, was an ihnen nicht stimmte. Angezeigt wird nur eine Meldung je Feld.
+    /// </summary>
+    private void DateienVerloren(string? fehler = null)
+    {
+        var meldung = string.Join(" ", new[] { fehler, Anhangablage.NochmalAnhaengen(Dateien) }.Where(t => t is not null));
+        if (meldung.Length > 0)
+            ModelState.AddModelError(nameof(Dateien), meldung);
     }
 }

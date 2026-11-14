@@ -90,6 +90,10 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
             async (auftrag, ich, jetzt) => auftrag.NachrichtAnKunden(ich, text, jetzt, await AnhaengeSpeichernAsync(dateien)),
             versionPruefen: false, formular: "nachricht", entwurf: text);
 
+    /// <summary>Hängt an die Fehlermeldung an, welche Dateien noch einmal anzuhängen sind.</summary>
+    private string MitDateihinweis(string fehler) =>
+        Request.HasFormContentType && Anhangablage.NochmalAnhaengen(Request.Form.Files) is { } hinweis ? $"{fehler} {hinweis}" : fehler;
+
     private async Task<List<Anhang>> AnhaengeSpeichernAsync(List<IFormFile> dateien)
     {
         var anhaenge = await ablage.SpeichernAsync(dateien);
@@ -165,7 +169,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
         void Gescheitert(string fehler)
         {
             ablage.Verwerfen(_neueAnhaenge);
-            TempData["Fehler"] = fehler;
+            TempData["Fehler"] = MitDateihinweis(fehler);
             // Das Formular geht mit dem geschriebenen Text wieder auf.
             if (formular is not null)
             {

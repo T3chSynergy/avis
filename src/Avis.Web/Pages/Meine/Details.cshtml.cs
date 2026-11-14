@@ -97,7 +97,7 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
         {
             ablage.Verwerfen(anhaenge);
             TempData.Remove("Meldung");
-            TempData["Fehler"] = ex.Message;
+            TempData["Fehler"] = Anhangablage.NochmalAnhaengen(dateien) is { } hinweis ? $"{ex.Message} {hinweis}" : ex.Message;
             TempData["Entwurf"] = text;
         }
 

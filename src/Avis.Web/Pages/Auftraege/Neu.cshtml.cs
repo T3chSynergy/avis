@@ -119,6 +119,7 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         var angaben = await Eingabe.Felder.AlsAngabenAsync(db, ModelState, "Eingabe.Felder");
         if (angaben is null || gruppe is null)
         {
+            DateienVerloren();
             await ListenLadenAsync();
             return Page();
         }
@@ -130,7 +131,7 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         }
         catch (AuftragException ex)
         {
-            ModelState.AddModelError(nameof(Dateien), ex.Message);
+            DateienVerloren(ex.Message);
             await ListenLadenAsync();
             return Page();
         }
@@ -156,6 +157,17 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
 
         TempData["Meldung"] = $"Auftrag {auftrag.Id} wurde erfasst.";
         return RedirectToPage("Details", new { id = auftrag.Id });
+    }
+
+    /// <summary>
+    /// Sagt am Dateifeld, dass die Dateien noch einmal anzuhängen sind, und
+    /// davor, was an ihnen nicht stimmte. Angezeigt wird nur eine Meldung je Feld.
+    /// </summary>
+    private void DateienVerloren(string? fehler = null)
+    {
+        var meldung = string.Join(" ", new[] { fehler, Anhangablage.NochmalAnhaengen(Dateien) }.Where(t => t is not null));
+        if (meldung.Length > 0)
+            ModelState.AddModelError(nameof(Dateien), meldung);
     }
 
     private async Task<Kunde> KundeFindenOderAnlegenAsync()

@@ -1,7 +1,9 @@
 // Bilder in Textfelder einfügen: Ein Bild aus der Zwischenablage (Strg+V) und
 // hineingezogene Dateien werden Anhänge dieses Eintrags. Unter dem Dateifeld
 // steht, was mitgeschickt wird. Wer nacheinander mehrmals Dateien wählt,
-// behält die schon gewählten.
+// behält die schon gewählten. Zu große, leere und zu viele Dateien werden
+// gleich abgelehnt: Käme das Formular deswegen mit einem Fehler zurück,
+// wären alle gewählten Dateien weg.
 // Ohne dieses Skript wählt man Dateien über das Dateifeld, alle auf einmal.
 (function () {
     document.querySelectorAll('textarea[data-markdown]').forEach(feld => {
@@ -16,7 +18,14 @@
         const vorschau = document.createElement('ul');
         vorschau.className = 'dateivorschau';
         vorschau.setAttribute('aria-live', 'polite');
-        dateifeld.after(hinweis, vorschau);
+        const meldung = document.createElement('p');
+        meldung.className = 'feldfehler';
+        meldung.setAttribute('role', 'alert');
+        dateifeld.after(hinweis, meldung, vorschau);
+
+        // Dieselben Grenzen prüft der Server noch einmal.
+        const hoechstgroesse = Number(dateifeld.dataset.hoechstgroesse) || Infinity;
+        const hoechstzahl = Number(dateifeld.dataset.hoechstzahl) || Infinity;
 
         // Was mitgeschickt wird. Der Browser ersetzt die Auswahl im Dateifeld
         // bei jedem Öffnen des Dialogs, deshalb steht sie hier noch einmal.
@@ -32,7 +41,19 @@
 
         // Dieselbe Datei ein zweites Mal zu wählen, hängt sie nicht doppelt an.
         function hinzufuegen(neue) {
-            setzen(bestand.concat(neue.filter(datei => !bestand.some(vorhanden => gleich(vorhanden, datei)))));
+            const liste = bestand.slice();
+            const abgelehnt = [];
+            const zuViele = [];
+            neue.forEach(datei => {
+                if (liste.some(vorhanden => gleich(vorhanden, datei))) return;
+                if (datei.size === 0) abgelehnt.push(datei.name + ' ist leer');
+                else if (datei.size > hoechstgroesse) abgelehnt.push(datei.name + ' ist größer als ' + groesse(hoechstgroesse));
+                else if (liste.length >= hoechstzahl) zuViele.push(datei.name);
+                else liste.push(datei);
+            });
+            if (zuViele.length) abgelehnt.push(zuViele.join(', ') + ' – es gehen höchstens ' + hoechstzahl + ' Dateien auf einmal');
+            meldung.textContent = abgelehnt.length ? 'Nicht angehängt: ' + abgelehnt.join('; ') + '.' : '';
+            setzen(liste);
         }
 
         function gleich(a, b) {
@@ -100,6 +121,7 @@
     function groesse(bytes) {
         if (bytes < 1024) return bytes + ' Byte';
         if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1).replace('.', ',') + ' MB';
+        const mb = bytes / (1024 * 1024);
+        return (Number.isInteger(mb) ? String(mb) : mb.toFixed(1).replace('.', ',')) + ' MB';
     }
 })();

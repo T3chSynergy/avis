@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using Avis.Web.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -125,6 +126,71 @@ public class AnhangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
         Assert.Equal(auftraege, await app.DatenbankAsync(db => db.Auftraege.CountAsync()));
         Assert.Equal(dateien, app.DateienInDerAblage());
+    }
+
+    /// <summary>
+    /// Kommt ein Formular mit einem Fehler zurück, kann der Browser die
+    /// gewählten Dateien nicht wieder eintragen. Das soll nicht still geschehen.
+    /// </summary>
+    [Fact]
+    public async Task Nach_einem_Fehler_nennt_die_Seite_die_Dateien_die_noch_einmal_anzuhaengen_sind()
+    {
+        const string hinweis = "Die gewählten Dateien stehen nach einem Fehler nicht mehr im Formular. Bitte noch einmal anhängen: ";
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var dieter = await app.AnmeldenAlsAsync("dieter");
+        var ohneBeschreibung = new Dictionary<string, string>
+        {
+            ["Eingabe.KundeName"] = "Test Kunde",
+            ["Eingabe.Felder.Betreff"] = "Ohne Beschreibung",
+            ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync())).ToString(),
+        };
+
+        // Erfassen durch einen Bearbeiter.
+        var erfassen = await (await anna.PostMitDateienAsync("/Auftraege/Neu", "/Auftraege/Neu", new(ohneBeschreibung), ("foto.png", Bild), ("protokoll.txt", Protokoll))).Content.ReadAsStringAsync();
+        Assert.Contains("Bitte eine Beschreibung angeben.", erfassen);
+        Assert.Contains(hinweis + "foto.png, protokoll.txt.", erfassen);
+
+        // Ohne Dateien gibt es nichts zu sagen.
+        var ohneDateien = await (await anna.PostMitDateienAsync("/Auftraege/Neu", "/Auftraege/Neu", new(ohneBeschreibung))).Content.ReadAsStringAsync();
+        Assert.Contains("Bitte eine Beschreibung angeben.", ohneDateien);
+        Assert.DoesNotContain("noch einmal anhängen", ohneDateien);
+
+        // Wird eine Datei abgelehnt, sind auch die übrigen weg.
+        var zuGross = await (await ErfassenAntwortAsync(anna, "Eine zu groß", null, ("klein.txt", Protokoll), ("riesig.bin", new byte[1024 * 1024 + 1]))).Content.ReadAsStringAsync();
+        Assert.Contains("Die Datei riesig.bin ist größer als 1 MB.", zuGross);
+        Assert.Contains(hinweis + "klein.txt, riesig.bin.", zuGross);
+
+        // Neuer Auftrag eines Kunden.
+        var stellen = await (await dieter.PostMitDateienAsync("/Meine/Neu", "/Meine/Neu", new() { ["Eingabe.Betreff"] = "Ohne Beschreibung" }, ("foto.png", Bild))).Content.ReadAsStringAsync();
+        Assert.Contains(hinweis + "foto.png.", stellen);
+
+        // Kommentar an einem Auftrag, den Anna nicht übernommen hat, und eine Antwort des Kunden mit zu großer Datei.
+        var id = await StellenAsync(dieter, "Mit Anhängen im Verlauf");
+        var kommentar = await (await anna.PostMitDateienAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=InternerKommentar", new() { ["version"] = "1", ["text"] = "Notiz." }, ("notiz.txt", Protokoll))).Content.ReadAsStringAsync();
+        Assert.Contains(hinweis + "notiz.txt.", kommentar);
+        var antwort = await (await dieter.PostMitDateienAsync($"/Meine/{id}", $"/Meine/{id}", new() { ["text"] = "Siehe Anhang." }, ("riesig.bin", new byte[1024 * 1024 + 1]))).Content.ReadAsStringAsync();
+        Assert.Contains(hinweis + "riesig.bin.", antwort);
+    }
+
+    [Fact]
+    public async Task Der_Browser_kann_Pflichtfelder_und_Dateien_schon_vor_dem_Absenden_pruefen()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var dieter = await app.AnmeldenAlsAsync("dieter");
+
+        foreach (var (seite, betreff, beschreibung) in new[]
+        {
+            (await anna.GetStringAsync("/Auftraege/Neu"), "Eingabe.Felder.Betreff", "Eingabe.Felder.Beschreibung"),
+            (await dieter.GetStringAsync("/Meine/Neu"), "Eingabe.Betreff", "Eingabe.Beschreibung"),
+        })
+        {
+            Assert.Contains(" required", Regex.Match(seite, $"<input[^>]*name=\"{betreff}\"[^>]*>").Value);
+            Assert.Contains(" required", Regex.Match(seite, $"<textarea[^>]*name=\"{beschreibung}\"[^>]*>").Value);
+            // Die Grenzen der Testumgebung: 1 MB je Datei, drei Dateien.
+            var dateifeld = Regex.Match(seite, "<input[^>]*type=\"file\"[^>]*>").Value;
+            Assert.Contains("data-hoechstgroesse=\"1048576\"", dateifeld);
+            Assert.Contains("data-hoechstzahl=\"3\"", dateifeld);
+        }
     }
 
     [Fact]
