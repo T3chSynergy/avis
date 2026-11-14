@@ -154,6 +154,49 @@ public class GeraeteabgleichTests
     }
 
     [Fact]
+    public async Task Bekommt_ein_Geraet_eine_neue_Nummer_ist_die_alte_im_selben_Lauf_wieder_frei()
+    {
+        using var app = await OhneQuellgeraeteAsync();
+        app.Geraetequelle.Geraete.AddRange([Lesegeraet, Plotter]);
+        await AbgleichenAsync(app);
+        var scanner = await GeraetAsync(app, "SC-7001");
+
+        // Der Scanner wird in der Quelle umnummeriert, und ein neues Gerät bekommt seine bisherige Nummer.
+        app.Geraetequelle.Geraete.Clear();
+        app.Geraetequelle.Geraete.AddRange([
+            Lesegeraet with { Inventarnummer = "SC-7009" },
+            Plotter,
+            new("107", "SC-7001", "Nachfolger", "Scanner", null, null),
+        ]);
+        var ergebnis = await AbgleichenAsync(app);
+
+        Assert.Null(ergebnis.Fehler);
+        Assert.Empty(ergebnis.Hinweise!);
+        Assert.Equal((3, 1, 1, 0, 0), (ergebnis.Gelesen, ergebnis.Neu, ergebnis.Geaendert, ergebnis.Reaktiviert, ergebnis.Inaktiv));
+        Assert.Equal(scanner.Id, (await GeraetAsync(app, "SC-7009")).Id);
+        Assert.Equal(("107", "Nachfolger"), ((await GeraetAsync(app, "SC-7001")).ExterneKennung, (await GeraetAsync(app, "SC-7001")).Bezeichnung));
+    }
+
+    [Fact]
+    public async Task Auch_sehr_viele_Geraete_gleicht_ein_Lauf_zuegig_ab()
+    {
+        using var app = await OhneQuellgeraeteAsync();
+        app.Geraetequelle.Geraete.AddRange(Enumerable.Range(0, 20000).Select(i =>
+            new Quellgeraet($"{100000 + i}", $"INV-{i:D6}", $"Gerät {i}", "Notebook", $"A {i % 400}", null)));
+
+        var erster = await AbgleichenAsync(app);
+        var uhr = System.Diagnostics.Stopwatch.StartNew();
+        var zweiter = await AbgleichenAsync(app);
+        uhr.Stop();
+
+        Assert.Equal((20000, 20000), (erster.Gelesen, erster.Neu));
+        Assert.Equal((20000, 0, 0, 0), (zweiter.Gelesen, zweiter.Neu, zweiter.Geaendert, zweiter.Inaktiv));
+        // Mit einer Suche je Gerät durch die ganze Liste dauerte der zweite Lauf über zehn Sekunden. Die Grenze
+        // lässt langsamen Rechnern viel Luft und fängt trotzdem den Rückfall dahin.
+        Assert.True(uhr.Elapsed < TimeSpan.FromSeconds(8), $"Der Lauf dauerte {uhr.Elapsed.TotalSeconds:F1} s.");
+    }
+
+    [Fact]
     public async Task Geraete_aus_der_Quelle_lassen_sich_in_AVIS_nicht_aendern()
     {
         using var app = await OhneQuellgeraeteAsync();
