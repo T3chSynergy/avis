@@ -1,5 +1,7 @@
 using Avis.Web.Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Avis.Web.Data;
 
@@ -12,10 +14,61 @@ public static class Startdaten
         var db = scope.ServiceProvider.GetRequiredService<AvisDb>();
 
         await db.Database.MigrateAsync();
+        await FuellenAsync(db, app.Configuration, app.Environment, app.Logger);
+    }
 
-        var ersteNummer = app.Configuration.GetValue<int>("Auftraege:ErsteNummer");
+    /// <summary>
+    /// Leert alle Tabellen und legt die Testdaten neu an, als wäre die
+    /// Anwendung zum ersten Mal gestartet. Nur für die Entwicklungsumgebung
+    /// mit eingeschalteten Testdaten; sonst geschieht nichts und es gibt
+    /// einen Fehler. Die Dateien der Anhänge räumt der Aufrufer weg.
+    ///
+    /// Geleert wird in einer Transaktion, die Datei bleibt bestehen: So stört
+    /// es nicht, wenn der Mailversand im Hintergrund gerade liest. Die
+    /// Anweisungen sind die von SQLite.
+    /// </summary>
+    public static async Task NeuAnlegenAsync(AvisDb db, IConfiguration konfiguration, IHostEnvironment umgebung, ILogger log)
+    {
+        if (!umgebung.IsDevelopment() || !konfiguration.GetValue<bool>("Testdaten:Anlegen"))
+            throw new InvalidOperationException(
+                "Die Datenbank lässt sich nur in der Entwicklungsumgebung mit Testdaten (Testdaten:Anlegen) neu anlegen.");
+        if (!db.Database.IsSqlite())
+            throw new NotSupportedException("Das Neuanlegen der Testdaten ist nur für SQLite umgesetzt.");
+
+        var sql = db.GetService<ISqlGenerationHelper>();
+        var tabellen = db.Model.GetEntityTypes()
+            .Select(t => t.GetTableName())
+            .OfType<string>()
+            .Distinct()
+            .ToList();
+
+        await using (var transaktion = await db.Database.BeginTransactionAsync())
+        {
+            // Die Reihenfolge der Tabellen spielt so keine Rolle: Geprüft wird erst am Ende, wenn alles leer ist.
+            await db.Database.ExecuteSqlRawAsync("PRAGMA defer_foreign_keys = ON");
+            foreach (var tabelle in tabellen)
+            {
+                // Die Namen stammen aus dem Modell, nicht aus einer Eingabe.
+#pragma warning disable EF1002
+                await db.Database.ExecuteSqlRawAsync($"DELETE FROM {sql.DelimitIdentifier(tabelle)}");
+#pragma warning restore EF1002
+            }
+            // Die Zählung beginnt wieder von vorn.
+            await db.Database.ExecuteSqlRawAsync("DELETE FROM sqlite_sequence");
+            await transaktion.CommitAsync();
+        }
+        db.ChangeTracker.Clear();
+
+        await FuellenAsync(db, konfiguration, umgebung, log);
+        log.LogWarning("Die Datenbank wurde geleert und mit Testdaten neu angelegt.");
+    }
+
+    /// <summary>Was eine Datenbank mit aktuellen Tabellen noch braucht: Zählung, Eingangsgruppe, Suchtexte, Testdaten.</summary>
+    private static async Task FuellenAsync(AvisDb db, IConfiguration konfiguration, IHostEnvironment umgebung, ILogger log)
+    {
+        var ersteNummer = konfiguration.GetValue<int>("Auftraege:ErsteNummer");
         if (await AuftragsnummerAnhebenAsync(db, ersteNummer))
-            app.Logger.LogInformation("Der nächste Auftrag bekommt die Nummer {Nummer} (Auftraege:ErsteNummer).", ersteNummer);
+            log.LogInformation("Der nächste Auftrag bekommt die Nummer {Nummer} (Auftraege:ErsteNummer).", ersteNummer);
 
         if (!await db.Gruppen.AnyAsync(g => g.IstEingangsgruppe))
         {
@@ -41,9 +94,9 @@ public static class Startdaten
             await db.SaveChangesAsync();
         }
 
-        if (app.Configuration.GetValue<bool>("Testdaten:Anlegen"))
+        if (konfiguration.GetValue<bool>("Testdaten:Anlegen"))
         {
-            if (!app.Environment.IsDevelopment())
+            if (!umgebung.IsDevelopment())
                 throw new InvalidOperationException(
                     "Testdaten (Testdaten:Anlegen) sind nur in der Entwicklungsumgebung erlaubt.");
 

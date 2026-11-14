@@ -36,3 +36,33 @@
         <button type="submit" name="anmeldename" value="">Anmelden</button>
     </div>
 </form>
+
+<div class="kasten">
+    <h3>Mails</h3>
+    @switch (Model.Mailart)
+    {
+        case Avis.Web.Mail.MailOptionen.Ordner:
+            <p class="erklaerung">Mails werden nicht versendet, sondern als Dateien abgelegt. Ein Mailprogramm öffnet sie.</p>
+            <p><code>@Model.Mailordner</code></p>
+            break;
+        case Avis.Web.Mail.MailOptionen.Smtp:
+            <p class="erklaerung">Mails gehen an den eingestellten Mailserver (<code>Mail:Art = Smtp</code>).</p>
+            break;
+        default:
+            <p class="erklaerung">Der Mailversand ist ausgeschaltet (<code>Mail:Art = Aus</code>). Mit <code>Ordner</code> landen Mails als Dateien auf diesem Rechner.</p>
+            break;
+    }
+</div>
+
+@if (Model.MitTestdaten)
+{
+    <form method="post" asp-page-handler="NeuAnlegen" class="kasten">
+        <h3>Datenbank neu anlegen</h3>
+        <p class="erklaerung">Leert die Datenbank und legt die Testdaten neu an. Alle Aufträge, Kunden, Geräte, Anhänge und selbst angelegten Konten gehen dabei verloren. Abgelegte Mails bleiben liegen.</p>
+        <div class="ankreuz">
+            <input type="checkbox" id="bestaetigt" name="bestaetigt" value="true" required />
+            <label for="bestaetigt">Ja, alles löschen und neu anlegen</label>
+        </div>
+        <button type="submit">Datenbank neu anlegen</button>
+    </form>
+}

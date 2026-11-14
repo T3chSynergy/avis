@@ -47,8 +47,9 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **E-Mail-Eingang** über IMAP (EWS wäre im Haus möglich, wurde nicht gewählt).
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.
-  Einzige Ausnahme: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt
-  (`Startdaten.AuftragsnummerAnhebenAsync`); bei einem Wechsel ist diese Stelle neu zu schreiben.
+  Ausnahmen in `Startdaten`: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt
+  (`AuftragsnummerAnhebenAsync`), und das Neuanlegen der Testdaten leert die Tabellen mit Anweisungen
+  von SQLite (`NeuAnlegenAsync`). Bei einem Wechsel sind beide Stellen neu zu schreiben.
 - **.NET 10 (LTS) bleibt.** Pakete von .NET stehen auf `10.0.*`; Dependabot schlägt deren nächste
   Hauptversion nicht vor. Der Umstieg ist eine eigene Entscheidung.
 - **`global.json` nicht anheben.** Die Version dort ist eine Mindestversion; eine Anhebung sperrt Rechner

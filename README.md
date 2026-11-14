@@ -46,11 +46,13 @@ dotnet run --project src/Avis.Web
 Die Anwendung läuft dann unter http://localhost:5274. In der
 Entwicklungsumgebung legt sie beim ersten Start eine SQLite-Datenbank unter
 `src/Avis.Web/App_Data` mit Testdaten an und bietet eine Testanmeldung, bei der
-man den Benutzer auswählt. Wer die Datenbank löscht, bekommt beim nächsten
-Start frische Testdaten.
+man den Benutzer auswählt. Frische Testdaten gibt es auf der Seite der
+Testanmeldung über „Datenbank neu anlegen": Das leert die Datenbank, entfernt
+die Anhänge und beginnt die Zählung von vorn.
 
 Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
-`src/Avis.Web/App_Data/Mails` abgelegt. Ein Mailprogramm öffnet sie.
+`src/Avis.Web/App_Data/Mails` abgelegt. Ein Mailprogramm öffnet sie. Den
+Ordner nennt auch die Seite der Testanmeldung.
 
 ## Bedienung
 
