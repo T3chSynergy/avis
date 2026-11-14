@@ -5,13 +5,17 @@
     ViewData["Title"] = k.Name;
 }
 <p class="pfad"><a asp-page="Index">Kunden</a></p>
-<h1>@k.Name</h1>
+<h1>@k.Name @if (!k.Aktiv) { <span class="hinweis">inaktiv</span> }</h1>
+@if (!k.Aktiv)
+{
+    <p class="erklaerung">Dieser Kunde ist als inaktiv markiert. Seine Aufträge bleiben erhalten, für neue Aufträge steht er nicht mehr zur Wahl.</p>
+}
 
 <div class="spalten">
     <section aria-labelledby="h-auftraege">
         <h2 id="h-auftraege">
             Laufende Aufträge
-            <a class="nebenaktion" asp-page="/Auftraege/Neu" asp-route-kundeId="@k.Id">Auftrag für @k.Name erfassen</a>
+            @if (k.Aktiv) { <a class="nebenaktion" asp-page="/Auftraege/Neu" asp-route-kundeId="@k.Id">Auftrag für @k.Name erfassen</a> }
         </h2>
         <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Laufend, OhneKunde: true)" />
 
@@ -34,16 +38,21 @@
         }
     </section>
 
+    <div>
     <form method="post" class="kasten">
         <h3>Angaben</h3>
+        @if (k.AusQuelle)
+        {
+            <p class="erklaerung">Stammt aus @k.Quelle. Name, E-Mail, Telefon und Organisationseinheit werden dort gepflegt und beim Abgleich überschrieben.</p>
+        }
         <label for="name">Name</label>
-        <input id="name" name="name" value="@k.Name" maxlength="200" required autocomplete="off" />
+        <input id="name" name="name" value="@k.Name" maxlength="200" required autocomplete="off" disabled="@k.AusQuelle" />
         <label for="email">E-Mail</label>
-        <input id="email" name="email" type="email" value="@k.Email" maxlength="320" autocomplete="off" />
+        <input id="email" name="email" type="email" value="@k.Email" maxlength="320" autocomplete="off" disabled="@k.AusQuelle" />
         <label for="telefon">Telefon</label>
-        <input id="telefon" name="telefon" value="@k.Telefon" maxlength="50" autocomplete="off" />
+        <input id="telefon" name="telefon" value="@k.Telefon" maxlength="50" autocomplete="off" disabled="@k.AusQuelle" />
         <label for="organisationseinheit">Organisationseinheit</label>
-        <input id="organisationseinheit" name="organisationseinheit" value="@k.Organisationseinheit" maxlength="200" autocomplete="off" />
+        <input id="organisationseinheit" name="organisationseinheit" value="@k.Organisationseinheit" maxlength="200" autocomplete="off" disabled="@k.AusQuelle" />
         <label for="standortId">Standort</label>
         <select id="standortId" name="standortId" asp-items="Model.Standorte">
             <option value="">–</option>
@@ -54,4 +63,18 @@
         }
         <button type="submit" class="haupt">Speichern</button>
     </form>
+
+    @if (!k.AusQuelle)
+    {
+        <form method="post" asp-page-handler="Aktiv" class="kasten">
+            <h3>@(k.Aktiv ? "Als inaktiv markieren" : "Wieder aktivieren")</h3>
+            <p class="erklaerung">
+                @(k.Aktiv
+                    ? "Der Kunde bleibt mit seinen Aufträgen erhalten, steht aber nicht mehr zur Wahl, wenn ein Auftrag erfasst wird."
+                    : "Der Kunde steht danach wieder zur Wahl, wenn ein Auftrag erfasst wird.")
+            </p>
+            <button type="submit" name="aktiv" value="@(k.Aktiv ? "false" : "true")">@(k.Aktiv ? "Als inaktiv markieren" : "Wieder aktivieren")</button>
+        </form>
+    }
+    </div>
 </div>

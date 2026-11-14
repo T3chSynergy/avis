@@ -175,6 +175,9 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 | `Zeitzone` | Zeitzone für die Anzeige, Zeitpunkte werden in UTC gespeichert |
 | `Auftraege:ErsteNummer` | Nummer, die der nächste Auftrag mindestens bekommt, zum Beispiel `200000`, um an eine vorhandene Zählung anzuschließen. Wird beim Start angewendet und wirkt nur nach oben. Standard 0: Die Zählung beginnt bei 1 |
 | `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon und Abteilung neuer Konten aus dem Active Directory, `Keines` lässt das aus |
+| `Kundenabgleich:Art` | `ActiveDirectory` gleicht die Kunden mit einer Gruppe des Active Directory ab, `Aus` lässt das aus |
+| `Kundenabgleich:Gruppe` | Name der Gruppe, deren Mitglieder die Kunden sind |
+| `Kundenabgleich:AbstandMinuten` | Abstand zwischen zwei Abgleichen, Standard 60, mindestens 5 |
 | `Mail:Art` | `Smtp` versendet, `Ordner` legt Mails als Dateien ab, `Aus` sendet nichts |
 | `Mail:Server`, `Mail:Port` | Mailserver, Standardport 25 |
 | `Mail:Verschluesselung` | `Auto`, `Keine`, `StartTls` oder `Ssl` |
@@ -255,6 +258,31 @@ Gmail und Thunderbird geprüft, nicht mit echten Mails aus dem Haus. Der dazugeh
 `AVIS_TEST_IMAP` in der Form `host:port:benutzer:kennwort` gesetzt ist. Er
 verarbeitet die ungelesenen Mails dieses Postfachs und markiert sie als
 gelesen, gehört also nur an ein Testpostfach.
+
+## Kundenabgleich
+
+Mit `Kundenabgleich:Art = ActiveDirectory` sind die Mitglieder der Gruppe aus
+`Kundenabgleich:Gruppe` die Kunden. AVIS liest sie eine Minute nach dem Start
+und dann im eingestellten Abstand; unter Verwaltung → Kundenabgleich steht,
+was der letzte Lauf getan hat, und er lässt sich dort sofort anstoßen.
+
+- Das Verzeichnis gewinnt: Name, E-Mail, Telefon und Organisationseinheit
+  werden überschrieben und lassen sich in AVIS nicht ändern.
+- Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
+  wiedererkannt und übernommen.
+- Wer in der Gruppe fehlt oder dessen Konto deaktiviert ist, wird als inaktiv
+  markiert. Er bleibt mit seinen Aufträgen erhalten und steht nur nicht mehr
+  zur Wahl, wenn ein Auftrag erfasst wird.
+- Kunden, die nur in AVIS angelegt wurden, bleiben unberührt. Ein Bearbeiter
+  markiert sie auf der Seite des Kunden als inaktiv.
+- Liefert das Verzeichnis keinen einzigen Kunden oder ist es nicht
+  erreichbar, ändert sich nichts.
+
+Gelesen wird mit dem Konto, unter dem AVIS läuft, aus der Domäne des Servers.
+Die Gruppe muss ihre Mitglieder im Verzeichnis führen; verschachtelte Gruppen
+zählen mit. Eine dynamische Verteilergruppe von Exchange besteht nur aus einem
+Filter und liefert keine Mitglieder. Der Abgleich ist noch nicht an einem
+echten Verzeichnis erprobt.
 
 ## Anhänge
 

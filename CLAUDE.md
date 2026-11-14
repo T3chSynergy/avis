@@ -49,6 +49,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Oberfläche:** Blau nur für Anklickbares, damit Schaltflächen sich vom Schmuck unterscheiden.
 - **JavaScript** nur als Zugabe, ohne Framework und ohne Node-Werkzeuge; deshalb auch kein ESLint.
 - **E-Mail-Eingang** über IMAP (EWS wäre im Haus möglich, wurde nicht gewählt).
+- **Kunden aus dem AD:** AVIS zieht selbst, keine API. Eine AD-Gruppe bestimmt, wer Kunde ist. Das AD
+  gewinnt; wer dort fehlt, wird inaktiv, nie gelöscht. Der Kern (`Kundenabgleich`) kennt die Quelle nicht.
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.
   Ausnahmen in `Startdaten`: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt
@@ -93,7 +95,7 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert werden:
 
 - Windows-Anmeldung (`Anmeldung:Art = Windows`) unter IIS
-- Abgleich mit Active Directory (`ActiveDirectoryVerzeichnis`)
+- Abgleich mit Active Directory (`ActiveDirectoryVerzeichnis`, `ActiveDirectoryKundenquelle`)
 - SMTP und IMAP gegen Exchange – IMAP lief bisher nur gegen einen lokalen Dovecot-Server
   (Test mit der Umgebungsvariable `AVIS_TEST_IMAP`)
 - HTML-Mails aus dem echten Outlook
@@ -107,6 +109,6 @@ In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert
 3. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
 4. Lizenz wählen.
-5. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen oder stilllegen; Anhänge lassen sich
-   nicht löschen; im Browser eingefügte Bilder stehen unter dem Text, nicht mittendrin; keine
-   Markdown-Vorschau.
+5. Anmeldung der Kunden an die AD-Gruppe des Kundenabgleichs binden: vom Nutzer angedacht, nicht gebaut.
+6. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen; Anhänge lassen sich nicht löschen;
+   im Browser eingefügte Bilder stehen unter dem Text, nicht mittendrin; keine Markdown-Vorschau.

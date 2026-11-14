@@ -15,6 +15,7 @@ else if (!Model.Gesucht && Model.Treffer.Count == 0)
             <input type="radio" name="kundeId" id="kunde-@k.Id" value="@k.Id" checked="@(k.Id == Model.GewaehltId)" />
             <label for="kunde-@k.Id">
                 <strong>@k.Name</strong>
+                @if (!k.Aktiv) { <span class="hinweis">inaktiv</span> }
                 @if (k.Email is not null) {<text> · @k.Email</text>}
                 @if (k.Telefon is not null) {<text> · Tel. @k.Telefon</text>}
                 @if (k.Organisationseinheit is not null) {<text> · @k.Organisationseinheit</text>}

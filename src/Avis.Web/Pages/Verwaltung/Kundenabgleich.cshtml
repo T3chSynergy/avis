@@ -1,0 +1,65 @@
+@page
+@model KundenabgleichModel
+@{
+    ViewData["Title"] = "Kundenabgleich";
+    var letztes = Model.Letztes;
+}
+<h1>Verwaltung</h1>
+<partial name="_Bereiche" />
+<h2>Kundenabgleich</h2>
+
+@if (!Model.Eingerichtet)
+{
+    <p class="erklaerung">
+        Der Abgleich ist ausgeschaltet (<code>Kundenabgleich:Art = @Model.Optionen.Art</code>). Kunden werden nur in AVIS gepflegt.
+        Mit <code>ActiveDirectory</code> und einer Gruppe in <code>Kundenabgleich:Gruppe</code> sind die Mitglieder dieser Gruppe die Kunden.
+    </p>
+}
+else
+{
+    <p class="erklaerung">
+        Quelle: <strong>@Model.Optionen.Art</strong>@if (!string.IsNullOrWhiteSpace(Model.Optionen.Gruppe)) {<text>, Gruppe <strong>@Model.Optionen.Gruppe</strong></text>}.
+        Die Quelle gewinnt: Name, E-Mail, Telefon und Organisationseinheit werden überschrieben.
+        Wer dort fehlt, wird nicht gelöscht, sondern als inaktiv markiert. Kunden, die nur in AVIS angelegt wurden, bleiben unberührt.
+    </p>
+
+    @if (letztes is null)
+    {
+        <p class="leer">Seit dem Start von AVIS wurde noch nicht abgeglichen.</p>
+    }
+    else if (letztes.Fehler is not null)
+    {
+        <p class="meldung fehler">Letzter Abgleich am @Ortszeit.Anzeigen(letztes.Zeitpunkt): @letztes.Fehler</p>
+    }
+    else
+    {
+        <dl class="angaben">
+            <dt>Letzter Abgleich</dt>
+            <dd>@Ortszeit.Anzeigen(letztes.Zeitpunkt)</dd>
+            <dt>Aus der Quelle gelesen</dt>
+            <dd>@letztes.Gelesen</dd>
+            <dt>Neu angelegt</dt>
+            <dd>@letztes.Neu</dd>
+            <dt>Geändert</dt>
+            <dd>@letztes.Geaendert</dd>
+            <dt>Wieder aktiv</dt>
+            <dd>@letztes.Reaktiviert</dd>
+            <dt>Als inaktiv markiert</dt>
+            <dd>@letztes.Inaktiv</dd>
+        </dl>
+        @if (letztes.Hinweise is { Count: > 0 } hinweise)
+        {
+            <h3>Hinweise</h3>
+            <ul>
+                @foreach (var hinweis in hinweise)
+                {
+                    <li>@hinweis</li>
+                }
+            </ul>
+        }
+    }
+
+    <form method="post">
+        <button type="submit" class="haupt">Jetzt abgleichen</button>
+    </form>
+}

@@ -44,8 +44,10 @@ public class Kundenauswahl
         var treffer = new List<Kunde>();
         if (gesucht)
         {
+            // Inaktive Kunden stehen nicht zur Wahl. Ist einer schon gewählt, bleibt er unten sichtbar.
             treffer = await db.Kunden.AsNoTracking()
                 .Include(k => k.Standort)
+                .Where(k => k.Aktiv)
                 .Suchen(begriff)
                 .OrderBy(k => k.Name)
                 .Take(Hoechstzahl + 1)

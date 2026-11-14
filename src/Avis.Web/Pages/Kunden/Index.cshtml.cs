@@ -12,7 +12,7 @@ public class IndexModel(AvisDb db) : PageModel
 {
     public const int Hoechstzahl = 50;
 
-    public record Zeile(int Id, string Name, string? Email, string? Telefon, string? Organisationseinheit, string? Standort, int Laufend);
+    public record Zeile(int Id, string Name, string? Email, string? Telefon, string? Organisationseinheit, string? Standort, int Laufend, bool Aktiv);
 
     [BindProperty(SupportsGet = true)]
     public string? Q { get; set; }
@@ -34,7 +34,8 @@ public class IndexModel(AvisDb db) : PageModel
                 k.Telefon,
                 k.Organisationseinheit,
                 k.Standort!.Name,
-                sichtbar.Count(a => a.KundeId == k.Id && a.AbgeschlossenAm == null)))
+                sichtbar.Count(a => a.KundeId == k.Id && a.AbgeschlossenAm == null),
+                k.Aktiv))
             .ToListAsync();
 
         Gekuerzt = kunden.Count > Hoechstzahl;

@@ -94,6 +94,10 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
                 ModelState.AddModelError(nameof(KundeId), "Dieser Kunde wurde nicht gefunden.");
                 KundeId = null;
             }
+            else if (!kunde.Aktiv)
+            {
+                ModelState.AddModelError(nameof(KundeId), $"{kunde.Name} ist als inaktiv markiert. Für inaktive Kunden wird kein Auftrag erfasst.");
+            }
         }
         else if (neuerName.Length == 0)
         {

@@ -170,6 +170,29 @@ können, ohne dass sich am Auftrag etwas ändert.
   wird über Name, E-Mail, Telefon und Organisationseinheit.
 - Eine E-Mail-Adresse gehört zu genau einem Kunden.
 - Am Kunden sind seine bisherigen Aufträge sichtbar.
+- Ein Kunde lässt sich als inaktiv markieren. Er bleibt mit seinen Aufträgen
+  erhalten, steht aber nicht mehr zur Wahl, wenn ein Auftrag erfasst wird.
+
+### Abgleich der Kunden mit dem Active Directory
+
+- AVIS holt die Kunden selbst aus dem Active Directory, regelmäßig im
+  Hintergrund und auf Wunsch aus der Verwaltung. Es gibt dafür keine
+  Schnittstelle nach außen.
+- Eine Gruppe im Verzeichnis bestimmt, wer Kunde ist. Verschachtelte Gruppen
+  zählen mit, deaktivierte Konten nicht.
+- Das Verzeichnis gewinnt: Name, E-Mail, Telefon und Organisationseinheit
+  werden überschrieben und lassen sich in AVIS nicht ändern. Der Standort
+  gehört weiter AVIS.
+- Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
+  wiedererkannt und übernommen, nicht verdoppelt.
+- Wer in der Gruppe fehlt, wird nicht gelöscht, sondern inaktiv, und wieder
+  aktiv, sobald er dort wieder steht.
+- Kunden, die nur in AVIS angelegt wurden, fasst der Abgleich nicht an. Sie
+  werden von Hand als inaktiv markiert.
+- Liefert das Verzeichnis nichts oder ist es nicht erreichbar, ändert sich
+  nichts.
+- Der Abgleich selbst kennt die Quelle nicht. Eine andere Quelle könnte
+  dieselbe Liste liefern.
 
 ### Gerätetabelle
 
@@ -184,9 +207,10 @@ können, ohne dass sich am Auftrag etwas ändert.
 ### Vorbereitung für externe Quellen
 
 Kunden und Geräte tragen je eine externe Kennung und die Angabe ihrer Quelle.
-In der ersten Fassung werden beide Tabellen in AVIS gepflegt. Später können
-Einträge aus externen Systemen abgeglichen oder die Verknüpfung auf externe
-Objekte umgestellt werden.
+Die Kunden lassen sich damit aus dem Active Directory abgleichen (siehe oben).
+Die Gerätetabelle wird noch in AVIS gepflegt. Später können auch ihre Einträge
+aus einem externen System abgeglichen oder die Verknüpfung auf externe Objekte
+umgestellt werden.
 
 Die Verknüpfung ist nie Pflicht: Ein Auftrag lässt sich immer auch ohne
 passenden Geräteeintrag erfassen.

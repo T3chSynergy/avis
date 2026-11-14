@@ -76,6 +76,22 @@ public class Kunde
     public string? Quelle { get; set; }
 
     /// <summary>
+    /// Ob Name, E-Mail, Telefon und Organisationseinheit in einem externen
+    /// System gepflegt werden. Dann gewinnt dieses System: Der Abgleich
+    /// überschreibt die Angaben, und in AVIS lassen sie sich nicht ändern.
+    /// </summary>
+    public bool AusQuelle => Quelle is not null;
+
+    /// <summary>
+    /// Ein inaktiver Kunde bleibt mit seinen Aufträgen erhalten, steht aber
+    /// nicht mehr zur Auswahl, wenn ein Auftrag erfasst wird. Wer aus einer
+    /// externen Quelle stammt, wird inaktiv, sobald er dort fehlt, und wieder
+    /// aktiv, sobald er dort wieder steht. Alle anderen markiert ein
+    /// Bearbeiter von Hand.
+    /// </summary>
+    public bool Aktiv { get; set; } = true;
+
+    /// <summary>
     /// Alles, wonach man einen Kunden sucht, in Kleinbuchstaben. Die Suche
     /// vergleicht nur mit diesem Feld und verhält sich dadurch in jeder
     /// Datenbank gleich, auch bei Umlauten. Wird beim Speichern gesetzt.
