@@ -59,6 +59,7 @@ Aufträge gesperrter Gruppen auch während der Bearbeitung geschützt bleiben.
 | Übernehmen | jeder Bearbeiter, der den Auftrag sehen darf | Bearbeiter wird gesetzt, auch wenn schon ein anderer eingetragen ist |
 | Weiterleiten | wer den Auftrag bearbeitet | neue Gruppe wird gesetzt, Bearbeiter wird geleert, optional bevorzugter Bearbeiter |
 | Interner Kommentar | wer den Auftrag bearbeitet | Eintrag im Verlauf, für den Kunden unsichtbar |
+| Eintrag ändern | wer den Auftrag bearbeitet und den Eintrag geschrieben hat | Der Text eines internen Kommentars oder des Hinweises beim Weiterleiten wird ersetzt. Am Eintrag steht, wann er geändert wurde; der bisherige Text wird nicht aufbewahrt |
 | Nachricht an den Kunden | wer den Auftrag bearbeitet | Eintrag im Verlauf, der Kunde sieht ihn und erhält eine Mail |
 | Antwort des Kunden | Kunde | Eintrag im Verlauf |
 | Ändern | wer den Auftrag bearbeitet | Angaben und Kunde anpassen, Änderung steht im Verlauf |

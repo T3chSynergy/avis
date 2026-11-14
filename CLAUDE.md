@@ -38,6 +38,10 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Übernehmen ist Voraussetzung** für Weiterleiten, Kommentieren, Nachricht an den Kunden, Ändern und
   Abschließen. Die Regel sitzt im Domänenmodell (`Auftrag.NurZustaendig`), nicht nur in der Oberfläche.
 - **Kunden** dürfen abgeschlossene Aufträge wieder öffnen.
+- **Verlauf:** Einträge werden nie gelöscht. Ändern kann nur der Verfasser den Text interner Einträge
+  (interner Kommentar, Hinweis beim Weiterleiten), und nur solange er den Auftrag bearbeitet. Der alte
+  Text wird ersetzt, der Eintrag trägt „geändert“. Was ein Kunde gesehen oder per Mail bekommen hat,
+  bleibt unveränderlich. So vom Nutzer entschieden.
 - **Texte:** Markdown ohne Formatierleiste (vom Nutzer verworfen: lenkt ab, wird kaum benutzt). Bilder
   einfügen mit Strg+V bleibt.
 - **HTML-Mails:** Nur eindeutige Auszeichnungen (fett, kursiv, Überschrift, Link, Listen) und kleine,

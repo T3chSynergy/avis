@@ -169,6 +169,7 @@ ol.verlauf > li {
 ol.verlauf > li.intern { background: var(--intern); border-left-color: var(--intern-linie); }
 ol.verlauf .kopfzeile { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
 ol.verlauf .kopfzeile span { color: var(--gedaempft); font-size: 13px; }
+ol.verlauf .kopfzeile a { font-size: 13px; }
 ol.verlauf p { margin: 4px 0 0; }
 
 form.formular fieldset {
@@ -199,6 +200,7 @@ table.liste button { margin-top: 0; }
 form.schalter { display: flex; align-items: center; gap: 10px; margin: 0; }
 
 form.formular { max-width: 900px; }
+form.formular fieldset.intern { background: var(--intern); border-color: var(--intern-linie); }
 form.formular legend { font-weight: 700; padding: 0 6px; }
 .reihe { display: flex; flex-wrap: wrap; gap: 0 16px; }
 .reihe .feld { flex: 1 1 180px; }

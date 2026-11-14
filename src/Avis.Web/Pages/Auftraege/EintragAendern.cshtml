@@ -1,0 +1,29 @@
+@page "/Auftraege/{id:int}/Eintrag/{eintrag:int}"
+@model Avis.Web.Pages.Auftraege.EintragAendernModel
+@{
+    var hinweis = Model.Eintrag.Art == VerlaufArt.Weitergeleitet;
+    ViewData["Title"] = $"Eintrag in Auftrag {Model.Id} ändern";
+}
+<p class="pfad"><a asp-page="Details" asp-route-id="@Model.Id">Auftrag @Model.Id</a></p>
+<h1>@(hinweis ? "Hinweis beim Weiterleiten ändern" : "Internen Kommentar ändern")</h1>
+<p class="erklaerung">Geschrieben am @Ortszeit.Anzeigen(Model.Eintrag.Zeitpunkt). Der bisherige Text wird ersetzt und nicht aufbewahrt; am Eintrag steht danach, wann er geändert wurde.</p>
+
+<form method="post" class="formular">
+    <fieldset class="intern">
+        <legend>@(hinweis ? "Hinweis an die Gruppe (intern)" : "Interner Kommentar")</legend>
+        <div class="feld">
+            <label asp-for="Text" class="unsichtbar">Text</label>
+            <textarea asp-for="Text" rows="8" autofocus></textarea>
+            <span asp-validation-for="Text" class="feldfehler"></span>
+        </div>
+        @if (Model.Eintrag.Anhaenge.Count > 0)
+        {
+            <p class="erklaerung">Die Anhänge bleiben, wie sie sind: @string.Join(", ", Model.Eintrag.Anhaenge.OrderBy(a => a.Id).Select(a => a.Dateiname)).</p>
+        }
+    </fieldset>
+
+    <div class="knoepfe">
+        <button type="submit" class="haupt">Speichern</button>
+        <a asp-page="Details" asp-route-id="@Model.Id">Abbrechen</a>
+    </div>
+</form>

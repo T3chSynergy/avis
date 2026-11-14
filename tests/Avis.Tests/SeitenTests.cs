@@ -425,6 +425,64 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Den_eigenen_internen_Kommentar_aendert_wer_den_Auftrag_bearbeitet()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var bernd = await app.AnmeldenAlsAsync("bernd");
+        var id = await ErfassenAsync(anna, "Kommentar wird geändert");
+        var seite = $"/Auftraege/{id}";
+        await anna.UebernehmenAsync(app, id);
+        await AktionAsync(anna, seite, "InternerKommentar", 2, new() { ["text"] = "Altfassung mit Tippfehler." });
+        await AktionAsync(anna, seite, "NachrichtAnKunden", 2, new() { ["text"] = "Wir kümmern uns." });
+        var verlauf = (await LadenAsync(id)).Verlauf;
+        var kommentar = verlauf.Single(v => v.Art == VerlaufArt.InternerKommentar).Id;
+        var nachricht = verlauf.Single(v => v.Art == VerlaufArt.NachrichtAnKunden).Id;
+        var aendern = $"{seite}/Eintrag/{kommentar}";
+
+        // Der Link steht nur am eigenen internen Kommentar, und nur für Anna.
+        var auftragsseite = await anna.GetStringAsync(seite);
+        Assert.Contains($"href=\"{aendern}\">Ändern</a>", auftragsseite);
+        Assert.DoesNotContain($"{seite}/Eintrag/{nachricht}", auftragsseite);
+        Assert.DoesNotContain("/Eintrag/", await bernd.GetStringAsync(seite));
+        Assert.Contains("Altfassung mit Tippfehler.</textarea>", await anna.GetStringAsync(aendern));
+
+        // Bernd hat den Kommentar nicht geschrieben und bearbeitet den Auftrag nicht.
+        Assert.Contains("kann nur ändern, wer ihn geschrieben hat", await bernd.GetStringAsync(aendern));
+        await bernd.PostFormularAsync(seite, aendern, new() { ["Text"] = "Von Bernd überschrieben." });
+        // Eine Nachricht an den Kunden bleibt, wie sie verschickt wurde.
+        Assert.Contains("Dieser Eintrag lässt sich nicht ändern.", await anna.GetStringAsync($"{seite}/Eintrag/{nachricht}"));
+        await anna.PostFormularAsync(seite, $"{seite}/Eintrag/{nachricht}", new() { ["Text"] = "Nachträglich anders." });
+        // Ein leerer Kommentar bleibt ein Fehler, der Rest des Formulars bleibt stehen.
+        var leer = await anna.PostFormularAsync(seite, aendern, new() { ["Text"] = " " });
+        Assert.Contains("Bitte einen Text eingeben oder eine Datei anhängen.", await leer.Content.ReadAsStringAsync());
+        Assert.Equal(["Altfassung mit Tippfehler.", "Wir kümmern uns."], (await LadenAsync(id)).Verlauf.Where(v => v.Text is not null).OrderBy(v => v.Id).Select(v => v.Text));
+
+        // Anna ändert: Der neue Text ersetzt den alten, mit Vermerk und auch für die Suche.
+        var geaendert = await (await anna.PostFormularAsync(seite, aendern, new() { ["Text"] = "Neufassung ohne Fehler." })).Content.ReadAsStringAsync();
+        Assert.Contains("Der Eintrag wurde geändert.", geaendert);
+        Assert.Contains("Neufassung ohne Fehler.", geaendert);
+        Assert.DoesNotContain("Altfassung", geaendert);
+        Assert.Matches("<span>geändert \\d\\d\\.\\d\\d\\.\\d{4}", geaendert);
+        Assert.Contains("Kommentar wird geändert", await anna.GetStringAsync("/Auftraege?q=Neufassung&status=alle"));
+        Assert.DoesNotContain("Kommentar wird geändert", await anna.GetStringAsync("/Auftraege?q=Altfassung&status=alle"));
+        var eintrag = (await LadenAsync(id)).Verlauf.Single(v => v.Id == kommentar);
+        Assert.NotNull(eintrag.GeaendertAm);
+        Assert.Equal(4, (await LadenAsync(id)).Verlauf.Count);
+
+        // Sobald Bernd den Auftrag übernimmt, kann Anna ihren Kommentar nicht mehr ändern, und Bernd auch nicht.
+        await AktionAsync(bernd, seite, "Uebernehmen", 2);
+        Assert.DoesNotContain("/Eintrag/", await anna.GetStringAsync(seite));
+        Assert.Contains("Übernimm den Auftrag zuerst.", await anna.GetStringAsync(aendern));
+        var zuSpaet = await anna.PostFormularAsync(seite, aendern, new() { ["Text"] = "Zu spät." });
+        Assert.Contains("Übernimm den Auftrag zuerst.", await zuSpaet.Content.ReadAsStringAsync());
+        await bernd.PostFormularAsync(seite, aendern, new() { ["Text"] = "Fremder Kommentar." });
+        Assert.Equal("Neufassung ohne Fehler.", (await LadenAsync(id)).Verlauf.Single(v => v.Id == kommentar).Text);
+
+        // Einen Eintrag eines anderen Auftrags gibt es unter dieser Adresse nicht.
+        Assert.Equal(HttpStatusCode.NotFound, (await anna.GetAsync($"/Auftraege/1/Eintrag/{kommentar}")).StatusCode);
+    }
+
+    [Fact]
     public async Task Nach_einem_Fehler_geht_das_Formular_mit_dem_geschriebenen_Text_wieder_auf()
     {
         var anna = await app.AnmeldenAlsAsync("anna");

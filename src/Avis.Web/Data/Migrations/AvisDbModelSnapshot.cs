@@ -499,6 +499,9 @@ namespace Avis.Web.Data.Migrations
                     b.Property<string>("Beschreibung")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("GeaendertAm")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Suchtext")
                         .HasColumnType("TEXT");
 

@@ -15,8 +15,11 @@ public enum VerlaufArt
 }
 
 /// <summary>
-/// Ein Eintrag im Verlauf eines Auftrags. Einträge werden nur angelegt, nie
-/// geändert oder gelöscht.
+/// Ein Eintrag im Verlauf eines Auftrags. Einträge werden nur angelegt und
+/// nie gelöscht. Ändern lässt sich allein der Text eines internen Eintrags,
+/// und nur durch den, der ihn geschrieben hat (siehe
+/// <see cref="Auftrag.EintragAendern"/>). Was ein Kunde gesehen oder per
+/// Mail bekommen hat, bleibt, wie es war.
 /// </summary>
 public class Verlaufseintrag
 {
@@ -66,12 +69,28 @@ public class Verlaufseintrag
     /// <summary>Vom Benutzer geschriebener Text.</summary>
     public string? Text { get; private set; }
 
+    /// <summary>
+    /// Wann der Verfasser den Text zuletzt geändert hat. Leer, solange der
+    /// Text der ursprüngliche ist. Der bisherige Text wird nicht aufbewahrt.
+    /// </summary>
+    public DateTime? GeaendertAm { get; private set; }
+
     public IReadOnlyList<Anhang> Anhaenge => _anhaenge;
 
     /// <summary>Der Text in Kleinbuchstaben, für die Suche.</summary>
     public string? Suchtext { get; private set; }
 
     internal void SuchtextAktualisieren() => Suchtext = Text?.ToLowerInvariant();
+
+    /// <summary>Ob der Verfasser den Text eines Eintrags dieser Art ändern kann: nur Internes.</summary>
+    public static bool TextAenderbar(VerlaufArt art) => art is VerlaufArt.InternerKommentar or VerlaufArt.Weitergeleitet;
+
+    internal void TextAendern(string? text, DateTime jetzt)
+    {
+        Text = text;
+        GeaendertAm = jetzt;
+        SuchtextAktualisieren();
+    }
 
     /// <summary>
     /// Ob der Kunde den Eintrag sieht. Interne Kommentare und
