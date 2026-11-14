@@ -17,9 +17,11 @@ public static class Mailtexte
     /// Bearbeiter und bevorzugter Bearbeiter müssen geladen sein. Gibt es
     /// nichts zu senden, ist die Mail null und der Grund gesetzt.
     /// Mit anBevorzugten entsteht statt der Mail, die zur Art des Eintrags
-    /// gehört, der Hinweis an den bevorzugten Bearbeiter.
+    /// gehört, der Hinweis an den bevorzugten Bearbeiter, mit gruppenmitglied
+    /// die Mail an ein Mitglied der Gruppe, in der der Auftrag neu liegt.
     /// </summary>
-    public static (Mailinhalt? Mail, string? Grund) Erstellen(Verlaufseintrag eintrag, string? basisUrl, bool anBevorzugten = false)
+    public static (Mailinhalt? Mail, string? Grund) Erstellen(
+        Verlaufseintrag eintrag, string? basisUrl, bool anBevorzugten = false, Benutzer? gruppenmitglied = null)
     {
         var auftrag = eintrag.Auftrag;
         var basis = string.IsNullOrWhiteSpace(basisUrl) ? null : basisUrl.TrimEnd('/');
@@ -42,6 +44,18 @@ public static class Mailtexte
 
         if (anBevorzugten)
             return FuerDich(null);
+
+        if (gruppenmitglied is not null)
+        {
+            if (auftrag.Status != AuftragStatus.Offen)
+                return (null, "Der Auftrag wurde inzwischen übernommen.");
+            return AnBearbeiter(gruppenmitglied, auftrag, $"Neu in {auftrag.Gruppe.Name}",
+                $"in der Gruppe {auftrag.Gruppe.Name} liegt ein neuer Auftrag: {auftrag.Id} „{auftrag.Betreff}“ für {kunde.Name}.",
+                // Der Hinweis an die Gruppe beim Weiterleiten ist intern und für die Mitglieder gedacht.
+                eintrag.Art == VerlaufArt.Weitergeleitet ? eintrag.Text : null,
+                fuerBearbeiter,
+                "Diese Mails lassen sich in AVIS unter „Meine Gruppen“ je Gruppe abschalten.");
+        }
 
         switch (eintrag.Art)
         {

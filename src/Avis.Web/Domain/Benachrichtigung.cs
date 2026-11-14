@@ -32,6 +32,18 @@ public class Benachrichtigung
     /// </summary>
     public bool AnBevorzugtenBearbeiter { get; set; }
 
+    /// <summary>
+    /// Die Id des Benutzers bei der Mail an ein Mitglied der Gruppe, das sich
+    /// über neue Aufträge benachrichtigen lässt. Sonst ergibt sich der
+    /// Empfänger aus dem Eintrag.
+    ///
+    /// Bewusst nur die Nummer, ohne Verknüpfung in der Datenbank: Eine
+    /// Verknüpfung ließe sich in SQLite nur durch den Umbau der ganzen
+    /// Tabelle nachrüsten, und der läuft nicht in einer Transaktion. Konten
+    /// werden nie gelöscht, nur deaktiviert.
+    /// </summary>
+    public int? EmpfaengerId { get; set; }
+
     public BenachrichtigungStatus Status { get; set; }
     public DateTime ErstelltAm { get; set; }
     public DateTime NaechsterVersuchAm { get; set; }

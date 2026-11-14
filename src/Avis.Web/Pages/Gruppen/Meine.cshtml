@@ -5,12 +5,24 @@
 }
 <h1>Meine Gruppen</h1>
 <p class="erklaerung">Trag dich in die Gruppen ein, deren Aufträge du bearbeitest oder vertrittst. In gesperrte Gruppen trägt dich der Administrator ein.</p>
+<p class="erklaerung">
+    Je Gruppe kannst du dir eine Mail schicken lassen, wenn dort ein Auftrag neu erfasst oder dorthin weitergeleitet wird.
+    @if (Model.Email is null)
+    {
+        <strong>Für dein Konto ist keine E-Mail-Adresse hinterlegt, deshalb kommt keine Mail an.</strong>
+    }
+    else
+    {
+        <text>Die Mails gehen an @Model.Email.</text>
+    }
+</p>
 
 <table class="liste schmal">
     <thead>
         <tr>
             <th scope="col">Gruppe</th>
             <th scope="col">Mitglieder</th>
+            <th scope="col">Mail bei neuem Auftrag</th>
             <th scope="col"><span class="unsichtbar">Aktion</span></th>
         </tr>
     </thead>
@@ -20,6 +32,15 @@
             <tr>
                 <td>@g.Name @if (g.IstMitglied) { <span class="hinweis mich">Mitglied</span> } @if (g.Gesperrt) { <span class="hinweis">gesperrt</span> }</td>
                 <td>@g.Mitglieder</td>
+                <td>
+                    @if (g.IstMitglied)
+                    {
+                        <form method="post" asp-page-handler="Mail" asp-route-id="@g.Id" class="schalter">
+                            <span class="@(g.Mail ? "hinweis mich" : "status")">@(g.Mail ? "an" : "aus")</span>
+                            <button type="submit" name="ein" value="@(g.Mail ? "false" : "true")" aria-label="Mail bei neuem Auftrag in @g.Name @(g.Mail ? "ausschalten" : "einschalten")">@(g.Mail ? "Ausschalten" : "Einschalten")</button>
+                        </form>
+                    }
+                </td>
                 <td>
                     @if (g.Gesperrt)
                     {

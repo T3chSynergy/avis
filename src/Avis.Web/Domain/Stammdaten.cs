@@ -38,6 +38,24 @@ public class Gruppe
     public List<Benutzer> Mitglieder { get; } = [];
 }
 
+/// <summary>
+/// Die Mitgliedschaft eines Bearbeiters in einer Gruppe, mit dem, was er für
+/// diese Gruppe eingestellt hat. Ein- und ausgetragen wird weiter über
+/// <see cref="Gruppe.Mitglieder"/>; mit dem Austragen verschwindet auch die
+/// Einstellung.
+/// </summary>
+public class Gruppenmitglied
+{
+    public int GruppeId { get; set; }
+    public int BenutzerId { get; set; }
+
+    /// <summary>
+    /// Ob das Mitglied eine Mail bekommt, wenn ein Auftrag neu in der Gruppe
+    /// liegt. Aus, solange es das nicht selbst einschaltet.
+    /// </summary>
+    public bool MailBeiNeuemAuftrag { get; set; }
+}
+
 /// <summary>Der Anwender, für den ein Auftrag bearbeitet wird.</summary>
 public class Kunde
 {

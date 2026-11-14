@@ -15,6 +15,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     public DbSet<Verlaufseintrag> Verlauf => Set<Verlaufseintrag>();
     public DbSet<Benutzer> Benutzer => Set<Benutzer>();
     public DbSet<Gruppe> Gruppen => Set<Gruppe>();
+    public DbSet<Gruppenmitglied> Gruppenmitglieder => Set<Gruppenmitglied>();
     public DbSet<Kunde> Kunden => Set<Kunde>();
     public DbSet<Kategorie> Kategorien => Set<Kategorie>();
     public DbSet<Standort> Standorte => Set<Standort>();
@@ -88,6 +89,46 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
                 });
             }
         }
+
+        GruppenmailsVormerken();
+    }
+
+    /// <summary>
+    /// Liegt ein Auftrag neu in einer Gruppe, weil er dort erfasst oder
+    /// dorthin weitergeleitet wurde, bekommt jedes Mitglied eine Mail, das
+    /// sie für diese Gruppe eingeschaltet hat. Ausgenommen sind, wer den
+    /// Eintrag selbst ausgelöst hat, und der bevorzugte Bearbeiter: Der
+    /// bekommt schon seine eigene Mail.
+    /// </summary>
+    private void GruppenmailsVormerken()
+    {
+        var neuInGruppe = ChangeTracker.Entries<Verlaufseintrag>()
+            .Where(e => e.State == EntityState.Added)
+            .Select(e => e.Entity)
+            // Wer beim Erfassen gleich selbst übernimmt, legt nichts in die Gruppe.
+            .Where(v => v.Art is (VerlaufArt.Erfasst or VerlaufArt.Weitergeleitet) && v.Auftrag.Status == AuftragStatus.Offen)
+            .ToList();
+
+        foreach (var eintrag in neuInGruppe)
+        {
+            var auftrag = eintrag.Auftrag;
+            var gruppe = auftrag.GruppeId;
+            var empfaenger = Gruppenmitglieder
+                .Where(m => m.GruppeId == gruppe && m.MailBeiNeuemAuftrag)
+                .Select(m => m.BenutzerId)
+                .ToList();
+
+            foreach (var benutzer in empfaenger.Where(id => id != eintrag.BenutzerId && id != auftrag.BevorzugterBearbeiterId))
+            {
+                Benachrichtigungen.Add(new Benachrichtigung
+                {
+                    Verlaufseintrag = eintrag,
+                    EmpfaengerId = benutzer,
+                    ErstelltAm = eintrag.Zeitpunkt,
+                    NaechsterVersuchAm = eintrag.Zeitpunkt,
+                });
+            }
+        }
     }
 
     private void SuchtexteAktualisieren()
@@ -129,9 +170,19 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.Property(g => g.Name).HasMaxLength(100);
             e.Property(g => g.Beschreibung).HasMaxLength(500);
             e.HasIndex(g => g.Name).IsUnique();
+            // Die Spalten heißen, wie EF sie anfangs aus den Namen der Listen gebildet hat.
             e.HasMany(g => g.Mitglieder)
                 .WithMany(b => b.Gruppen)
-                .UsingEntity(j => j.ToTable("Gruppenmitglieder"));
+                .UsingEntity<Gruppenmitglied>(
+                    r => r.HasOne<Benutzer>().WithMany().HasForeignKey(m => m.BenutzerId),
+                    l => l.HasOne<Gruppe>().WithMany().HasForeignKey(m => m.GruppeId),
+                    j =>
+                    {
+                        j.ToTable("Gruppenmitglieder");
+                        j.HasKey(m => new { m.GruppeId, m.BenutzerId });
+                        j.Property(m => m.GruppeId).HasColumnName("GruppenId");
+                        j.Property(m => m.BenutzerId).HasColumnName("MitgliederId");
+                    });
         });
 
         model.Entity<Kunde>(e =>

@@ -196,6 +196,7 @@ button:active, a.knopf:active, label.knopf:active { box-shadow: none; transform:
 button.haupt, a.knopf.haupt, label.knopf.haupt { background: var(--akzent); border-color: var(--akzent-dunkel); color: #fff; }
 button.haupt:hover, a.knopf.haupt:hover, label.knopf.haupt:hover { background: var(--akzent-dunkel); border-color: var(--akzent-dunkel); }
 table.liste button { margin-top: 0; }
+form.schalter { display: flex; align-items: center; gap: 10px; margin: 0; }
 
 form.formular { max-width: 900px; }
 form.formular legend { font-weight: 700; padding: 0 6px; }

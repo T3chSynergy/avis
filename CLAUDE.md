@@ -79,6 +79,10 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   dass wirklich alle Tests liefen: Ein Testl채ufer, der keine Tests findet, meldet ebenfalls Erfolg.
 - **Lizenztexte** f체r `THIRD-PARTY-NOTICES.md` stammen aus den Repos der Hersteller, nicht aus dem
   Ged채chtnis.
+- **Migrationen:** Eine neue Spalte ist harmlos. Ein Fremdschl체ssel oder eine ge채nderte Spalte an einer
+  vorhandenen Tabelle baut in SQLite die ganze Tabelle um, und das l채uft nicht in einer Transaktion (EF
+  warnt beim Start). Deshalb ist `Benachrichtigung.EmpfaengerId` nur eine Nummer ohne Verkn체pfung. Jede
+  neue Migration lesen, bevor sie eingecheckt wird.
 
 ## Nicht gepr체ft
 

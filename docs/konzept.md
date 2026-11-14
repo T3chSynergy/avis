@@ -211,7 +211,8 @@ passenden Geräteeintrag erfassen.
 - Auftrag erfassen: für einen Kunden, z. B. am Telefon
 - Auftrag: Felder, Verlauf, Anhänge und die Aktionen aus Abschnitt 3
 - Kunden und Geräte: suchen, ansehen, zugehörige Aufträge
-- Meine Gruppen: beitreten und austreten
+- Meine Gruppen: beitreten und austreten, je Gruppe die Mail bei einem neuen
+  Auftrag ein- und ausschalten
 
 **Administrator**
 
@@ -239,9 +240,11 @@ Mailsystem ist Exchange.
 - Ausgang: Versand über SMTP. Der Kunde erhält eine Mail bei Erfassung, bei
   Nachrichten an ihn und beim Abschluss. Interne Kommentare, Weiterleitungen
   und Gruppen stehen in keiner Mail an den Kunden.
-- Bearbeiter erhalten keine Mails für Gruppenaufträge. Der zuständige
-  Bearbeiter erhält eine Mail, wenn der Kunde antwortet, und wer als
-  bevorzugter Bearbeiter genannt wird, erhält einen Hinweis.
+- Bearbeiter erhalten von sich aus keine Mails für Gruppenaufträge. Wer es
+  unter „Meine Gruppen“ für eine Gruppe einschaltet, erhält eine Mail, wenn
+  dort ein Auftrag neu erfasst oder dorthin weitergeleitet wird. Der
+  zuständige Bearbeiter erhält eine Mail, wenn der Kunde antwortet, und wer
+  als bevorzugter Bearbeiter genannt wird, erhält einen Hinweis.
 - Der Betreff jeder Mail beginnt mit der Auftragsnummer in der Form
   `[AVIS-123]`, damit Antworten später zugeordnet werden können.
 - Ist der Mailserver nicht erreichbar, geht nichts verloren: Mails werden
