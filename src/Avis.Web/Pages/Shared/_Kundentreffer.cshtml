@@ -1,6 +1,6 @@
 @model Avis.Web.Pages.Kunden.Kundenauswahl
 @using Avis.Web.Pages.Kunden
-@if (Model.Gesucht && Model.Treffer.All(k => k.Id == Model.GewaehltId))
+@if (Model.NichtsGefunden)
 {
     <p class="erklaerung">Keine Kunden gefunden.</p>
 }

@@ -7,7 +7,8 @@
 <h1>Kunde ändern</h1>
 <p class="erklaerung">Bisher: <strong>@Model.Bisher</strong>. Die Änderung steht im Verlauf.</p>
 
-<form method="post" class="formular">
+@* Das Ziel steht ausdrücklich da: Nach "Suchen" enthält die Adresse der Seite "?handler=Suchen", und ohne Ziel ginge auch das Speichern dorthin. *@
+<form method="post" asp-page="KundeAendern" asp-route-id="@Model.Id" class="formular">
     <button type="submit" class="unsichtbar" tabindex="-1" aria-hidden="true">Speichern</button>
     <input type="hidden" name="version" value="@Model.Version" />
 
