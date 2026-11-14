@@ -252,7 +252,7 @@ public class GeraeteabgleichTests
         var bernd = await app.AnmeldenAlsAsync("bernd");
         app.Geraetequelle.Geraete.AddRange([Lesegeraet, Plotter]);
 
-        Assert.Contains("Seit dem Start von AVIS wurde noch nicht abgeglichen.", await anna.GetStringAsync("/Verwaltung/Geraeteabgleich"));
+        Assert.Contains("Es wurde noch nicht abgeglichen.", await anna.GetStringAsync("/Verwaltung/Geraeteabgleich"));
         Assert.Contains("Kein Zugriff", await bernd.GetStringAsync("/Verwaltung/Geraeteabgleich"));
 
         var seite = await (await anna.PostFormularAsync("/Verwaltung/Geraeteabgleich", "/Verwaltung/Geraeteabgleich", [])).Content.ReadAsStringAsync();

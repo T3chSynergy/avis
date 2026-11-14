@@ -22,6 +22,7 @@ else
         Was dort fehlt, wird nicht gelöscht, sondern ausgemustert. Geräte, die nur in AVIS angelegt wurden, bleiben unberührt.
         Der Nutzer wird über die E-Mail-Adresse eines Kunden zugeordnet.
     </p>
+    <p class="erklaerung">Der Abgleich läuft täglich um @Model.Optionen.Laufzeit.ToString("HH:mm") Uhr. Lief AVIS zu dieser Zeit nicht, wird er nachgeholt.</p>
 
     <partial name="_Abgleichergebnis" model='new Abgleichanzeige(Model.Letztes, "Wieder in Betrieb", "Ausgemustert")' />
 

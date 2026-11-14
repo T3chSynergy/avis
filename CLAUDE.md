@@ -49,11 +49,11 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Oberfläche:** Blau nur für Anklickbares, damit Schaltflächen sich vom Schmuck unterscheiden.
 - **JavaScript** nur als Zugabe, ohne Framework und ohne Node-Werkzeuge; deshalb auch kein ESLint.
 - **E-Mail-Eingang** über IMAP (EWS wäre im Haus möglich, wurde nicht gewählt).
-- **Kunden aus dem AD:** AVIS zieht selbst, keine API. Ein LDAP-Filter bestimmt, wer Kunde ist (keine
-  Gruppe: eine dynamische Verteilergruppe führt keine Mitglieder). Das AD gewinnt; wer fehlt, wird
-  inaktiv, nie gelöscht. Der Kern (`Kundenabgleich`) kennt die Quelle nicht.
-- **Geräte aus Snipe-IT:** nach demselben Muster (`Geraeteabgleich`), nur lesend; AVIS schreibt nie nach
-  Snipe-IT. Der Nutzer eines Geräts wird über die Mailadresse einem vorhandenen Kunden zugeordnet.
+- **Kunden aus dem AD:** AVIS zieht selbst, keine API. Ein LDAP-Filter bestimmt, wer Kunde ist (eine
+  dynamische Verteilergruppe führt keine Mitglieder). Das AD gewinnt; wer fehlt, wird inaktiv, nie gelöscht.
+- **Geräte aus Snipe-IT:** nur lesend, sonst wie die Kunden. Nutzer ist der Kunde mit derselben Mailadresse.
+- **Abgleiche laufen einmal täglich** zur festen Uhrzeit, nie beim Start: Snipe-IT ist langsam. Tagsüber
+  nur das Geänderte zu holen (Sortierung nach `updated_at`) ist möglich, aber zurückgestellt.
 - **Standort** (etwa der Raum „A 105“) ist freier Text an Kunde, Gerät und Auftrag, keine Auswahlliste.
   Bei Abgeglichenem kommt er aus der Quelle; der Auftrag übernimmt ohne Angabe den des Kunden.
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb

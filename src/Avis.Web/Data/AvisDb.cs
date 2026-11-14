@@ -22,6 +22,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     public DbSet<Inventargeraet> Geraete => Set<Inventargeraet>();
     public DbSet<Anhang> Anhaenge => Set<Anhang>();
     public DbSet<Maileingang> Maileingaenge => Set<Maileingang>();
+    public DbSet<Abgleichlauf> Abgleichlaeufe => Set<Abgleichlauf>();
 
     /// <summary>
     /// Ob zu neuen Verlaufseinträgen Mails vorgemerkt werden. Beim Anlegen
@@ -240,6 +241,13 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.Property(a => a.Inhaltstyp).HasMaxLength(200);
             e.Property(a => a.Ablagename).HasMaxLength(100);
             e.Property(a => a.Bildtyp).HasMaxLength(50);
+        });
+
+        model.Entity<Abgleichlauf>(e =>
+        {
+            e.ToTable("Abgleichlaeufe");
+            e.HasKey(l => l.Art);
+            e.Property(l => l.Art).HasMaxLength(20);
         });
 
         model.Entity<Inventargeraet>(e =>

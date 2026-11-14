@@ -17,6 +17,44 @@ namespace Avis.Web.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.15");
 
+            modelBuilder.Entity("Avis.Web.Domain.Abgleichlauf", b =>
+                {
+                    b.Property<string>("Art")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Fehler")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Geaendert")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Gelesen")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Hinweise")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Inaktiv")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("LetzterErfolg")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Neu")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Reaktiviert")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Zeitpunkt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Art");
+
+                    b.ToTable("Abgleichlaeufe", (string)null);
+                });
+
             modelBuilder.Entity("Avis.Web.Domain.Anhang", b =>
                 {
                     b.Property<int>("Id")
