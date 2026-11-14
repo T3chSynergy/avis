@@ -176,7 +176,7 @@ können, ohne dass sich am Auftrag etwas ändert.
 
 ### Abgleich der Kunden mit dem Active Directory
 
-- AVIS holt die Kunden selbst aus dem Active Directory, regelmäßig im
+- AVIS holt die Kunden selbst aus dem Active Directory, einmal täglich im
   Hintergrund und auf Wunsch aus der Verwaltung. Es gibt dafür keine
   Schnittstelle nach außen.
 - Ein LDAP-Filter in den Einstellungen bestimmt, wer Kunde ist. Er kann eine
@@ -207,7 +207,7 @@ können, ohne dass sich am Auftrag etwas ändert.
 ### Abgleich der Geräte mit Snipe-IT
 
 - AVIS holt die Geräte selbst aus Snipe-IT und schreibt dort nichts,
-  regelmäßig im Hintergrund und auf Wunsch aus der Verwaltung.
+  einmal täglich im Hintergrund und auf Wunsch aus der Verwaltung.
 - Snipe-IT gewinnt: Inventarnummer, Bezeichnung, Typ, Standort und Nutzer
   werden überschrieben. Ein Gerät aus Snipe-IT lässt sich in AVIS nicht
   ändern.

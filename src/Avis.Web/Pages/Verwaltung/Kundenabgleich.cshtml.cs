@@ -1,4 +1,5 @@
 using Avis.Web.Abgleich;
+using Avis.Web.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
@@ -8,16 +9,15 @@ namespace Avis.Web.Pages.Verwaltung;
 /// <summary>Zeigt, wie der Kundenabgleich eingestellt ist und was der letzte Lauf getan hat, und stößt einen Lauf an.</summary>
 public class KundenabgleichModel(
     Kundenabgleich abgleich,
-    Abgleichstand stand,
+    Abgleichprotokoll protokoll,
     IOptions<KundenabgleichOptionen> optionen) : PageModel
 {
     public KundenabgleichOptionen Optionen => optionen.Value;
     public bool Eingerichtet => abgleich.Eingerichtet;
-    public Abgleichergebnis? Letztes => stand.Kunden;
+    public Abgleichergebnis? Letztes { get; private set; }
 
-    public void OnGet()
-    {
-    }
+    public async Task OnGetAsync() =>
+        Letztes = await protokoll.LetztesAsync(Abgleichlauf.Kunden, HttpContext.RequestAborted);
 
     public async Task<IActionResult> OnPostAsync()
     {

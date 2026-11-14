@@ -27,7 +27,14 @@ public class GeraeteabgleichOptionen
     /// </summary>
     public string? Schluessel { get; set; }
 
-    public int AbstandMinuten { get; set; } = 60;
+    /// <summary>
+    /// Wann der Abgleich täglich läuft, in der Zeitzone der Anwendung, in der
+    /// Form "02:30". Nach den Kunden: Der Nutzer eines Geräts wird über die
+    /// Adresse eines Kunden gefunden.
+    /// </summary>
+    public string Uhrzeit { get; set; } = "02:30";
+
+    public TimeOnly Laufzeit => Abgleichplan.Uhrzeit(Uhrzeit, "Geraeteabgleich:Uhrzeit");
 }
 
 /// <summary>Ein Gerät, wie es eine externe Quelle kennt.</summary>
@@ -57,7 +64,7 @@ public interface IGeraetequelle
 public class Geraeteabgleich(
     AvisDb db,
     IEnumerable<IGeraetequelle> quellen,
-    Abgleichstand stand,
+    Abgleichprotokoll protokoll,
     TimeProvider uhr,
     ILogger<Geraeteabgleich> log)
 {
@@ -67,8 +74,20 @@ public class Geraeteabgleich(
 
     public async Task<Abgleichergebnis> AusfuehrenAsync(CancellationToken abbruch = default)
     {
-        var ergebnis = await AbgleichenAsync(abbruch);
-        stand.Geraete = ergebnis;
+        Abgleichergebnis ergebnis;
+        try
+        {
+            ergebnis = await AbgleichenAsync(abbruch);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Etwa wenn sich das Ergebnis nicht speichern lässt. Was halb vorbereitet war, wird verworfen.
+            log.LogError(ex, "Der Geräteabgleich ist auf einen Fehler gelaufen.");
+            db.ChangeTracker.Clear();
+            ergebnis = new(uhr.GetUtcNow().UtcDateTime, Fehler: $"Der Abgleich ist auf einen Fehler gelaufen, es wurde nichts geändert: {ex.Message}");
+        }
+
+        await protokoll.FesthaltenAsync(Abgleichlauf.Geraete, ergebnis, abbruch);
         if (ergebnis.Fehler is not null)
             log.LogError("Der Geräteabgleich ist gescheitert, es wurde nichts geändert: {Fehler}", ergebnis.Fehler);
         else
@@ -212,45 +231,13 @@ public class Geraeteabgleich(
     }
 }
 
-/// <summary>Stößt den Geräteabgleich regelmäßig an: kurz nach dem Start und dann im eingestellten Abstand.</summary>
-public class Geraeteabgleichhintergrund(IServiceScopeFactory scopes, IOptions<GeraeteabgleichOptionen> optionen, ILogger<Geraeteabgleichhintergrund> log)
-    : BackgroundService
-{
-    protected override async Task ExecuteAsync(CancellationToken abbruch)
-    {
-        try
-        {
-            // Nach den Kunden: Der Nutzer eines Geräts wird über die Adresse eines Kunden gefunden.
-            await Task.Delay(TimeSpan.FromMinutes(2), abbruch);
-            using var takt = new PeriodicTimer(TimeSpan.FromMinutes(Math.Max(5, optionen.Value.AbstandMinuten)));
-            do
-            {
-                try
-                {
-                    using var scope = scopes.CreateScope();
-                    await scope.ServiceProvider.GetRequiredService<Geraeteabgleich>().AusfuehrenAsync(abbruch);
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException)
-                {
-                    log.LogError(ex, "Der Geräteabgleich im Hintergrund ist auf einen Fehler gelaufen.");
-                }
-            }
-            while (await takt.WaitForNextTickAsync(abbruch));
-        }
-        catch (OperationCanceledException)
-        {
-            // Die Anwendung wird beendet.
-        }
-    }
-}
-
 public static class GeraeteabgleichExtensions
 {
     public static void AddAvisGeraeteabgleich(this WebApplicationBuilder builder)
     {
         var abschnitt = builder.Configuration.GetSection("Geraeteabgleich");
         builder.Services.Configure<GeraeteabgleichOptionen>(abschnitt);
-        builder.Services.TryAddSingleton<Abgleichstand>();
+        builder.Services.TryAddScoped<Abgleichprotokoll>();
         builder.Services.AddScoped<Geraeteabgleich>();
 
         var optionen = abschnitt.Get<GeraeteabgleichOptionen>() ?? new GeraeteabgleichOptionen();
@@ -263,8 +250,9 @@ public static class GeraeteabgleichExtensions
                     throw new InvalidOperationException("Für Geraeteabgleich:Art = SnipeIt muss Geraeteabgleich:Adresse die Adresse der Installation sein, zum Beispiel https://inventar.example.org.");
                 if (string.IsNullOrWhiteSpace(optionen.Schluessel))
                     throw new InvalidOperationException("Für Geraeteabgleich:Art = SnipeIt muss Geraeteabgleich:Schluessel gesetzt sein.");
+                _ = optionen.Laufzeit;
                 builder.Services.AddHttpClient<IGeraetequelle, SnipeItGeraetequelle>(http => SnipeItGeraetequelle.Einrichten(http, optionen));
-                builder.Services.AddHostedService<Geraeteabgleichhintergrund>();
+                builder.Services.AddHostedService<Abgleichhintergrund>();
                 break;
             default:
                 throw new InvalidOperationException($"Unbekannte Einstellung Geraeteabgleich:Art = {optionen.Art}.");

@@ -186,11 +186,11 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 | `Kundenabgleich:Art` | `ActiveDirectory` gleicht die Kunden mit dem Active Directory ab, `Aus` lässt das aus |
 | `Kundenabgleich:Filter` | LDAP-Filter, der bestimmt, wer Kunde ist, zum Beispiel `(department=*)` |
 | `Kundenabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird, zum Beispiel `OU=Mitarbeiter,DC=example,DC=org`. Leer: in der ganzen Domäne |
-| `Kundenabgleich:AbstandMinuten` | Abstand zwischen zwei Abgleichen, Standard 60, mindestens 5 |
+| `Kundenabgleich:Uhrzeit` | Wann der Abgleich täglich läuft, in der eingestellten Zeitzone, Standard `02:00` |
 | `Geraeteabgleich:Art` | `SnipeIt` gleicht die Geräte mit Snipe-IT ab, `Aus` lässt das aus |
 | `Geraeteabgleich:Adresse` | Adresse der Installation von Snipe-IT, zum Beispiel `https://inventar.example.org` |
 | `Geraeteabgleich:Schluessel` | Zugangsschlüssel (API-Token) eines Benutzers in Snipe-IT |
-| `Geraeteabgleich:AbstandMinuten` | Abstand zwischen zwei Abgleichen, Standard 60, mindestens 5 |
+| `Geraeteabgleich:Uhrzeit` | Wann der Abgleich täglich läuft, in der eingestellten Zeitzone, Standard `02:30`. Nach dem Kundenabgleich, weil der Nutzer eines Geräts ein Kunde ist |
 | `Mail:Art` | `Smtp` versendet, `Ordner` legt Mails als Dateien ab, `Aus` sendet nichts |
 | `Mail:Server`, `Mail:Port` | Mailserver, Standardport 25 |
 | `Mail:Verschluesselung` | `Auto`, `Keine`, `StartTls` oder `Ssl` |
@@ -276,8 +276,8 @@ gelesen, gehört also nur an ein Testpostfach.
 
 Mit `Kundenabgleich:Art = ActiveDirectory` sind die Benutzerkonten des Active
 Directory, auf die der LDAP-Filter aus `Kundenabgleich:Filter` passt, die
-Kunden. AVIS liest sie eine Minute nach dem Start und dann im eingestellten
-Abstand; unter Verwaltung → Kundenabgleich steht, was der letzte Lauf getan
+Kunden. AVIS liest sie einmal täglich zur eingestellten Uhrzeit (siehe
+„Wann die Abgleiche laufen“); unter Verwaltung → Kundenabgleich steht, was der letzte Lauf getan
 hat, und er lässt sich dort sofort anstoßen.
 
 Der Filter bestimmt, wer Kunde ist. Dass nur Benutzerkonten von Personen
@@ -316,8 +316,8 @@ einem echten Verzeichnis erprobt.
 
 Mit `Geraeteabgleich:Art = SnipeIt` kommen die Geräte aus Snipe-IT. AVIS liest
 nur: Es fragt die Assets über die Schnittstelle von Snipe-IT ab und schreibt
-dort nichts. Gelesen wird zwei Minuten nach dem Start und dann im
-eingestellten Abstand; unter Verwaltung → Geräteabgleich steht, was der letzte
+dort nichts. Gelesen wird einmal täglich zur eingestellten Uhrzeit (siehe
+„Wann die Abgleiche laufen“); unter Verwaltung → Geräteabgleich steht, was der letzte
 Lauf getan hat, und er lässt sich dort sofort anstoßen.
 
 | Snipe-IT | AVIS |
@@ -353,6 +353,25 @@ der Snipe-IT im Browser erreichbar ist, ohne `/api/v1`.
 Die Abfrage ist nach dem Quelltext von Snipe-IT geschrieben und mit
 nachgestellten Antworten geprüft, aber noch nicht an einer echten Installation
 erprobt.
+
+## Wann die Abgleiche laufen
+
+Kunden- und Geräteabgleich lesen ihre Quelle jedes Mal ganz. Sie laufen
+deshalb nur einmal am Tag, zur Uhrzeit aus `Kundenabgleich:Uhrzeit` und
+`Geraeteabgleich:Uhrzeit`, und nicht bei jedem Start der Anwendung.
+
+- AVIS sieht alle fünf Minuten nach, ob ein Lauf ansteht. Der letzte Lauf
+  steht in der Datenbank; die Verwaltung zeigt ihn auch nach einem Neustart.
+- Lief AVIS zur eingestellten Uhrzeit nicht, wird der Lauf nachgeholt, sobald
+  es wieder läuft. Das gilt auch für den allerersten Lauf nach dem
+  Einschalten eines Abgleichs.
+- Scheitert ein Lauf, etwa weil die Quelle nicht erreichbar ist, versucht AVIS
+  es nach einer Stunde wieder, bis er gelingt.
+- „Jetzt abgleichen“ in der Verwaltung geht jederzeit und zählt als Lauf des
+  Tages.
+
+Tagsüber ändert sich an Kunden und Geräten also nichts von selbst. Ein Gerät,
+das AVIS noch nicht kennt, lässt sich am Auftrag als Freitext eintragen.
 
 ## Standort
 
@@ -393,11 +412,12 @@ Dieser Teil ist noch nicht auf einem echten Server erprobt.
 - Das Konto des Anwendungspools braucht Schreibrechte auf den Ordner
   `App_Data`. Dort liegen die Datenbank und die Anhänge.
 - Der erste Administrator wird über `Anmeldung:Administratoren` festgelegt.
-- Der Hintergrundversand und der Abruf des Postfachs laufen nur, solange die
-  Anwendung läuft. Damit IIS sie
+- Der Hintergrundversand, der Abruf des Postfachs und die nächtlichen
+  Abgleiche laufen nur, solange die Anwendung läuft. Damit IIS sie
   nicht nach Leerlauf beendet, den Anwendungspool auf „AlwaysRunning" stellen
   und das Leerlauftimeout abschalten. Sonst gehen wartende Mails erst beim
-  nächsten Aufruf hinaus, und neue Mails werden erst dann abgeholt.
+  nächsten Aufruf hinaus, neue Mails werden erst dann abgeholt, und die
+  Abgleiche laufen erst morgens beim ersten Aufruf statt in der Nacht.
 - Am Exchange-Server muss IMAP für das Hotline-Postfach eingeschaltet sein.
 - Die Abfrage des Active Directory nutzt die Domäne, in der der Server Mitglied
   ist. Schlägt sie fehl, arbeitet AVIS mit dem Anmeldenamen weiter und schreibt

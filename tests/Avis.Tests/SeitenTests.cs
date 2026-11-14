@@ -134,8 +134,14 @@ public class Testkundenquelle : IKundenquelle
     /// <summary>Solange gesetzt, lässt sich die Quelle nicht lesen.</summary>
     public bool Gestoert { get; set; }
 
-    public IReadOnlyList<Quellkunde> Lesen() =>
-        Gestoert ? throw new InvalidOperationException("Der Server ist nicht funktionstüchtig.") : Kunden.ToList();
+    /// <summary>Wie oft die Quelle gelesen wurde, auch vergeblich.</summary>
+    public int Abrufe { get; private set; }
+
+    public IReadOnlyList<Quellkunde> Lesen()
+    {
+        Abrufe++;
+        return Gestoert ? throw new InvalidOperationException("Der Server ist nicht funktionstüchtig.") : Kunden.ToList();
+    }
 }
 
 public class Testgeraetequelle : IGeraetequelle
@@ -147,10 +153,16 @@ public class Testgeraetequelle : IGeraetequelle
     /// <summary>Solange gesetzt, lässt sich die Quelle nicht lesen.</summary>
     public bool Gestoert { get; set; }
 
-    public Task<IReadOnlyList<Quellgeraet>> LesenAsync(CancellationToken abbruch) =>
-        Gestoert
+    /// <summary>Wie oft die Quelle gelesen wurde, auch vergeblich.</summary>
+    public int Abrufe { get; private set; }
+
+    public Task<IReadOnlyList<Quellgeraet>> LesenAsync(CancellationToken abbruch)
+    {
+        Abrufe++;
+        return Gestoert
             ? throw new InvalidOperationException("Snipe-IT hat den Zugangsschlüssel abgelehnt.")
             : Task.FromResult<IReadOnlyList<Quellgeraet>>(Geraete.ToList());
+    }
 }
 
 public class Testverzeichnis : IVerzeichnis

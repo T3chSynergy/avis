@@ -29,6 +29,8 @@ public class Ortszeit(IConfiguration konfiguration)
     private readonly TimeZoneInfo _zone =
         TimeZoneInfo.FindSystemTimeZoneById(konfiguration["Zeitzone"] ?? "Europe/Berlin");
 
+    public TimeZoneInfo Zone => _zone;
+
     public string Anzeigen(DateTime utc) =>
         TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), _zone).ToString("dd.MM.yyyy HH:mm", CultureInfo.InvariantCulture);
 

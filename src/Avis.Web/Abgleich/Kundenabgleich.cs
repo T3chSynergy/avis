@@ -38,7 +38,10 @@ public class KundenabgleichOptionen
     public string Suchfilter =>
         $"(&(objectCategory=person)(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2)){Filter?.Trim()})";
 
-    public int AbstandMinuten { get; set; } = 60;
+    /// <summary>Wann der Abgleich täglich läuft, in der Zeitzone der Anwendung, in der Form "02:00".</summary>
+    public string Uhrzeit { get; set; } = "02:00";
+
+    public TimeOnly Laufzeit => Abgleichplan.Uhrzeit(Uhrzeit, "Kundenabgleich:Uhrzeit");
 }
 
 /// <summary>Ein Kunde, wie ihn eine externe Quelle kennt.</summary>
@@ -70,13 +73,6 @@ public record Abgleichergebnis(
     IReadOnlyList<string>? Hinweise = null,
     string? Fehler = null);
 
-/// <summary>Merkt sich die Ergebnisse der letzten Abgleiche seit dem Start, für die Verwaltung.</summary>
-public class Abgleichstand
-{
-    public Abgleichergebnis? Kunden { get; set; }
-    public Abgleichergebnis? Geraete { get; set; }
-}
-
 /// <summary>
 /// Gleicht die Kundentabelle mit einer externen Quelle ab. Die Quelle gewinnt:
 /// Ihre Angaben überschreiben, was in AVIS steht. Wer in der Quelle fehlt,
@@ -86,7 +82,7 @@ public class Abgleichstand
 public class Kundenabgleich(
     AvisDb db,
     IEnumerable<IKundenquelle> quellen,
-    Abgleichstand stand,
+    Abgleichprotokoll protokoll,
     TimeProvider uhr,
     ILogger<Kundenabgleich> log)
 {
@@ -96,8 +92,20 @@ public class Kundenabgleich(
 
     public async Task<Abgleichergebnis> AusfuehrenAsync(CancellationToken abbruch = default)
     {
-        var ergebnis = await AbgleichenAsync(abbruch);
-        stand.Kunden = ergebnis;
+        Abgleichergebnis ergebnis;
+        try
+        {
+            ergebnis = await AbgleichenAsync(abbruch);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Etwa wenn sich das Ergebnis nicht speichern lässt. Was halb vorbereitet war, wird verworfen.
+            log.LogError(ex, "Der Kundenabgleich ist auf einen Fehler gelaufen.");
+            db.ChangeTracker.Clear();
+            ergebnis = new(uhr.GetUtcNow().UtcDateTime, Fehler: $"Der Abgleich ist auf einen Fehler gelaufen, es wurde nichts geändert: {ex.Message}");
+        }
+
+        await protokoll.FesthaltenAsync(Abgleichlauf.Kunden, ergebnis, abbruch);
         if (ergebnis.Fehler is not null)
             log.LogError("Der Kundenabgleich ist gescheitert, es wurde nichts geändert: {Fehler}", ergebnis.Fehler);
         else
@@ -207,44 +215,13 @@ public class Kundenabgleich(
     }
 }
 
-/// <summary>Stößt den Abgleich regelmäßig an: kurz nach dem Start und dann im eingestellten Abstand.</summary>
-public class Abgleichhintergrund(IServiceScopeFactory scopes, IOptions<KundenabgleichOptionen> optionen, ILogger<Abgleichhintergrund> log)
-    : BackgroundService
-{
-    protected override async Task ExecuteAsync(CancellationToken abbruch)
-    {
-        try
-        {
-            await Task.Delay(TimeSpan.FromMinutes(1), abbruch);
-            using var takt = new PeriodicTimer(TimeSpan.FromMinutes(Math.Max(5, optionen.Value.AbstandMinuten)));
-            do
-            {
-                try
-                {
-                    using var scope = scopes.CreateScope();
-                    await scope.ServiceProvider.GetRequiredService<Kundenabgleich>().AusfuehrenAsync(abbruch);
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException)
-                {
-                    log.LogError(ex, "Der Kundenabgleich im Hintergrund ist auf einen Fehler gelaufen.");
-                }
-            }
-            while (await takt.WaitForNextTickAsync(abbruch));
-        }
-        catch (OperationCanceledException)
-        {
-            // Die Anwendung wird beendet.
-        }
-    }
-}
-
 public static class KundenabgleichExtensions
 {
     public static void AddAvisKundenabgleich(this WebApplicationBuilder builder)
     {
         var abschnitt = builder.Configuration.GetSection("Kundenabgleich");
         builder.Services.Configure<KundenabgleichOptionen>(abschnitt);
-        builder.Services.TryAddSingleton<Abgleichstand>();
+        builder.Services.TryAddScoped<Abgleichprotokoll>();
         builder.Services.AddScoped<Kundenabgleich>();
 
         var optionen = abschnitt.Get<KundenabgleichOptionen>() ?? new KundenabgleichOptionen();
@@ -261,6 +238,7 @@ public static class KundenabgleichExtensions
                     throw new InvalidOperationException("Kundenabgleich:Filter muss ein LDAP-Filter in Klammern sein, zum Beispiel (department=*).");
                 if (!OperatingSystem.IsWindows())
                     throw new InvalidOperationException("Kundenabgleich:Art = ActiveDirectory läuft nur unter Windows.");
+                _ = optionen.Laufzeit;
                 builder.Services.AddSingleton<IKundenquelle, ActiveDirectoryKundenquelle>();
                 builder.Services.AddHostedService<Abgleichhintergrund>();
                 break;

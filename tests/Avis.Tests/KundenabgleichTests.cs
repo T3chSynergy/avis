@@ -212,7 +212,7 @@ public class KundenabgleichTests
         var bernd = await app.AnmeldenAlsAsync("bernd");
         app.Kundenquelle.Kunden.AddRange([Eva, Hans]);
 
-        Assert.Contains("Seit dem Start von AVIS wurde noch nicht abgeglichen.", await anna.GetStringAsync("/Verwaltung/Kundenabgleich"));
+        Assert.Contains("Es wurde noch nicht abgeglichen.", await anna.GetStringAsync("/Verwaltung/Kundenabgleich"));
         Assert.Contains("Kein Zugriff", await bernd.GetStringAsync("/Verwaltung/Kundenabgleich"));
 
         var seite = await (await anna.PostFormularAsync("/Verwaltung/Kundenabgleich", "/Verwaltung/Kundenabgleich", [])).Content.ReadAsStringAsync();
