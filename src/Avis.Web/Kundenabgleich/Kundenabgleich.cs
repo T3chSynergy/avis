@@ -11,13 +11,31 @@ public class KundenabgleichOptionen
     public const string ActiveDirectory = "ActiveDirectory";
 
     /// <summary>
-    /// "Aus": Kunden werden nur in AVIS gepflegt. "ActiveDirectory": Die
-    /// Mitglieder einer Gruppe des Active Directory sind die Kunden.
+    /// "Aus": Kunden werden nur in AVIS gepflegt. "ActiveDirectory": Kunden
+    /// sind die Benutzerkonten des Active Directory, auf die der Filter passt.
     /// </summary>
     public string Art { get; set; } = Aus;
 
-    /// <summary>Name der Gruppe im Active Directory, deren Mitglieder Kunden sind.</summary>
-    public string? Gruppe { get; set; }
+    /// <summary>
+    /// LDAP-Filter, der bestimmt, wer Kunde ist, zum Beispiel
+    /// "(department=*)" oder "(memberOf=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)".
+    /// Dass nur aktive Benutzerkonten zählen, ergänzt AVIS selbst.
+    /// </summary>
+    public string? Filter { get; set; }
+
+    /// <summary>
+    /// Wo im Verzeichnis gesucht wird, zum Beispiel "OU=Mitarbeiter,DC=example,DC=org".
+    /// Leer: in der ganzen Domäne des Servers.
+    /// </summary>
+    public string? Suchbasis { get; set; }
+
+    /// <summary>
+    /// Der Filter, mit dem im Active Directory gesucht wird: der eingestellte,
+    /// eingeschränkt auf Benutzerkonten von Personen, die nicht deaktiviert
+    /// sind. Die lange Zahl steht für "Bit gesetzt", die 2 für "deaktiviert".
+    /// </summary>
+    public string Suchfilter =>
+        $"(&(objectCategory=person)(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2)){Filter?.Trim()})";
 
     public int AbstandMinuten { get; set; } = 60;
 }
@@ -232,8 +250,12 @@ public static class KundenabgleichExtensions
             case KundenabgleichOptionen.Aus:
                 break;
             case KundenabgleichOptionen.ActiveDirectory:
-                if (string.IsNullOrWhiteSpace(optionen.Gruppe))
-                    throw new InvalidOperationException("Für Kundenabgleich:Art = ActiveDirectory muss Kundenabgleich:Gruppe gesetzt sein.");
+                // Ohne Filter wäre jedes Konto der Domäne ein Kunde. Das soll niemand versehentlich einstellen.
+                var filter = optionen.Filter?.Trim() ?? "";
+                if (filter.Length == 0)
+                    throw new InvalidOperationException("Für Kundenabgleich:Art = ActiveDirectory muss Kundenabgleich:Filter gesetzt sein.");
+                if (!filter.StartsWith('(') || !filter.EndsWith(')'))
+                    throw new InvalidOperationException("Kundenabgleich:Filter muss ein LDAP-Filter in Klammern sein, zum Beispiel (department=*).");
                 if (!OperatingSystem.IsWindows())
                     throw new InvalidOperationException("Kundenabgleich:Art = ActiveDirectory läuft nur unter Windows.");
                 builder.Services.AddSingleton<IKundenquelle, ActiveDirectoryKundenquelle>();

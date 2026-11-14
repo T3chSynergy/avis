@@ -178,15 +178,15 @@ können, ohne dass sich am Auftrag etwas ändert.
 - AVIS holt die Kunden selbst aus dem Active Directory, regelmäßig im
   Hintergrund und auf Wunsch aus der Verwaltung. Es gibt dafür keine
   Schnittstelle nach außen.
-- Eine Gruppe im Verzeichnis bestimmt, wer Kunde ist. Verschachtelte Gruppen
-  zählen mit, deaktivierte Konten nicht.
+- Ein LDAP-Filter in den Einstellungen bestimmt, wer Kunde ist. Er kann eine
+  Gruppe nennen, muss es aber nicht. Deaktivierte Konten zählen nie.
 - Das Verzeichnis gewinnt: Name, E-Mail, Telefon und Organisationseinheit
   werden überschrieben und lassen sich in AVIS nicht ändern. Der Standort
   gehört weiter AVIS.
 - Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
   wiedererkannt und übernommen, nicht verdoppelt.
-- Wer in der Gruppe fehlt, wird nicht gelöscht, sondern inaktiv, und wieder
-  aktiv, sobald er dort wieder steht.
+- Auf wen der Filter nicht mehr passt, der wird nicht gelöscht, sondern
+  inaktiv, und wieder aktiv, sobald der Filter wieder passt.
 - Kunden, die nur in AVIS angelegt wurden, fasst der Abgleich nicht an. Sie
   werden von Hand als inaktiv markiert.
 - Liefert das Verzeichnis nichts oder ist es nicht erreichbar, ändert sich

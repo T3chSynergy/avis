@@ -171,7 +171,46 @@ public static class Startdaten
             kunde2,
             new Kunde { Name = "Özlem Übung", Email = "oezlem.uebung@example.org", Telefon = "0221 12-34", Organisationseinheit = "Personal", Standort = haupthaus },
             new Kunde { Name = "Frank Müller", Email = "frank.mueller@example.org", Telefon = "2201", Organisationseinheit = "Finanzen", Standort = haupthaus },
-            new Kunde { Name = "Gabi Müller", Email = "gabi.mueller@example.org", Telefon = "2202", Organisationseinheit = "Personal", Standort = nebenstelle });
+            new Kunde { Name = "Gabi Müller", Email = "gabi.mueller@example.org", Telefon = "2202", Organisationseinheit = "Personal", Standort = nebenstelle },
+            // Von Hand angelegt und stillgelegt.
+            new Kunde { Name = "Karl Ruhestand", Telefon = "2290", Organisationseinheit = "Ordnungsamt", Aktiv = false });
+
+        // Kunden, wie sie der Abgleich mit dem Active Directory anlegt: mit der Kennung des Verzeichnisses und dem
+        // Anmeldenamen samt Domäne. Ihre Angaben pflegt das Verzeichnis. Jana steht dort nicht mehr und ist inaktiv.
+        const string verzeichnis = Avis.Web.Kundenabgleich.KundenabgleichOptionen.ActiveDirectory;
+        db.Kunden.AddRange(
+            new Kunde
+            {
+                Name = "Hanna Verzeichnis",
+                Email = "hanna.verzeichnis@example.org",
+                Telefon = "3101",
+                Organisationseinheit = "Bauamt",
+                Anmeldename = @"avis\hanna",
+                Quelle = verzeichnis,
+                ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b01",
+                Standort = haupthaus,
+            },
+            new Kunde
+            {
+                Name = "Igor Abgleich",
+                Email = "igor.abgleich@example.org",
+                Telefon = "3102",
+                Organisationseinheit = "Kämmerei",
+                Anmeldename = @"avis\igor",
+                Quelle = verzeichnis,
+                ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b02",
+            },
+            new Kunde
+            {
+                Name = "Jana Ehemals",
+                Email = "jana.ehemals@example.org",
+                Telefon = "3103",
+                Organisationseinheit = "Bauamt",
+                Anmeldename = @"avis\jana",
+                Quelle = verzeichnis,
+                ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b03",
+                Aktiv = false,
+            });
 
         var flurdrucker = new Inventargeraet { Inventarnummer = "DR-0042", Bezeichnung = "Laserdrucker Flur 2. OG", Typ = "Drucker", Standort = haupthaus };
         db.Geraete.AddRange(

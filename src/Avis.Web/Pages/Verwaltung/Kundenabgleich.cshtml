@@ -12,13 +12,13 @@
 {
     <p class="erklaerung">
         Der Abgleich ist ausgeschaltet (<code>Kundenabgleich:Art = @Model.Optionen.Art</code>). Kunden werden nur in AVIS gepflegt.
-        Mit <code>ActiveDirectory</code> und einer Gruppe in <code>Kundenabgleich:Gruppe</code> sind die Mitglieder dieser Gruppe die Kunden.
+        Mit <code>ActiveDirectory</code> und einem LDAP-Filter in <code>Kundenabgleich:Filter</code> sind die Benutzerkonten, auf die der Filter passt, die Kunden.
     </p>
 }
 else
 {
     <p class="erklaerung">
-        Quelle: <strong>@Model.Optionen.Art</strong>@if (!string.IsNullOrWhiteSpace(Model.Optionen.Gruppe)) {<text>, Gruppe <strong>@Model.Optionen.Gruppe</strong></text>}.
+        Quelle: <strong>@Model.Optionen.Art</strong>@if (!string.IsNullOrWhiteSpace(Model.Optionen.Filter)) {<text>, Filter <code>@Model.Optionen.Filter</code></text>}@if (!string.IsNullOrWhiteSpace(Model.Optionen.Suchbasis)) {<text>, gesucht in <code>@Model.Optionen.Suchbasis</code></text>}.
         Die Quelle gewinnt: Name, E-Mail, Telefon und Organisationseinheit werden überschrieben.
         Wer dort fehlt, wird nicht gelöscht, sondern als inaktiv markiert. Kunden, die nur in AVIS angelegt wurden, bleiben unberührt.
     </p>

@@ -25,7 +25,7 @@ public class KundenabgleichTests
     [Fact]
     public async Task Der_erste_Abgleich_uebernimmt_vorhandene_Kunden_legt_fehlende_an_und_die_Quelle_gewinnt()
     {
-        using var app = new AvisAnwendung();
+        using var app = await OhneVerzeichniskundenAsync();
         var vorher = await app.DatenbankAsync(db => db.Kunden.CountAsync());
         var dieter = await KundeAsync(app, "Dieter Kunde");
         // In den Testdaten heißt Dieters Konto nur "dieter". Im Verzeichnis steht die Domäne davor.
@@ -62,7 +62,7 @@ public class KundenabgleichTests
     [Fact]
     public async Task Wer_in_der_Quelle_fehlt_wird_inaktiv_und_bleibt_mit_seinen_Auftraegen_erhalten()
     {
-        using var app = new AvisAnwendung();
+        using var app = await OhneVerzeichniskundenAsync();
         var anna = await app.AnmeldenAlsAsync("anna");
         app.Kundenquelle.Kunden.AddRange([Eva, Hans]);
         await AbgleichenAsync(app);
@@ -107,7 +107,7 @@ public class KundenabgleichTests
     [Fact]
     public async Task Liefert_die_Quelle_nichts_oder_laesst_sie_sich_nicht_lesen_aendert_sich_nichts()
     {
-        using var app = new AvisAnwendung();
+        using var app = await OhneVerzeichniskundenAsync();
         app.Kundenquelle.Kunden.AddRange([Eva, Hans]);
         await AbgleichenAsync(app);
 
@@ -127,7 +127,7 @@ public class KundenabgleichTests
     [Fact]
     public async Task Eine_Adresse_die_schon_einem_anderen_Kunden_gehoert_wird_nicht_uebernommen()
     {
-        using var app = new AvisAnwendung();
+        using var app = await OhneVerzeichniskundenAsync();
         // Dieter ist in den Testdaten mit dem Konto "dieter" verknüpft. Ein anderes Konto nennt dieselbe Adresse.
         app.Kundenquelle.Kunden.AddRange([Hans, new("guid-doppelt", @"avis\doppelt", "Doppelt, Dora", "dieter.kunde@example.org", null, null)]);
 
@@ -142,7 +142,7 @@ public class KundenabgleichTests
     [Fact]
     public async Task Kunden_aus_AVIS_markiert_man_von_Hand_als_inaktiv_Kunden_aus_der_Quelle_nicht()
     {
-        using var app = new AvisAnwendung();
+        using var app = await OhneVerzeichniskundenAsync();
         var anna = await app.AnmeldenAlsAsync("anna");
         app.Kundenquelle.Kunden.Add(Hans);
         await AbgleichenAsync(app);
@@ -175,7 +175,7 @@ public class KundenabgleichTests
     [Fact]
     public async Task Die_Verwaltung_zeigt_den_letzten_Abgleich_und_stoesst_einen_an()
     {
-        using var app = new AvisAnwendung();
+        using var app = await OhneVerzeichniskundenAsync();
         var anna = await app.AnmeldenAlsAsync("anna");
         var bernd = await app.AnmeldenAlsAsync("bernd");
         app.Kundenquelle.Kunden.AddRange([Eva, Hans]);
@@ -208,10 +208,57 @@ public class KundenabgleichTests
         var antwort = await client.PostFormularAsync("/Verwaltung/Gruppen", "/Verwaltung/Kundenabgleich", []);
         Assert.Equal(HttpStatusCode.NotFound, antwort.StatusCode);
 
+        // Ohne Filter wäre jedes Konto der Domäne ein Kunde.
         using var halb = new AvisAnwendung();
-        using var ohneGruppe = halb.WithWebHostBuilder(b => b.UseSetting("Kundenabgleich:Art", "ActiveDirectory"));
-        var fehler = Assert.ThrowsAny<Exception>(() => ohneGruppe.CreateClient());
-        Assert.Contains("Kundenabgleich:Gruppe", fehler.ToString());
+        using var ohneFilter = halb.WithWebHostBuilder(b => b.UseSetting("Kundenabgleich:Art", "ActiveDirectory"));
+        Assert.Contains("muss Kundenabgleich:Filter gesetzt sein", Assert.ThrowsAny<Exception>(() => ohneFilter.CreateClient()).ToString());
+
+        using var schief = new AvisAnwendung();
+        using var ohneKlammern = schief.WithWebHostBuilder(b => b.UseSetting("Kundenabgleich:Art", "ActiveDirectory").UseSetting("Kundenabgleich:Filter", "department=*"));
+        Assert.Contains("muss ein LDAP-Filter in Klammern sein", Assert.ThrowsAny<Exception>(() => ohneKlammern.CreateClient()).ToString());
+    }
+
+    [Fact]
+    public void Der_eingestellte_Filter_wird_auf_aktive_Benutzerkonten_eingeschraenkt()
+    {
+        var optionen = new KundenabgleichOptionen { Filter = " (memberOf=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org) " };
+
+        Assert.Equal(
+            "(&(objectCategory=person)(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2))(memberOf=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org))",
+            optionen.Suchfilter);
+    }
+
+    [Fact]
+    public async Task Die_Testdaten_enthalten_Kunden_aus_dem_Verzeichnis_und_stillgelegte()
+    {
+        using var app = new AvisAnwendung();
+        var anna = await app.AnmeldenAlsAsync("anna");
+
+        var kunden = await app.DatenbankAsync(db => db.Kunden.AsNoTracking().OrderBy(k => k.Name).ToListAsync());
+        Assert.Equal(
+            [("Hanna Verzeichnis", @"avis\hanna", true), ("Igor Abgleich", @"avis\igor", true), ("Jana Ehemals", @"avis\jana", false)],
+            kunden.Where(k => k.Quelle == "ActiveDirectory").Select(k => (k.Name, k.Anmeldename!, k.Aktiv)));
+        Assert.All(kunden.Where(k => k.AusQuelle), k => Assert.True(Guid.TryParse(k.ExterneKennung, out _)));
+        Assert.Equal(["Karl Ruhestand"], kunden.Where(k => !k.AusQuelle && !k.Aktiv).Select(k => k.Name));
+
+        // Wie echte: Die Angaben pflegt das Verzeichnis, und wer dort fehlt, ist markiert und nicht wählbar.
+        var hanna = kunden.Single(k => k.Name == "Hanna Verzeichnis");
+        Assert.Contains("Stammt aus ActiveDirectory.", await anna.GetStringAsync($"/Kunden/{hanna.Id}"));
+        Assert.Matches("Jana Ehemals</a>\\s*<span class=\"hinweis\">inaktiv</span>", await anna.GetStringAsync("/Kunden?q=bauamt"));
+        var treffer = await anna.GetStringAsync("/Kunden/Treffer?q=bauamt&leer=neu");
+        Assert.Contains("Hanna Verzeichnis", treffer);
+        Assert.DoesNotContain("Jana Ehemals", treffer);
+    }
+
+    /// <summary>
+    /// Eine Anwendung ohne die Kunden aus dem Verzeichnis, die die Testdaten
+    /// mitbringen: Diese Tests zählen genau, was ein Abgleich tut.
+    /// </summary>
+    private static async Task<AvisAnwendung> OhneVerzeichniskundenAsync()
+    {
+        var app = new AvisAnwendung();
+        await app.DatenbankAsync(db => db.Kunden.Where(k => k.Quelle != null).ExecuteDeleteAsync());
+        return app;
     }
 
     private static async Task<Abgleichergebnis> AbgleichenAsync(AvisAnwendung app)
