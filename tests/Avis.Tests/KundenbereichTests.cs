@@ -40,17 +40,20 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
     {
         var dieter = await app.AnmeldenAlsAsync("dieter");
 
-        // Das Formular schlägt den Standort des Kunden vor; er nennt einen anderen.
-        Assert.Contains("value=\"A 204\"", await dieter.GetStringAsync("/Meine/Neu"));
-        var id = await StellenAsync(dieter, "Beamer zeigt kein Bild", new() { ["Eingabe.Standort"] = " B 001 ", ["Eingabe.Geraet"] = "Beamer Raum 1.01" });
+        // Das Formular fragt nur Betreff, Beschreibung und Anhänge ab. Standort und Gerät gehören der Hotline;
+        // was jemand trotzdem mitschickt, wird nicht beachtet.
+        var formular = await dieter.GetStringAsync("/Meine/Neu");
+        Assert.DoesNotContain("Eingabe.Standort", formular);
+        Assert.DoesNotContain("Eingabe.Geraet", formular);
+        var id = await StellenAsync(dieter, "Beamer zeigt kein Bild", new() { ["Eingabe.Standort"] = "Z 999", ["Eingabe.Geraet"] = "Beamer Raum 1.01" });
 
         var auftrag = await LadenAsync(id);
         Assert.Equal(AuftragStatus.Offen, auftrag.Status);
         Assert.True(auftrag.Gruppe.IstEingangsgruppe);
         Assert.Equal(Eingang.Web, auftrag.Eingang);
         Assert.Equal("Dieter Kunde", auftrag.Kunde.Name);
-        Assert.Equal("Beamer Raum 1.01", auftrag.Geraet);
-        Assert.Equal("B 001", auftrag.Standort);
+        // Der Standort ist der des Kunden aus den Testdaten.
+        Assert.Equal(("A 204", null), (auftrag.Standort, auftrag.Geraet));
 
         var anna = await app.AnmeldenAlsAsync("anna");
         Assert.Contains("Beamer zeigt kein Bild", await anna.GetStringAsync("/Gruppen"));

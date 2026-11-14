@@ -137,8 +137,8 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 | Anhänge | Dateien | am Auftrag, an Kommentaren, Nachrichten und Antworten. Anhänge an internen Kommentaren sieht der Kunde nicht. Bilder erscheinen als Vorschau und lassen sich mit Strg+V einfügen |
 | Verlauf | Einträge | automatisch |
 
-Das Kundenformular zeigt nur Betreff, Beschreibung, Standort, Gerät und
-Anhänge. Alles andere ergänzt die Hotline.
+Das Kundenformular zeigt nur Betreff, Beschreibung und Anhänge. Der Standort
+kommt vom Kunden, alles andere ergänzt die Hotline.
 
 ### Priorität
 
