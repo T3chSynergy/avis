@@ -23,12 +23,6 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
 
         [Required(ErrorMessage = "Bitte eine Beschreibung angeben.")]
         public string? Beschreibung { get; set; }
-
-        [StringLength(100, ErrorMessage = "Höchstens 100 Zeichen.")]
-        public string? Standort { get; set; }
-
-        [StringLength(200, ErrorMessage = "Höchstens 200 Zeichen.")]
-        public string? Geraet { get; set; }
     }
 
     [BindProperty]
@@ -42,7 +36,6 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
     public async Task OnGetAsync()
     {
         var kunde = await zuordnung.FuerBenutzerAsync(User.BenutzerId());
-        Eingabe.Standort = kunde.Standort;
         Email = kunde.Email;
     }
 
@@ -75,7 +68,8 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
 
         var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
         var auftrag = Auftrag.Erfassen(
-            new AuftragAngaben(Eingabe.Betreff!, Eingabe.Beschreibung!) { Standort = Eingabe.Standort, Geraet = Eingabe.Geraet },
+            // Standort und Gerät fragt das Formular nicht ab: Der Standort kommt vom Kunden, das Gerät trägt die Hotline ein.
+            new AuftragAngaben(Eingabe.Betreff!, Eingabe.Beschreibung!),
             kunde,
             ich,
             eingang,
