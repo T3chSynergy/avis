@@ -8,15 +8,27 @@
     let wartend;
     let laufend = 0;
 
-    // Beim Erfassen: Wer keinen Kunden wählt, legt einen neuen an und muss dessen
+    // Beim Erfassen: Ein Kunde muss gewählt sein, und wer einen neuen anlegt, muss dessen
     // Namen nennen. Das prüft der Browser vor dem Absenden, damit das Formular nicht
     // mit einem Fehler zurückkommt und dabei die gewählten Anhänge verliert.
     const neuerName = document.querySelector('.neukunde input[name$=".KundeName"]');
     function pflicht() {
+        if (!neuerName) return;
         const neu = treffer.querySelector('#kunde-neu');
-        if (neuerName) neuerName.required = !!neu && neu.checked;
+        neuerName.required = !!neu && neu.checked;
+        feld.setCustomValidity(treffer.querySelector('input[name="kundeId"]:checked')
+            ? ''
+            : 'Bitte einen Kunden suchen und auswählen. Ist er nicht dabei, lässt er sich nach der Suche neu anlegen.');
     }
-    treffer.addEventListener('change', pflicht);
+    treffer.addEventListener('change', ereignis => {
+        pflicht();
+        // Wer "neuen Kunden anlegen" wählt, hat den Namen meist gerade gesucht.
+        if (neuerName && ereignis.target.id === 'kunde-neu' && ereignis.target.checked) {
+            const gesucht = feld.value.trim();
+            if (!neuerName.value && gesucht && !/[@\d]/.test(gesucht)) neuerName.value = gesucht;
+            neuerName.focus();
+        }
+    });
     pflicht();
 
     function suchen() {
@@ -24,6 +36,7 @@
         const url = new URL(treffer.dataset.url, location.href);
         url.searchParams.set('q', feld.value);
         if (gewaehlt && gewaehlt.value) url.searchParams.set('gewaehlt', gewaehlt.value);
+        if (gewaehlt && !gewaehlt.value) url.searchParams.set('neu', 'true');
 
         const nummer = ++laufend;
         fetch(url, { credentials: 'same-origin' })

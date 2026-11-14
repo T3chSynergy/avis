@@ -166,8 +166,9 @@ können, ohne dass sich am Auftrag etwas ändert.
 - Die Mailadresse eines Anmeldekontos stammt aus dem Active Directory oder vom
   Administrator, nie von der Person selbst. So kann sich niemand die Aufträge
   eines anderen zuordnen.
-- Die Hotline kann am Telefon einen Kunden suchen oder neu anlegen. Gesucht
-  wird über Name, E-Mail, Telefon, Organisationseinheit und Standort.
+- Die Hotline sucht am Telefon den Kunden und wählt ihn aus. Gesucht wird
+  über Name, E-Mail, Telefon, Organisationseinheit und Standort. Ein neuer
+  Kunde ist die Ausnahme: Er lässt sich erst anlegen, nachdem gesucht wurde.
 - Eine E-Mail-Adresse gehört zu genau einem Kunden.
 - Am Kunden sind seine bisherigen Aufträge sichtbar.
 - Ein Kunde lässt sich als inaktiv markieren. Er bleibt mit seinen Aufträgen

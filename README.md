@@ -14,7 +14,8 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 - Angaben und Kunde eines Auftrags nachträglich ändern, mit den bisherigen
   Werten im Verlauf
 - Kunden suchen, anlegen und pflegen, mit den Aufträgen eines Kunden; beim
-  Erfassen erscheinen Treffer schon während des Tippens
+  Erfassen erscheinen Treffer schon während des Tippens, und ein neuer Kunde
+  lässt sich erst nach einer Suche anlegen
 - Listen: Meine Aufträge, offene Aufträge (meiner Gruppen und für mich vorgemerkte), alle Aufträge
 - Meine Gruppen: selbst beitreten und austreten, je Gruppe eine Mail bei
   neuen Aufträgen ein- und ausschalten

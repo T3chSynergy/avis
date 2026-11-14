@@ -101,7 +101,7 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         }
         else if (neuerName.Length == 0)
         {
-            ModelState.AddModelError(nameof(KundeId), "Bitte einen Kunden auswählen oder den Namen eines neuen Kunden angeben.");
+            ModelState.AddModelError(nameof(KundeId), "Bitte einen Kunden suchen und auswählen. Ist er nicht dabei, lässt er sich nach der Suche neu anlegen.");
         }
 
         var gruppe = await db.Gruppen.FirstOrDefaultAsync(g => g.Id == Eingabe.GruppeId && g.Aktiv);
@@ -174,6 +174,17 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
             ModelState.AddModelError(nameof(Dateien), meldung);
     }
 
+    /// <summary>
+    /// Ob beim Absenden "neuen Kunden anlegen" angekreuzt war oder dessen
+    /// Felder ausgefüllt sind. Dann bleiben sie sichtbar, wenn das Formular
+    /// wieder angezeigt wird. Die Wahl sendet "kundeId" ohne Wert; ist
+    /// nichts angekreuzt, fehlt das Feld.
+    /// </summary>
+    private bool NeuerKundeGewaehlt() =>
+        KundeId is null
+        && ((Request.HasFormContentType && Request.Form.ContainsKey("kundeId"))
+            || new[] { Eingabe.KundeName, Eingabe.KundeEmail, Eingabe.KundeTelefon }.Any(t => !string.IsNullOrWhiteSpace(t)));
+
     private async Task<Kunde> KundeFindenOderAnlegenAsync()
     {
         var email = string.IsNullOrWhiteSpace(Eingabe.KundeEmail) ? null : Eingabe.KundeEmail.Trim().ToLowerInvariant();
@@ -204,6 +215,6 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
             .Select(b => new SelectListItem(b.Name, b.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         Auswahl = await AuftragAuswahl.LadenAsync(db);
-        Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "neu");
+        Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "neu", neuGewaehlt: NeuerKundeGewaehlt());
     }
 }

@@ -51,8 +51,56 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains("Frank Müller", treffer);
         Assert.Contains("Gabi Müller", treffer);
         Assert.Contains($"id=\"kunde-{dieter}\" value=\"{dieter}\" checked", treffer);
-        Assert.Contains("Neuer Kunde", treffer);
-        Assert.DoesNotContain("Neuer Kunde", await anna.GetStringAsync("/Kunden/Treffer?q=müller"));
+        Assert.Contains("neuen Kunden anlegen", treffer);
+        Assert.DoesNotContain("neuen Kunden anlegen", await anna.GetStringAsync("/Kunden/Treffer?q=müller"));
+    }
+
+    [Fact]
+    public async Task Ein_neuer_Kunde_ist_die_Ausnahme_und_steht_erst_nach_einer_Suche_zur_Wahl()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        const string ausweg = "Nicht dabei: neuen Kunden anlegen";
+        const string angekreuzt = "id=\"kunde-neu\" value=\"\" checked";
+
+        // Das leere Formular bietet nur die Suche an. Nichts ist vorausgewählt.
+        var leer = await anna.GetStringAsync("/Auftraege/Neu");
+        Assert.Contains("id=\"kundensuche\"", leer);
+        Assert.DoesNotContain(ausweg, leer);
+        Assert.DoesNotContain("type=\"radio\" name=\"kundeId\"", leer);
+
+        // Nach einer Suche stehen die Treffer da und darunter der Ausweg, keiner davon angekreuzt.
+        var treffer = await anna.GetStringAsync("/Kunden/Treffer?q=müller&leer=neu");
+        Assert.Contains("Frank Müller", treffer);
+        Assert.Contains(ausweg, treffer);
+        Assert.DoesNotContain("checked", treffer);
+
+        // Findet die Suche niemanden, bleibt der Ausweg; auch dann wählt ihn erst der Bearbeiter.
+        var nichts = await anna.GetStringAsync("/Kunden/Treffer?q=xyzxyz&leer=neu");
+        Assert.Contains("Keine Kunden gefunden.", nichts);
+        Assert.Contains(ausweg, nichts);
+        Assert.DoesNotContain("checked", nichts);
+
+        // Ist er gewählt, bleibt er es, während weiter getippt wird, auch wenn die Suche wieder leer ist.
+        Assert.Contains(angekreuzt, await anna.GetStringAsync("/Kunden/Treffer?q=müller&leer=neu&neu=true"));
+        Assert.Contains(angekreuzt, await anna.GetStringAsync("/Kunden/Treffer?q=&leer=neu&neu=true"));
+
+        // Kommt das Formular mit einem Fehler zurück, bleiben die Felder des neuen Kunden sichtbar und gefüllt.
+        var zurueck = await (await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        {
+            ["kundeId"] = "",
+            ["Eingabe.KundeName"] = "Nora Neu",
+            ["Eingabe.Felder.Betreff"] = "",
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.GruppeId"] = (await HotlineIdAsync()).ToString(),
+        })).Content.ReadAsStringAsync();
+        Assert.Contains("Bitte einen Betreff angeben.", zurueck);
+        Assert.Contains(angekreuzt, zurueck);
+        Assert.Contains("value=\"Nora Neu\"", zurueck);
+
+        // Bei einem Gerät heißt die Wahl ohne Kunden "Kein Kunde" und ist wie bisher von Anfang an da und angekreuzt.
+        var geraet = await anna.GetStringAsync("/Kunden/Treffer?q=&leer=kein");
+        Assert.Contains("Kein Kunde", geraet);
+        Assert.Contains(angekreuzt, geraet);
     }
 
     [Fact]
@@ -155,7 +203,7 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             ["Eingabe.GruppeId"] = (await HotlineIdAsync()).ToString(),
         });
 
-        Assert.Contains("Bitte einen Kunden auswählen oder den Namen eines neuen Kunden angeben.", await antwort.Content.ReadAsStringAsync());
+        Assert.Contains("Bitte einen Kunden suchen und auswählen. Ist er nicht dabei, lässt er sich nach der Suche neu anlegen.", await antwort.Content.ReadAsStringAsync());
         Assert.False(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.Betreff == "Ohne Kunde")));
     }
 

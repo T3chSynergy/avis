@@ -22,12 +22,23 @@ public class Kundenauswahl
     /// </summary>
     public string? Leer { get; private init; }
 
+    /// <summary>Ob "neuer Kunde" gewählt ist. Von selbst ist er es nie.</summary>
+    public bool NeuGewaehlt { get; private init; }
+
+    /// <summary>
+    /// Der Text der Wahl ohne Kunden, oder null, wenn sie nicht angeboten
+    /// wird. Einen neuen Kunden legt man erst an, wenn die Suche ihn nicht
+    /// gefunden hat: Die Wahl erscheint deshalb erst nach einer Suche.
+    /// </summary>
     public string? Leertext => Leer switch
     {
-        "neu" => "Neuer Kunde",
+        "neu" when Gesucht || NeuGewaehlt => "Nicht dabei: neuen Kunden anlegen",
         "kein" => "Kein Kunde",
         _ => null,
     };
+
+    /// <summary>Ob die Wahl ohne Kunden angekreuzt ist. "Kein Kunde" ist es, solange kein Kunde gewählt ist.</summary>
+    public bool LeerGewaehlt => Leer == "neu" ? NeuGewaehlt && GewaehltId is null : GewaehltId is null;
 
     public IReadOnlyList<Kunde> Treffer { get; private init; } = [];
     public bool Mehr { get; private init; }
@@ -36,7 +47,7 @@ public class Kundenauswahl
     /// <summary>Ob die Suche selbst nichts fand. Der gewählte Kunde steht auch dann in den Treffern.</summary>
     public bool NichtsGefunden { get; private init; }
 
-    public static async Task<Kundenauswahl> LadenAsync(AvisDb db, string? suche, int? gewaehltId, string? leer = null)
+    public static async Task<Kundenauswahl> LadenAsync(AvisDb db, string? suche, int? gewaehltId, string? leer = null, bool neuGewaehlt = false)
     {
         var begriff = suche?.Trim() ?? "";
         var gesucht = begriff.Length >= Mindestlaenge;
@@ -71,6 +82,7 @@ public class Kundenauswahl
             Suche = begriff,
             GewaehltId = gewaehltId,
             Leer = leer,
+            NeuGewaehlt = neuGewaehlt,
             Treffer = treffer,
             Mehr = mehr,
             Gesucht = gesucht,
