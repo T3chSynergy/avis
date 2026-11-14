@@ -200,7 +200,9 @@ passenden Geräteeintrag erfassen.
 **Bearbeiter**
 
 - Meine Aufträge: alles, was ich gerade in Bearbeitung habe
-- Gruppen: offene Aufträge meiner Gruppen, bevorzugt an mich gerichtete markiert
+- Gruppen: offene Aufträge meiner Gruppen, bevorzugt an mich gerichtete markiert.
+  Umschaltbar: je Gruppe eine Liste, oder alle Gruppen zusammen nach Priorität
+  oder nach Liegezeit (die ältesten zuerst)
 - Alle Aufträge: Suche in Betreff, Beschreibung, Gerät, Kunde und Verlauf,
   Filter nach Status, Gruppe und Bearbeiter, über alles, was ich sehen darf.
   Eine Auftragsnummer führt direkt zum Auftrag

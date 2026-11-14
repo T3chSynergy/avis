@@ -295,6 +295,68 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Die_Gruppenliste_laesst_sich_auf_Prioritaet_und_Liegezeit_ueber_alle_Gruppen_umschalten()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var betreuung = await app.DatenbankAsync(db => db.Gruppen.Where(g => g.Name == "Anwenderbetreuung").Select(g => g.Id).FirstAsync());
+        var hotline = await app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync());
+
+        // Drei Aufträge in zwei Gruppen von Anna, in dieser Reihenfolge erfasst.
+        async Task<int> NeuAsync(string betreff, int gruppe, string stufe)
+        {
+            var antwort = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+            {
+                ["Eingabe.KundeName"] = "Test Kunde",
+                ["Eingabe.Felder.Betreff"] = betreff,
+                ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+                ["Eingabe.Felder.Dringlichkeit"] = stufe,
+                ["Eingabe.Felder.Wichtigkeit"] = stufe,
+                ["Eingabe.GruppeId"] = gruppe.ToString(),
+            });
+            return int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
+        }
+        var mittel = await NeuAsync("Ansicht mittel", hotline, "Mittel");
+        var niedrig = await NeuAsync("Ansicht niedrig", betreuung, "Niedrig");
+        var hoch = await NeuAsync("Ansicht hoch", betreuung, "Hoch");
+
+        static List<int> Reihenfolge(string seite) => Regex.Matches(seite, "<td>(\\d+)</td>\\s*<td><span class=\"prio").Select(m => int.Parse(m.Groups[1].Value)).ToList();
+        static string[] Spalten(string seite) => Regex
+            .Matches(seite[..seite.IndexOf("</thead>", StringComparison.Ordinal)], "<th scope=\"col\">([^<]+)</th>").Select(m => m.Groups[1].Value).ToArray();
+        static int Ueberschriften(string seite) => Regex.Count(seite, "<h2>[^<]*<span class=\"anzahl\">");
+        void Davor(List<int> liste, int erster, int zweiter) => Assert.True(liste.IndexOf(erster) >= 0 && liste.IndexOf(erster) < liste.IndexOf(zweiter), $"{erster} steht nicht vor {zweiter}: {string.Join(", ", liste)}");
+
+        // Ohne Angabe und mit einer unbekannten: je Gruppe eine Liste, die Gruppe steht in der Überschrift.
+        foreach (var adresse in new[] { "/Gruppen", "/Gruppen?ansicht=unsinn" })
+        {
+            var nachGruppe = await anna.GetStringAsync(adresse);
+            Assert.Equal(2, Ueberschriften(nachGruppe));
+            Assert.DoesNotContain("Gruppe", Spalten(nachGruppe));
+            Assert.Contains("<a aria-current=\"page\" href=\"/Gruppen\">Nach Gruppe</a>", nachGruppe);
+        }
+
+        // Nach Priorität: eine Liste über alle Gruppen, die Gruppe als Spalte.
+        var nachPrio = await anna.GetStringAsync("/Gruppen?ansicht=prio");
+        Assert.Equal(0, Ueberschriften(nachPrio));
+        Assert.Equal(["Nr.", "Prio", "Betreff", "Kunde", "Gruppe", "Termin", "Alter"], Spalten(nachPrio));
+        Assert.Contains("<a aria-current=\"page\" href=\"/Gruppen?ansicht=prio\">Nach Priorität</a>", nachPrio);
+        Davor(Reihenfolge(nachPrio), hoch, mittel);
+        Davor(Reihenfolge(nachPrio), mittel, niedrig);
+
+        // Nach Liegezeit: die ältesten zuerst, also in der Reihenfolge des Erfassens und nach den Testdaten.
+        var nachLiegezeit = await anna.GetStringAsync("/Gruppen?ansicht=liegezeit");
+        var drucker = await app.DatenbankAsync(db => db.Auftraege.Where(a => a.Betreff == "Drucker im Flur druckt nicht").Select(a => a.Id).FirstAsync());
+        Assert.Equal(0, Ueberschriften(nachLiegezeit));
+        Assert.Contains("Gruppe", Spalten(nachLiegezeit));
+        Davor(Reihenfolge(nachLiegezeit), drucker, mittel);
+        Davor(Reihenfolge(nachLiegezeit), mittel, niedrig);
+        Davor(Reihenfolge(nachLiegezeit), niedrig, hoch);
+
+        // Jede Ansicht zeigt dieselben Aufträge.
+        Assert.Equal(Reihenfolge(nachPrio).Order(), Reihenfolge(nachLiegezeit).Order());
+        Assert.Equal(Reihenfolge(nachPrio).Order(), Reihenfolge(await anna.GetStringAsync("/Gruppen")).Order());
+    }
+
+    [Fact]
     public async Task Nach_einem_Fehler_geht_das_Formular_mit_dem_geschriebenen_Text_wieder_auf()
     {
         var anna = await app.AnmeldenAlsAsync("anna");

@@ -9,8 +9,32 @@
 {
     <p class="leer">Du bist in keiner Gruppe. Unter <a asp-page="/Gruppen/Meine">Meine Gruppen</a> kannst du dich eintragen.</p>
 }
-@foreach (var gruppe in Model.Gruppen)
+else
 {
-    <h2>@gruppe.Name <span class="anzahl">@Model.Offen[gruppe.Id].Count</span></h2>
-    <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Offen[gruppe.Id], OhneGruppe: true, OhneBearbeiter: true)" />
+    <nav class="filter" aria-label="Ansicht">
+        <a asp-page="Index" aria-current="@Aktuell(IndexModel.NachGruppe)">Nach Gruppe</a>
+        <a asp-page="Index" asp-route-ansicht="@IndexModel.NachPrioritaet" aria-current="@Aktuell(IndexModel.NachPrioritaet)">Nach Priorität</a>
+        <a asp-page="Index" asp-route-ansicht="@IndexModel.NachLiegezeit" aria-current="@Aktuell(IndexModel.NachLiegezeit)">Nach Liegezeit</a>
+    </nav>
+
+    @if (Model.Ansicht == IndexModel.NachGruppe)
+    {
+        foreach (var gruppe in Model.Gruppen)
+        {
+            <h2>@gruppe.Name <span class="anzahl">@Model.Offen[gruppe.Id].Count</span></h2>
+            <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Offen[gruppe.Id], OhneGruppe: true, OhneBearbeiter: true)" />
+        }
+    }
+    else
+    {
+        <p class="erklaerung">
+            Alle Gruppen zusammen,
+            @(Model.Ansicht == IndexModel.NachLiegezeit ? "die ältesten Aufträge zuerst." : "die höchste Priorität zuerst.")
+        </p>
+        <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Alle, OhneBearbeiter: true)" />
+    }
+}
+
+@functions {
+    string? Aktuell(string ansicht) => Model.Ansicht == ansicht ? "page" : null;
 }
