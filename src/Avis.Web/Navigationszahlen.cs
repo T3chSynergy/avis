@@ -4,22 +4,23 @@ using Microsoft.EntityFrameworkCore;
 namespace Avis.Web;
 
 /// <summary>
-/// Die Zahlen an den Reitern der Navigation: was bei mir liegt und was in
-/// meinen Gruppen auf jemanden wartet.
+/// Die Zahlen an den Reitern der Navigation: was ich in Bearbeitung habe und
+/// was offen auf eine Übernahme wartet, in meinen Gruppen oder für mich
+/// vorgemerkt.
 /// </summary>
 public class Navigationszahlen(AvisDb db, ILogger<Navigationszahlen> log)
 {
-    public record Zahlen(int Meine, int Gruppen);
+    public record Zahlen(int Meine, int Offen);
 
     public async Task<Zahlen> LadenAsync(int benutzerId)
     {
         try
         {
             var sichtbar = db.AuftraegeFuer(benutzerId);
-            var meine = await sichtbar.CountAsync(a => a.AbgeschlossenAm == null
-                && (a.BearbeiterId == benutzerId || (a.BearbeiterId == null && a.BevorzugterBearbeiterId == benutzerId)));
-            var gruppen = await sichtbar.Offen().CountAsync(a => a.Gruppe.Aktiv && a.Gruppe.Mitglieder.Any(m => m.Id == benutzerId));
-            return new Zahlen(meine, gruppen);
+            var meine = await sichtbar.InBearbeitung().CountAsync(a => a.BearbeiterId == benutzerId);
+            var offen = await sichtbar.Offen().CountAsync(a =>
+                (a.Gruppe.Aktiv && a.Gruppe.Mitglieder.Any(m => m.Id == benutzerId)) || a.BevorzugterBearbeiterId == benutzerId);
+            return new Zahlen(meine, offen);
         }
         catch (Exception ex)
         {

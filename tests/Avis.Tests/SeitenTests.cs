@@ -205,7 +205,7 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var gruppen = await clara.GetStringAsync("/Gruppen");
 
         Assert.Matches("<a class=\"neu\"[^>]*href=\"/Auftraege/Neu\"", gruppen);
-        Assert.Contains("<a aria-current=\"page\" href=\"/Gruppen\">Gruppen", gruppen);
+        Assert.Contains("<a aria-current=\"page\" href=\"/Gruppen\">Offene Aufträge", gruppen);
         Assert.DoesNotContain("<a aria-current=\"page\" href=\"/\">Meine Aufträge", gruppen);
         // Clara bearbeitet aus den Testdaten den Auftrag zum Monitor.
         Assert.Matches("Meine Aufträge <span class=\"zahl voll\">[1-9]\\d*</span>", gruppen);
@@ -329,8 +329,8 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         foreach (var adresse in new[] { "/Gruppen", "/Gruppen?ansicht=unsinn" })
         {
             var nachGruppe = await anna.GetStringAsync(adresse);
-            Assert.Equal(2, Ueberschriften(nachGruppe));
-            Assert.DoesNotContain("Gruppe", Spalten(nachGruppe));
+            Assert.Contains("<h2>Anwenderbetreuung <span class=\"anzahl\">", nachGruppe);
+            Assert.Contains("<h2>IT-Hotline <span class=\"anzahl\">", nachGruppe);
             Assert.Contains("<a aria-current=\"page\" href=\"/Gruppen\">Nach Gruppe</a>", nachGruppe);
         }
 
@@ -354,6 +354,74 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         // Jede Ansicht zeigt dieselben Aufträge.
         Assert.Equal(Reihenfolge(nachPrio).Order(), Reihenfolge(nachLiegezeit).Order());
         Assert.Equal(Reihenfolge(nachPrio).Order(), Reihenfolge(await anna.GetStringAsync("/Gruppen")).Order());
+    }
+
+    /// <summary>
+    /// Bernd ist Mitglied im Netzwerk, aber nicht in der IT-Hotline. Als
+    /// bevorzugter Bearbeiter kann er trotzdem in der Hotline genannt sein.
+    /// </summary>
+    [Fact]
+    public async Task Was_fuer_mich_vorgemerkt_ist_steht_bei_den_offenen_Auftraegen_und_nicht_bei_meinen()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var bernd = await app.AnmeldenAlsAsync("bernd");
+        var berndId = await app.DatenbankAsync(db => db.Benutzer.Where(b => b.Anmeldename == "bernd").Select(b => b.Id).FirstAsync());
+        var hotline = await app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync());
+        var netzwerk = await app.DatenbankAsync(db => db.Gruppen.Where(g => g.Name == "Netzwerk").Select(g => g.Id).FirstAsync());
+
+        static (int Meine, int Offen) Zahlen(string seite) => (
+            int.Parse(Regex.Match(seite, "Meine Aufträge <span class=\"zahl[^\"]*\">(\\d+)</span>").Groups[1].Value),
+            int.Parse(Regex.Match(seite, "Offene Aufträge <span class=\"zahl[^\"]*\">(\\d+)</span>").Groups[1].Value));
+        static int Vorkommen(string seite, string betreff) => Regex.Count(seite, $">{Regex.Escape(betreff)}</a>");
+        var vorher = Zahlen(await bernd.GetStringAsync("/"));
+
+        async Task<int> NeuAsync(string betreff, int gruppe)
+        {
+            var antwort = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+            {
+                ["Eingabe.KundeName"] = "Test Kunde",
+                ["Eingabe.Felder.Betreff"] = betreff,
+                ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+                ["Eingabe.GruppeId"] = gruppe.ToString(),
+                ["Eingabe.BevorzugtId"] = berndId.ToString(),
+            });
+            return int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
+        }
+        var fremd = await NeuAsync("Vorgemerkt in fremder Gruppe", hotline);
+        await NeuAsync("Vorgemerkt in eigener Gruppe", netzwerk);
+
+        // Die Startseite verweist nur darauf, die Zahlen folgen der Einteilung.
+        var start = await bernd.GetStringAsync("/");
+        Assert.Contains("Für dich vorgemerkt", start);
+        Assert.Equal(0, Vorkommen(start, "Vorgemerkt in fremder Gruppe"));
+        Assert.Equal((vorher.Meine, vorher.Offen + 2), Zahlen(start));
+
+        // Nach Gruppe: oben ein eigener Abschnitt, und jeder Auftrag steht nur einmal da.
+        var nachGruppe = await bernd.GetStringAsync("/Gruppen");
+        Assert.Contains("<h2>Für mich vorgemerkt <span class=\"anzahl\">", nachGruppe);
+        Assert.True(nachGruppe.IndexOf("Für mich vorgemerkt", StringComparison.Ordinal) < nachGruppe.IndexOf("<h2>Netzwerk", StringComparison.Ordinal));
+        Assert.Equal(1, Vorkommen(nachGruppe, "Vorgemerkt in fremder Gruppe"));
+        Assert.Equal(1, Vorkommen(nachGruppe, "Vorgemerkt in eigener Gruppe"));
+
+        // In den gemeinsamen Listen stehen sie mit drin.
+        foreach (var ansicht in new[] { "prio", "liegezeit" })
+        {
+            var zusammen = await bernd.GetStringAsync($"/Gruppen?ansicht={ansicht}");
+            Assert.Equal(1, Vorkommen(zusammen, "Vorgemerkt in fremder Gruppe"));
+            Assert.Equal(1, Vorkommen(zusammen, "Vorgemerkt in eigener Gruppe"));
+        }
+
+        // Anna ist nicht gemeint: Für sie liegt der Auftrag einfach in ihrer Gruppe.
+        var beiAnna = await anna.GetStringAsync("/Gruppen");
+        Assert.Equal(1, Vorkommen(beiAnna, "Vorgemerkt in fremder Gruppe"));
+        Assert.True(beiAnna.IndexOf("<h2>IT-Hotline", StringComparison.Ordinal) < beiAnna.IndexOf("Vorgemerkt in fremder Gruppe", StringComparison.Ordinal));
+
+        // Übernimmt Bernd, wechselt der Auftrag zu seinen eigenen.
+        await bernd.UebernehmenAsync(app, fremd);
+        start = await bernd.GetStringAsync("/");
+        Assert.Equal(1, Vorkommen(start, "Vorgemerkt in fremder Gruppe"));
+        Assert.Equal((vorher.Meine + 1, vorher.Offen + 1), Zahlen(start));
+        Assert.Equal(0, Vorkommen(await bernd.GetStringAsync("/Gruppen"), "Vorgemerkt in fremder Gruppe"));
     }
 
     [Fact]
@@ -584,9 +652,9 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Equal(AuftragStatus.Offen, auftrag.Status);
         Assert.Equal("Netzwerk", auftrag.Gruppe.Name);
 
-        // Bernd sieht ihn in seiner Gruppe und auf seiner Startseite.
+        // Bernd sieht ihn bei den offenen Aufträgen, und seine Startseite weist darauf hin.
         Assert.Contains("Kein Netz am Arbeitsplatz", await bernd.GetStringAsync("/Gruppen"));
-        Assert.Contains("Kein Netz am Arbeitsplatz", await bernd.GetStringAsync("/"));
+        Assert.Contains("Für dich vorgemerkt", await bernd.GetStringAsync("/"));
 
         // Anna kann nicht abschließen, Bernd übernimmt und schließt ab.
         await AktionAsync(anna, seite, "Abschliessen", auftrag.Version, new() { ["text"] = "Erledigt." });
