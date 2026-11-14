@@ -52,6 +52,11 @@ man den Benutzer auswählt. Frische Testdaten gibt es auf der Seite der
 Testanmeldung über „Datenbank neu anlegen": Das leert die Datenbank, entfernt
 die Anhänge und beginnt die Zählung von vorn.
 
+Zu den Testdaten gehören Kunden, die für Konten aus dem Active Directory
+stehen (Hanna Verzeichnis, Igor Abgleich und die inaktive Jana Ehemals), und
+ein von Hand stillgelegter Kunde (Karl Ruhestand). An ihnen lässt sich ohne
+Verzeichnis ansehen, wie abgeglichene und inaktive Kunden aussehen.
+
 Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
 `src/Avis.Web/App_Data/Mails` abgelegt. Ein Mailprogramm öffnet sie. Den
 Ordner nennt auch die Seite der Testanmeldung.
@@ -175,6 +180,10 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 | `Zeitzone` | Zeitzone für die Anzeige, Zeitpunkte werden in UTC gespeichert |
 | `Auftraege:ErsteNummer` | Nummer, die der nächste Auftrag mindestens bekommt, zum Beispiel `200000`, um an eine vorhandene Zählung anzuschließen. Wird beim Start angewendet und wirkt nur nach oben. Standard 0: Die Zählung beginnt bei 1 |
 | `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon und Abteilung neuer Konten aus dem Active Directory, `Keines` lässt das aus |
+| `Kundenabgleich:Art` | `ActiveDirectory` gleicht die Kunden mit dem Active Directory ab, `Aus` lässt das aus |
+| `Kundenabgleich:Filter` | LDAP-Filter, der bestimmt, wer Kunde ist, zum Beispiel `(department=*)` |
+| `Kundenabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird, zum Beispiel `OU=Mitarbeiter,DC=example,DC=org`. Leer: in der ganzen Domäne |
+| `Kundenabgleich:AbstandMinuten` | Abstand zwischen zwei Abgleichen, Standard 60, mindestens 5 |
 | `Mail:Art` | `Smtp` versendet, `Ordner` legt Mails als Dateien ab, `Aus` sendet nichts |
 | `Mail:Server`, `Mail:Port` | Mailserver, Standardport 25 |
 | `Mail:Verschluesselung` | `Auto`, `Keine`, `StartTls` oder `Ssl` |
@@ -255,6 +264,44 @@ Gmail und Thunderbird geprüft, nicht mit echten Mails aus dem Haus. Der dazugeh
 `AVIS_TEST_IMAP` in der Form `host:port:benutzer:kennwort` gesetzt ist. Er
 verarbeitet die ungelesenen Mails dieses Postfachs und markiert sie als
 gelesen, gehört also nur an ein Testpostfach.
+
+## Kundenabgleich
+
+Mit `Kundenabgleich:Art = ActiveDirectory` sind die Benutzerkonten des Active
+Directory, auf die der LDAP-Filter aus `Kundenabgleich:Filter` passt, die
+Kunden. AVIS liest sie eine Minute nach dem Start und dann im eingestellten
+Abstand; unter Verwaltung → Kundenabgleich steht, was der letzte Lauf getan
+hat, und er lässt sich dort sofort anstoßen.
+
+Der Filter bestimmt, wer Kunde ist. Dass nur Benutzerkonten von Personen
+zählen und deaktivierte Konten nicht, ergänzt AVIS selbst. Beispiele:
+
+| Filter | Kunden sind |
+|---|---|
+| `(department=*)` | alle Konten, bei denen eine Abteilung eingetragen ist |
+| `(mail=*@example.org)` | alle Konten mit einer Adresse dieser Domäne |
+| `(memberOf=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | die Mitglieder dieser Gruppe |
+| `(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | ihre Mitglieder samt verschachtelter Gruppen |
+
+Mit `Kundenabgleich:Suchbasis` lässt sich die Suche auf einen Teil des
+Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
+
+- Das Verzeichnis gewinnt: Name, E-Mail, Telefon und Organisationseinheit
+  werden überschrieben und lassen sich in AVIS nicht ändern.
+- Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
+  wiedererkannt und übernommen.
+- Auf wen der Filter nicht mehr passt oder wessen Konto deaktiviert ist, der
+  wird als inaktiv markiert. Er bleibt mit seinen Aufträgen erhalten und steht
+  nur nicht mehr zur Wahl, wenn ein Auftrag erfasst wird.
+- Kunden, die nur in AVIS angelegt wurden, bleiben unberührt. Ein Bearbeiter
+  markiert sie auf der Seite des Kunden als inaktiv.
+- Liefert das Verzeichnis keinen einzigen Kunden oder ist es nicht
+  erreichbar, ändert sich nichts.
+
+Gelesen wird mit dem Konto, unter dem AVIS läuft, aus der Domäne des Servers.
+Ein fehlerhafter Filter lässt den Abgleich scheitern, ohne dass sich etwas
+ändert; die Meldung steht in der Verwaltung. Der Abgleich ist noch nicht an
+einem echten Verzeichnis erprobt.
 
 ## Anhänge
 

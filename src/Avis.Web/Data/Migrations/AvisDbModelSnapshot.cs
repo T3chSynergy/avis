@@ -373,6 +373,9 @@ namespace Avis.Web.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("Aktiv")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Anmeldename")
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");

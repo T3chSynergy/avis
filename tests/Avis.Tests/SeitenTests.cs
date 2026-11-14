@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
+using Avis.Web.Kundenabgleich;
 using Avis.Web.Mail;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -30,6 +31,9 @@ public class AvisAnwendung : WebApplicationFactory<Program>
     /// <summary>Steht für das Active Directory.</summary>
     public Testverzeichnis Verzeichnis { get; } = new();
 
+    /// <summary>Steht für die Gruppe im Active Directory, deren Mitglieder die Kunden sind.</summary>
+    public Testkundenquelle Kundenquelle { get; } = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
@@ -49,6 +53,7 @@ public class AvisAnwendung : WebApplicationFactory<Program>
         {
             services.AddSingleton<IMailversand>(Postfach);
             services.AddSingleton<IVerzeichnis>(Verzeichnis);
+            services.AddSingleton<IKundenquelle>(Kundenquelle);
         });
     }
 
@@ -114,6 +119,19 @@ public class Postfach : IMailversand
         Mails.Add(mail);
         return Task.CompletedTask;
     }
+}
+
+public class Testkundenquelle : IKundenquelle
+{
+    public string Name => "ActiveDirectory";
+
+    public List<Quellkunde> Kunden { get; } = [];
+
+    /// <summary>Solange gesetzt, lässt sich die Quelle nicht lesen.</summary>
+    public bool Gestoert { get; set; }
+
+    public IReadOnlyList<Quellkunde> Lesen() =>
+        Gestoert ? throw new InvalidOperationException("Der Server ist nicht funktionstüchtig.") : Kunden.ToList();
 }
 
 public class Testverzeichnis : IVerzeichnis

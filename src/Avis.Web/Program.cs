@@ -4,6 +4,7 @@ using Avis.Web;
 using Avis.Web.Anhaenge;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
+using Avis.Web.Kundenabgleich;
 using Avis.Web.Mail;
 using Avis.Web.Posteingang;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ builder.AddAvisAnmeldung();
 builder.AddAvisVerzeichnis();
 builder.AddAvisMail();
 builder.AddAvisPosteingang();
+builder.AddAvisKundenabgleich();
 builder.Services.Configure<AnhangOptionen>(builder.Configuration.GetSection("Anhaenge"));
 builder.Services.AddSingleton<Anhangablage>();
 

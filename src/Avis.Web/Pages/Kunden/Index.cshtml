@@ -33,8 +33,8 @@ else
         <tbody>
             @foreach (var k in Model.Kunden)
             {
-                <tr>
-                    <td><a asp-page="Details" asp-route-id="@k.Id">@k.Name</a></td>
+                <tr class="@(k.Aktiv ? "" : "inaktiv")">
+                    <td><a asp-page="Details" asp-route-id="@k.Id">@k.Name</a> @if (!k.Aktiv) { <span class="hinweis">inaktiv</span> }</td>
                     <td>@k.Email</td>
                     <td>@k.Telefon</td>
                     <td>@k.Organisationseinheit</td>

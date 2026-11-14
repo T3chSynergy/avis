@@ -57,6 +57,8 @@ public class KundeAendernModel(AvisDb db, TimeProvider uhr) : PageModel
 
             var kunde = await db.Kunden.FirstOrDefaultAsync(k => k.Id == kundeId)
                 ?? throw new AuftragException("Bitte einen Kunden auswählen.");
+            if (!kunde.Aktiv)
+                throw new AuftragException($"{kunde.Name} ist als inaktiv markiert und steht nicht zur Wahl.");
             var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
 
             auftrag.KundeAendern(kunde, ich, uhr.GetUtcNow().UtcDateTime);
