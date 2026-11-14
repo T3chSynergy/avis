@@ -140,6 +140,74 @@ public class AuftragTests
     }
 
     [Fact]
+    public void Wer_den_Auftrag_bearbeitet_aendert_den_Text_seines_internen_Kommentars()
+    {
+        var auftrag = BeiAnna();
+        auftrag.InternKommentieren(_anna, "Erste Fassung.", Jetzt);
+        var eintrag = auftrag.Verlauf[^1];
+        var eintraege = auftrag.Verlauf.Count;
+
+        // Derselbe Text ist keine Änderung.
+        Assert.False(auftrag.EintragAendern(eintrag, _anna, " Erste Fassung. ", Jetzt.AddMinutes(1)));
+        Assert.Null(eintrag.GeaendertAm);
+
+        Assert.True(auftrag.EintragAendern(eintrag, _anna, " Zweite Fassung. ", Jetzt.AddMinutes(5)));
+
+        // Der alte Text ist ersetzt, auch für die Suche. Es entsteht kein neuer Eintrag.
+        Assert.Equal(("Zweite Fassung.", "zweite fassung.", Jetzt.AddMinutes(5)), (eintrag.Text, eintrag.Suchtext, eintrag.GeaendertAm));
+        Assert.Equal(Jetzt, eintrag.Zeitpunkt);
+        Assert.Equal(eintraege, auftrag.Verlauf.Count);
+
+        // Ein Kommentar ohne Anhang braucht weiterhin Text.
+        Assert.Throws<AuftragException>(() => auftrag.EintragAendern(eintrag, _anna, "  ", Jetzt));
+        Assert.Equal("Zweite Fassung.", eintrag.Text);
+    }
+
+    [Fact]
+    public void Den_Text_aendert_nur_der_Verfasser_nur_bei_Internem_und_nur_solange_er_den_Auftrag_bearbeitet()
+    {
+        var auftrag = BeiAnna();
+        auftrag.InternKommentieren(_anna, "Von Anna.", Jetzt);
+        var kommentar = auftrag.Verlauf[^1];
+        auftrag.NachrichtAnKunden(_anna, "An den Kunden.", Jetzt);
+        var nachricht = auftrag.Verlauf[^1];
+        var fremd = BeiAnna();
+        fremd.InternKommentieren(_anna, "Anderer Auftrag.", Jetzt);
+
+        // Was der Kunde gesehen hat, bleibt. Ein Eintrag eines anderen Auftrags gehört nicht hierher.
+        Assert.Throws<AuftragException>(() => auftrag.EintragAendern(nachricht, _anna, "Anders.", Jetzt));
+        Assert.Throws<AuftragException>(() => auftrag.EintragAendern(fremd.Verlauf[^1], _anna, "Anders.", Jetzt));
+        Assert.False(auftrag.DarfTextAendern(nachricht, _anna.Id));
+        Assert.True(auftrag.DarfTextAendern(kommentar, _anna.Id));
+
+        // Bernd übernimmt: Anna bearbeitet den Auftrag nicht mehr, und Bernd hat den Kommentar nicht geschrieben.
+        auftrag.Uebernehmen(_bernd, Jetzt);
+        Assert.Throws<AuftragException>(() => auftrag.EintragAendern(kommentar, _anna, "Anders.", Jetzt));
+        Assert.Throws<AuftragException>(() => auftrag.EintragAendern(kommentar, _bernd, "Anders.", Jetzt));
+        Assert.False(auftrag.DarfTextAendern(kommentar, _anna.Id));
+        Assert.False(auftrag.DarfTextAendern(kommentar, _bernd.Id));
+        Assert.Equal(("Von Anna.", null), (kommentar.Text, kommentar.GeaendertAm));
+    }
+
+    [Fact]
+    public void Der_Hinweis_beim_Weiterleiten_laesst_sich_aendern_und_auch_leeren_sobald_man_den_Auftrag_wieder_hat()
+    {
+        var auftrag = BeiAnna();
+        auftrag.Weiterleiten(_netzwerk, _anna, Jetzt, text: "Bitte Port 12 prüfen.");
+        var hinweis = auftrag.Verlauf[^1];
+
+        // Nach dem Weiterleiten liegt der Auftrag offen in der Gruppe: Anna bearbeitet ihn nicht.
+        Assert.Throws<AuftragException>(() => auftrag.EintragAendern(hinweis, _anna, "Port 21.", Jetzt));
+
+        auftrag.Uebernehmen(_anna, Jetzt);
+        Assert.True(auftrag.EintragAendern(hinweis, _anna, "Bitte Port 21 prüfen.", Jetzt.AddMinutes(1)));
+        Assert.Equal("Bitte Port 21 prüfen.", hinweis.Text);
+        Assert.True(auftrag.EintragAendern(hinweis, _anna, null, Jetzt.AddMinutes(2)));
+        Assert.Null(hinweis.Text);
+        Assert.Equal("Weitergeleitet an Gruppe Netzwerk", hinweis.Beschreibung);
+    }
+
+    [Fact]
     public void Die_Verwaltung_gibt_einen_Auftrag_an_seine_Gruppe_zurueck()
     {
         var auftrag = Neu();

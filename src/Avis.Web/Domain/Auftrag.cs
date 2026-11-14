@@ -50,7 +50,8 @@ public class AuftragException(string message) : Exception(message);
 /// Ein Auftrag gehört immer zu genau einer Gruppe und hat höchstens einen
 /// Bearbeiter. Der Status ergibt sich daraus und wird nicht gespeichert.
 /// Alles an einem Auftrag ändert sich nur über die Methoden dieser Klasse,
-/// und jede davon schreibt einen Verlaufseintrag.
+/// und jede davon schreibt einen Verlaufseintrag. Einzige Ausnahme: Ändert
+/// jemand den Text seines eigenen internen Eintrags, entsteht kein neuer.
 ///
 /// Übernehmen darf jeder Bearbeiter. Alles Weitere setzt das Übernehmen
 /// voraus: Nur wer den Auftrag bearbeitet, leitet ihn weiter, kommentiert
@@ -285,6 +286,43 @@ public class Auftrag
         NurZustaendig(durch);
         TextOderAnhang(text, anhaenge);
         Eintragen(VerlaufArt.InternerKommentar, durch, jetzt, null, text, aendertDenStand: false, anhaenge);
+    }
+
+    /// <summary>
+    /// Ob dieser Benutzer den Text des Eintrags ändern darf: Er hat ihn
+    /// geschrieben, der Eintrag ist intern, und er bearbeitet den Auftrag.
+    /// </summary>
+    public bool DarfTextAendern(Verlaufseintrag eintrag, int benutzerId) =>
+        ReferenceEquals(eintrag.Auftrag, this)
+        && BearbeiterId == benutzerId
+        && eintrag.BenutzerId == benutzerId
+        && Verlaufseintrag.TextAenderbar(eintrag.Art);
+
+    /// <summary>
+    /// Der Verfasser ändert den Text eines internen Kommentars oder seines
+    /// Hinweises beim Weiterleiten. Wie das Kommentieren setzt das voraus,
+    /// dass er den Auftrag bearbeitet. Der bisherige Text wird ersetzt; der
+    /// Eintrag merkt sich nur, wann. Es entsteht kein neuer Eintrag.
+    /// Gibt false zurück, wenn sich nichts geändert hat.
+    /// </summary>
+    public bool EintragAendern(Verlaufseintrag eintrag, Benutzer durch, string? text, DateTime jetzt)
+    {
+        NurZustaendig(durch);
+        if (!ReferenceEquals(eintrag.Auftrag, this) || !Verlaufseintrag.TextAenderbar(eintrag.Art))
+            throw new AuftragException("Dieser Eintrag lässt sich nicht ändern. Das geht nur bei internen Kommentaren und beim Hinweis zum Weiterleiten.");
+        if (eintrag.BenutzerId != durch.Id)
+            throw new AuftragException("Einen Eintrag kann nur ändern, wer ihn geschrieben hat.");
+
+        var neu = string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+        // Der Hinweis beim Weiterleiten darf fehlen, ein Kommentar braucht Text oder Anhang.
+        if (eintrag.Art == VerlaufArt.InternerKommentar)
+            TextOderAnhang(neu, eintrag.Anhaenge);
+        if (neu == eintrag.Text)
+            return false;
+
+        eintrag.TextAendern(neu, jetzt);
+        GeaendertAm = jetzt;
+        return true;
     }
 
     /// <summary>Für den Kunden sichtbar.</summary>
