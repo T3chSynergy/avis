@@ -6,7 +6,7 @@
 }
 else if (!Model.Gesucht && Model.Treffer.Count == 0)
 {
-    <p class="erklaerung">Suche nach Name, E-Mail, Telefon oder Organisationseinheit, mit mindestens @Kundenauswahl.Mindestlaenge Zeichen.</p>
+    <p class="erklaerung">Suche nach Name, E-Mail, Telefon, Organisationseinheit oder Standort, mit mindestens @Kundenauswahl.Mindestlaenge Zeichen.</p>
 }
 <ul class="auswahl">
     @foreach (var k in Model.Treffer)
@@ -25,8 +25,8 @@ else if (!Model.Gesucht && Model.Treffer.Count == 0)
     }
     @if (Model.Leertext is not null)
     {
-        <li>
-            <input type="radio" name="kundeId" id="kunde-neu" value="" checked="@(Model.GewaehltId is null)" />
+        <li class="@(Model.Leer == "neu" ? "ausweg" : null)">
+            <input type="radio" name="kundeId" id="kunde-neu" value="" checked="@Model.LeerGewaehlt" />
             <label for="kunde-neu">@Model.Leertext</label>
         </li>
     }

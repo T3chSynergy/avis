@@ -2,7 +2,8 @@
 @model Avis.Web.Pages.Auftraege.NeuModel
 @{
     ViewData["Title"] = "Auftrag erfassen";
-    // Am Telefon tippt man zuerst den Namen des Anrufers.
+    // Am Telefon tippt man zuerst den Namen des Anrufers. Fast immer gibt es ihn schon: Suchen und Auswählen ist
+    // der Normalfall, ein neuer Kunde die Ausnahme. Dessen Felder erscheinen erst, wenn man sie verlangt.
     ViewData["Autofokus"] = "kundensuche";
 }
 <h1>Auftrag erfassen</h1>
@@ -19,7 +20,7 @@
         <partial name="_Kundenauswahl" model="Model.Kundenauswahl" />
         <span asp-validation-for="KundeId" class="feldfehler"></span>
         <div class="neukunde">
-            <p class="erklaerung">Gibt es zur E-Mail-Adresse schon einen Kunden, wird der Auftrag ihm zugeordnet.</p>
+            <p class="erklaerung">Neuer Kunde. Gibt es zur E-Mail-Adresse schon einen Kunden, wird der Auftrag ihm zugeordnet.</p>
             <div class="reihe">
                 <div class="feld">
                     <label asp-for="Eingabe.KundeName">Name</label>

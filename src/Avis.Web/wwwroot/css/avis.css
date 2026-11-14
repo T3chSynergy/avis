@@ -275,8 +275,11 @@ ul.auswahl li:last-child { border-bottom: 1px solid var(--linie); }
 ul.auswahl li:has(input:checked) { background: #e8f0fa; }
 ul.auswahl label { margin: 0; font-weight: 400; flex: 1; cursor: pointer; }
 #kundentreffer .erklaerung { margin: 10px 0 0; }
-.neukunde { margin-top: 10px; }
-fieldset.kunde:has(#kunde-neu:not(:checked)) .neukunde { display: none; }
+/* Ein neuer Kunde ist die Ausnahme: Seine Felder erscheinen erst, wenn er verlangt wird. */
+ul.auswahl li.ausweg label { color: var(--gedaempft); }
+ul.auswahl li.ausweg:has(input:checked) label { color: var(--text); }
+.neukunde { display: none; margin-top: 10px; }
+fieldset.kunde:has(#kunde-neu:checked) .neukunde { display: block; }
 .spalten > .kasten { margin-top: 0; }
 
 /* Seiten für Kunden */
