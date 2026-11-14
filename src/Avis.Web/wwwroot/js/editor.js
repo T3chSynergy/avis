@@ -1,7 +1,8 @@
 // Bilder in Textfelder einfügen: Ein Bild aus der Zwischenablage (Strg+V) und
 // hineingezogene Dateien werden Anhänge dieses Eintrags. Unter dem Dateifeld
-// steht, was mitgeschickt wird.
-// Ohne dieses Skript wählt man Dateien über das Dateifeld.
+// steht, was mitgeschickt wird. Wer nacheinander mehrmals Dateien wählt,
+// behält die schon gewählten.
+// Ohne dieses Skript wählt man Dateien über das Dateifeld, alle auf einmal.
 (function () {
     document.querySelectorAll('textarea[data-markdown]').forEach(feld => {
         const dateifeld = feld.form && feld.form.querySelector('input[type="file"][name="dateien"]');
@@ -17,15 +18,25 @@
         vorschau.setAttribute('aria-live', 'polite');
         dateifeld.after(hinweis, vorschau);
 
+        // Was mitgeschickt wird. Der Browser ersetzt die Auswahl im Dateifeld
+        // bei jedem Öffnen des Dialogs, deshalb steht sie hier noch einmal.
+        let bestand = Array.from(dateifeld.files);
+
         function setzen(dateien) {
+            bestand = dateien;
             const sammlung = new DataTransfer();
             dateien.forEach(datei => sammlung.items.add(datei));
             dateifeld.files = sammlung.files;
             zeigen();
         }
 
+        // Dieselbe Datei ein zweites Mal zu wählen, hängt sie nicht doppelt an.
         function hinzufuegen(neue) {
-            setzen(Array.from(dateifeld.files).concat(neue));
+            setzen(bestand.concat(neue.filter(datei => !bestand.some(vorhanden => gleich(vorhanden, datei)))));
+        }
+
+        function gleich(a, b) {
+            return a.name === b.name && a.size === b.size && a.lastModified === b.lastModified;
         }
 
         function zeigen() {
@@ -45,13 +56,13 @@
                 weg.type = 'button';
                 weg.textContent = 'Entfernen';
                 weg.setAttribute('aria-label', datei.name + ' entfernen');
-                weg.addEventListener('click', () => setzen(Array.from(dateifeld.files).filter((_, i) => i !== nummer)));
+                weg.addEventListener('click', () => setzen(bestand.filter((_, i) => i !== nummer)));
                 eintrag.append(name, weg);
                 vorschau.appendChild(eintrag);
             });
         }
 
-        dateifeld.addEventListener('change', zeigen);
+        dateifeld.addEventListener('change', () => hinzufuegen(Array.from(dateifeld.files)));
 
         feld.addEventListener('paste', ereignis => {
             const dateien = Array.from(ereignis.clipboardData ? ereignis.clipboardData.files : []);

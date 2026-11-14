@@ -60,6 +60,9 @@ Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
   schreibt.
 - Strg+V fügt ein Bild aus der Zwischenablage als Anhang ein. Dateien lassen
   sich auch auf das Textfeld ziehen.
+- Wer nacheinander mehrmals Dateien auswählt, behält die schon gewählten. Unter
+  dem Dateifeld steht, was mitgeschickt wird; dort lässt sich jede Datei wieder
+  entfernen.
 
 ## Texte mit Markdown
 
