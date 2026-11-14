@@ -252,7 +252,10 @@ table.liste tr.inaktiv td, table.liste tr.inaktiv a { color: var(--gedaempft); }
 .spalten.gleich .kasten { margin-top: 0; max-width: none; }
 .spalten.gleich section .kasten { margin-top: 12px; }
 @media (max-width: 900px) { .spalten.gleich { grid-template-columns: minmax(0, 1fr); } }
-select:disabled, input:disabled { background: #eef1f5; color: var(--gedaempft); }
+/* So genau wie die Regel für Eingabefelder oben, sonst gewinnt deren weißer Grund. */
+select:disabled, textarea:disabled, input:disabled:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
+    background: #eef1f5; color: var(--gedaempft); cursor: not-allowed;
+}
 .kasten dl.angaben { grid-template-columns: 200px minmax(0, 1fr); }
 table.liste.schmal td { vertical-align: middle; }
 
