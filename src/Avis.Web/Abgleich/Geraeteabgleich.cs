@@ -124,6 +124,14 @@ public class Geraeteabgleich(
         var vergeben = new HashSet<Inventargeraet>();
         int neu = 0, geaendert = 0, reaktiviert = 0, inaktiv = 0;
 
+        // Nachschlagen statt Durchsuchen: Bei zwanzigtausend Geräten dauerte jeder Lauf sonst viele Sekunden.
+        // Die Inventarnummer ist in AVIS eindeutig, die Kennung innerhalb einer Quelle auch.
+        var nachKennung = geraete
+            .Where(g => g.Quelle == _quelle.Name && g.ExterneKennung is not null)
+            .GroupBy(g => g.ExterneKennung!)
+            .ToDictionary(g => g.Key, g => g.First());
+        var nachNummer = geraete.ToDictionary(g => g.Nummernschluessel);
+
         foreach (var eintrag in eintraege)
         {
             var kennung = eintrag.Kennung.Trim();
@@ -132,13 +140,14 @@ public class Geraeteabgleich(
 
             // Wiedererkannt wird über die Kennung der Quelle. Ein Gerät, das mit derselben Inventarnummer schon
             // von Hand in AVIS angelegt wurde, wird übernommen statt verdoppelt.
-            var geraet = geraete.FirstOrDefault(g => g.Quelle == _quelle.Name && g.ExterneKennung == kennung)
-                ?? geraete.FirstOrDefault(g => g.Quelle is null && g.Nummernschluessel == schluessel && !vergeben.Contains(g));
+            nachNummer.TryGetValue(schluessel, out var mitNummer);
+            var geraet = nachKennung.GetValueOrDefault(kennung)
+                ?? (mitNummer is { Quelle: null } && !vergeben.Contains(mitNummer) ? mitNummer : null);
 
             // Die Inventarnummer ist in AVIS eindeutig. Trägt sie schon ein anderes Gerät, bleibt dieses hier aus.
-            var besitzer = geraete.FirstOrDefault(g => g != geraet && g.Nummernschluessel == schluessel);
-            if (besitzer is not null)
+            if (mitNummer is not null && mitNummer != geraet)
             {
+                var besitzer = mitNummer;
                 hinweise.Add($"{nummer}: Die Inventarnummer gehört in AVIS schon zu einem anderen Gerät ({besitzer.Bezeichnung}). Das Gerät aus {_quelle.Name} wurde ausgelassen.");
                 if (geraet is not null)
                     vergeben.Add(geraet);
@@ -151,6 +160,11 @@ public class Geraeteabgleich(
                 geraet = new Inventargeraet();
                 db.Geraete.Add(geraet);
                 geraete.Add(geraet);
+            }
+            else if (nachNummer.GetValueOrDefault(geraet.Nummernschluessel) == geraet)
+            {
+                // Die bisherige Nummer wird frei, falls das Gerät gleich eine andere bekommt.
+                nachNummer.Remove(geraet.Nummernschluessel);
             }
             vergeben.Add(geraet);
 
@@ -169,6 +183,8 @@ public class Geraeteabgleich(
             geraet.KundeId = kunde;
             geraet.Aktiv = true;
             geraet.SuchtextAktualisieren();
+            nachKennung[kennung] = geraet;
+            nachNummer[geraet.Nummernschluessel] = geraet;
 
             if (istNeu)
                 neu++;
