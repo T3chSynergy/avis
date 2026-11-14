@@ -186,8 +186,9 @@ form.formular fieldset {
 
 label { display: block; font-weight: 600; margin: 8px 0 3px; }
 h3 + label { margin-top: 0; }
+/* Die Textfarbe steht fest und wird nicht geerbt: Im dunklen Kopf wäre die Schrift des Suchfelds sonst weiß auf weiß. */
 input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea {
-    width: 100%; padding: 6px 8px; font: inherit; color: inherit;
+    width: 100%; padding: 6px 8px; font: inherit; color: var(--text);
     background: #fff; border: 1px solid #8793a1; border-radius: 4px;
 }
 textarea { resize: vertical; }
