@@ -29,7 +29,7 @@ Leitsatz: Was das alte AVIS nicht brauchte, braucht das neue auch nicht.
 |---|---|
 | Kunde | eigene Aufträge erstellen, eigene Aufträge und deren Stand sehen, Rückfragen beantworten. Jedes Anmeldekonto ohne Rolle ist Kunde, auch Bearbeiter können eigene Aufträge stellen |
 | Bearbeiter | Aufträge erfassen, alle Aufträge sehen (außer gesperrte Gruppen), übernehmen, weiterleiten, abschließen, sich selbst Gruppen zuordnen, Kunden anlegen und pflegen |
-| Administrator | Gruppen, Kategorien, Standorte und Geräte pflegen, Mitglieder gesperrter Gruppen zuordnen, Rollen vergeben |
+| Administrator | Gruppen, Kategorien und Geräte pflegen, Mitglieder gesperrter Gruppen zuordnen, Rollen vergeben |
 
 „Kunde" ist der Anwender, für den ein Auftrag bearbeitet wird.
 
@@ -125,7 +125,7 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 | Erfasst von | Person | automatisch |
 | Eingang | Web, E-Mail, Telefon | automatisch bzw. Vorgabe |
 | Kategorie | Auswahlliste | vom Administrator gepflegt |
-| Standort | Auswahlliste | vom Administrator gepflegt |
+| Standort | Freitext | zum Beispiel der Raum. Ohne Angabe der Standort des Kunden |
 | Gerät | Freitext | immer möglich |
 | Gerät (verknüpft) | Verweis auf Gerätetabelle | optional, siehe Abschnitt 5 |
 | Dringlichkeit | 3 Stufen | siehe Matrix |
@@ -159,7 +159,7 @@ können, ohne dass sich am Auftrag etwas ändert.
 
 ### Kundentabelle
 
-- Name, E-Mail, Telefon, Standort, Raum, Organisationseinheit, Anmeldename
+- Name, E-Mail, Telefon, Standort, Organisationseinheit, Anmeldename
 - Jeder Auftrag verweist auf einen Kunden.
 - Meldet sich ein Kunde an oder schreibt eine Mail, wird er über Anmeldename
   bzw. Mailadresse zugeordnet. Gibt es ihn noch nicht, wird er angelegt.
@@ -167,7 +167,7 @@ können, ohne dass sich am Auftrag etwas ändert.
   Administrator, nie von der Person selbst. So kann sich niemand die Aufträge
   eines anderen zuordnen.
 - Die Hotline kann am Telefon einen Kunden suchen oder neu anlegen. Gesucht
-  wird über Name, E-Mail, Telefon, Organisationseinheit und Raum.
+  wird über Name, E-Mail, Telefon, Organisationseinheit und Standort.
 - Eine E-Mail-Adresse gehört zu genau einem Kunden.
 - Am Kunden sind seine bisherigen Aufträge sichtbar.
 - Ein Kunde lässt sich als inaktiv markieren. Er bleibt mit seinen Aufträgen
@@ -181,8 +181,7 @@ können, ohne dass sich am Auftrag etwas ändert.
 - Ein LDAP-Filter in den Einstellungen bestimmt, wer Kunde ist. Er kann eine
   Gruppe nennen, muss es aber nicht. Deaktivierte Konten zählen nie.
 - Das Verzeichnis gewinnt: Name, E-Mail, Telefon, Organisationseinheit und
-  Raum werden überschrieben und lassen sich in AVIS nicht ändern. Der Standort
-  gehört weiter AVIS.
+  Standort werden überschrieben und lassen sich in AVIS nicht ändern.
 - Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
   wiedererkannt und übernommen, nicht verdoppelt.
 - Auf wen der Filter nicht mehr passt, der wird nicht gelöscht, sondern
@@ -196,7 +195,7 @@ können, ohne dass sich am Auftrag etwas ändert.
 
 ### Gerätetabelle
 
-- Inventarnummer, Bezeichnung, Typ, Standort, Raum, optional der Kunde, der das
+- Inventarnummer, Bezeichnung, Typ, Standort, optional der Kunde, der das
   Gerät nutzt
 - Ein Auftrag kann über die Inventarnummer mit einem Gerät verknüpft werden,
   muss aber nicht. Das Freitextfeld bleibt daneben bestehen.
@@ -208,9 +207,9 @@ können, ohne dass sich am Auftrag etwas ändert.
 
 - AVIS holt die Geräte selbst aus Snipe-IT und schreibt dort nichts,
   regelmäßig im Hintergrund und auf Wunsch aus der Verwaltung.
-- Snipe-IT gewinnt: Inventarnummer, Bezeichnung, Typ, Raum und Nutzer werden
-  überschrieben und lassen sich in AVIS nicht ändern. Der Standort gehört
-  weiter AVIS.
+- Snipe-IT gewinnt: Inventarnummer, Bezeichnung, Typ, Standort und Nutzer
+  werden überschrieben. Ein Gerät aus Snipe-IT lässt sich in AVIS nicht
+  ändern.
 - Der Nutzer ist der Kunde mit der Mailadresse des Benutzers, an den das
   Gerät ausgegeben ist. Gibt es ihn in AVIS nicht, bleibt der Nutzer leer;
   Kunden kommen nur aus dem Kundenabgleich.
@@ -224,12 +223,13 @@ können, ohne dass sich am Auftrag etwas ändert.
 - Der Abgleich selbst kennt die Quelle nicht. Eine andere Quelle könnte
   dieselbe Liste liefern.
 
-### Raum
+### Standort
 
-Kunden und Geräte tragen neben dem Standort einen Raum als freien Text, zum
-Beispiel „A 105“. Bei abgeglichenen Einträgen liefert ihn die Quelle, sonst
-wird er von Hand eingetragen. Der Standort bleibt die von AVIS gepflegte
-Auswahlliste.
+Kunden, Geräte und Aufträge tragen einen Standort als freien Text, zum
+Beispiel den Raum „A 105“. Eine Auswahlliste gibt es dafür nicht. Bei
+abgeglichenen Kunden und Geräten liefert ihn die Quelle, sonst wird er von
+Hand eingetragen. Ein Auftrag bekommt beim Erfassen den Standort des Kunden,
+wenn keiner angegeben ist.
 
 ### Externe Quellen
 
@@ -266,7 +266,7 @@ passenden Geräteeintrag erfassen.
 
 **Administrator**
 
-- Gruppen, Kategorien, Standorte, Geräte, Rollen
+- Gruppen, Kategorien, Geräte, Rollen
 
 ## 7. E-Mail
 

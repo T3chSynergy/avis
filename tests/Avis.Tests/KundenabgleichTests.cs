@@ -43,7 +43,8 @@ public class KundenabgleichTests
         var d = await app.DatenbankAsync(db => db.Kunden.AsNoTracking().SingleAsync(k => k.Id == dieter.Id));
         Assert.Equal(("ActiveDirectory", "guid-dieter", "Kunde, Dieter", "dieter.kunde@example.org", "9001", "Bauhof", @"avis\dieter", true),
             (d.Quelle, d.ExterneKennung, d.Name, d.Email, d.Telefon, d.Organisationseinheit, d.Anmeldename, d.Aktiv));
-        Assert.Equal(dieter.StandortId, d.StandortId);
+        // Die Quelle nennt für Dieter keinen Standort: Der von Hand eingetragene gilt nicht mehr.
+        Assert.Equal(("A 204", null), (dieter.Standort, d.Standort));
         var e = await app.DatenbankAsync(db => db.Kunden.AsNoTracking().SingleAsync(k => k.Id == eva.Id));
         Assert.Equal(("guid-eva", "Test, Eva", @"avis\eva", "Kasse"), (e.ExterneKennung, e.Name, e.Anmeldename, e.Organisationseinheit));
         var h = await KundeAsync(app, "Neu, Hans");
@@ -160,45 +161,46 @@ public class KundenabgleichTests
         await anna.PostFormularAsync($"/Kunden/{frank.Id}", $"/Kunden/{frank.Id}?handler=Aktiv", new() { ["aktiv"] = "true" });
         Assert.True((await KundeAsync(app, "Frank Müller")).Aktiv);
 
-        // Hans stammt aus der Quelle: Dort entscheidet sich, ob er aktiv ist und wie er heißt. Nur der Standort gehört AVIS.
+        // Hans stammt aus der Quelle: Dort entscheidet sich, ob er aktiv ist, wie er heißt und wo er sitzt.
         var seite = await anna.GetStringAsync($"/Kunden/{hans.Id}");
         Assert.Contains("Stammt aus ActiveDirectory.", seite);
         Assert.DoesNotContain("Als inaktiv markieren", seite);
         var abgelehnt = await anna.PostFormularAsync($"/Kunden/{hans.Id}", $"/Kunden/{hans.Id}?handler=Aktiv", new() { ["aktiv"] = "false" });
         Assert.Contains("Ob der Kunde aktiv ist, entscheidet sich dort.", await abgelehnt.Content.ReadAsStringAsync());
-        var standort = await app.DatenbankAsync(db => db.Standorte.Where(s => s.Name == "Nebenstelle").Select(s => s.Id).FirstAsync());
-        await anna.PostFormularAsync($"/Kunden/{hans.Id}", $"/Kunden/{hans.Id}", new() { ["name"] = "Von Hand umbenannt", ["email"] = "anders@example.org", ["standortId"] = standort.ToString() });
+        Assert.DoesNotContain(">Speichern</button>", seite);
+        var gesperrt = await anna.PostFormularAsync($"/Kunden/{hans.Id}", $"/Kunden/{hans.Id}", new() { ["name"] = "Von Hand umbenannt", ["email"] = "anders@example.org", ["standort"] = "Z 999" });
+        Assert.Contains("Die Angaben werden dort gepflegt und lassen sich in AVIS nicht ändern.", await gesperrt.Content.ReadAsStringAsync());
         hans = await app.DatenbankAsync(db => db.Kunden.AsNoTracking().SingleAsync(k => k.Id == hans.Id));
-        Assert.Equal(("Neu, Hans", "hans.neu@example.org", true, standort), (hans.Name, hans.Email, hans.Aktiv, hans.StandortId!.Value));
+        Assert.Equal(("Neu, Hans", "hans.neu@example.org", true, null), (hans.Name, hans.Email, hans.Aktiv, hans.Standort));
     }
 
     [Fact]
-    public async Task Der_Raum_kommt_aus_der_Quelle_und_wird_sonst_von_Hand_eingetragen()
+    public async Task Der_Standort_kommt_aus_der_Quelle_und_wird_sonst_von_Hand_eingetragen()
     {
         using var app = await OhneVerzeichniskundenAsync();
         var anna = await app.AnmeldenAlsAsync("anna");
-        app.Kundenquelle.Kunden.Add(Hans with { Raum = " A 105 " });
+        app.Kundenquelle.Kunden.Add(Hans with { Standort = " A 105 " });
         await AbgleichenAsync(app);
         var hans = await KundeAsync(app, "Neu, Hans");
-        Assert.Equal("A 105", hans.Raum);
+        Assert.Equal("A 105", hans.Standort);
 
         // Er steht in der Liste, in der Auswahl beim Erfassen, und die Suche findet ihn.
         Assert.Contains("Neu, Hans", await anna.GetStringAsync("/Kunden?q=a+105"));
-        Assert.Contains("Raum A 105", await anna.GetStringAsync("/Kunden/Treffer?q=hans&leer=neu"));
+        Assert.Contains("· A 105", await anna.GetStringAsync("/Kunden/Treffer?q=hans&leer=neu"));
 
         // Von Hand lässt er sich bei einem Kunden aus der Quelle nicht ändern; ein Umzug kommt mit dem nächsten Abgleich.
-        await anna.PostFormularAsync($"/Kunden/{hans.Id}", $"/Kunden/{hans.Id}", new() { ["name"] = "Neu, Hans", ["raum"] = "Z 999" });
-        Assert.Equal("A 105", (await KundeAsync(app, "Neu, Hans")).Raum);
+        await anna.PostFormularAsync($"/Kunden/{hans.Id}", $"/Kunden/{hans.Id}", new() { ["name"] = "Neu, Hans", ["standort"] = "Z 999" });
+        Assert.Equal("A 105", (await KundeAsync(app, "Neu, Hans")).Standort);
         app.Kundenquelle.Kunden.Clear();
-        app.Kundenquelle.Kunden.Add(Hans with { Raum = "B 0.12" });
+        app.Kundenquelle.Kunden.Add(Hans with { Standort = "B 0.12" });
         var ergebnis = await AbgleichenAsync(app);
         Assert.Equal(1, ergebnis.Geaendert);
-        Assert.Equal("B 0.12", (await KundeAsync(app, "Neu, Hans")).Raum);
+        Assert.Equal("B 0.12", (await KundeAsync(app, "Neu, Hans")).Standort);
 
         // Bei einem Kunden, der nur in AVIS steht, trägt ihn ein Bearbeiter ein.
         var frank = await KundeAsync(app, "Frank Müller");
-        await anna.PostFormularAsync($"/Kunden/{frank.Id}", $"/Kunden/{frank.Id}", new() { ["name"] = "Frank Müller", ["email"] = frank.Email ?? "", ["raum"] = " C 0.04 " });
-        Assert.Equal("C 0.04", (await KundeAsync(app, "Frank Müller")).Raum);
+        await anna.PostFormularAsync($"/Kunden/{frank.Id}", $"/Kunden/{frank.Id}", new() { ["name"] = "Frank Müller", ["email"] = frank.Email ?? "", ["standort"] = " C 0.04 " });
+        Assert.Equal("C 0.04", (await KundeAsync(app, "Frank Müller")).Standort);
         Assert.Contains("Frank Müller", await anna.GetStringAsync("/Kunden?q=c+0.04"));
     }
 

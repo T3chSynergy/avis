@@ -18,7 +18,6 @@ public class VorschlaegeModel(AvisDb db) : PageModel
         Geraete = await db.Geraete.AsNoTracking()
             .Where(g => g.Aktiv)
             .Suchen(q)
-            .Include(g => g.Standort)
             .Include(g => g.Kunde)
             .OrderBy(g => g.Inventarnummer)
             .Take(10)

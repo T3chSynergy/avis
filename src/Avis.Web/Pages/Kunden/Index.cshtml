@@ -7,7 +7,7 @@
 
 <form method="get" class="suchzeile" role="search">
     <div class="feld breit">
-        <label for="q">Suche nach Name, E-Mail, Telefon, Organisationseinheit oder Raum</label>
+        <label for="q">Suche nach Name, E-Mail, Telefon, Organisationseinheit oder Standort</label>
         <input id="q" name="q" value="@Model.Q" type="search" autocomplete="off" />
     </div>
     <button type="submit" class="haupt">Suchen</button>
@@ -26,7 +26,6 @@ else
                 <th scope="col">E-Mail</th>
                 <th scope="col">Telefon</th>
                 <th scope="col">Organisationseinheit</th>
-                <th scope="col">Raum</th>
                 <th scope="col">Standort</th>
                 <th scope="col">Laufende Aufträge</th>
             </tr>
@@ -39,7 +38,6 @@ else
                     <td>@k.Email</td>
                     <td>@k.Telefon</td>
                     <td>@k.Organisationseinheit</td>
-                    <td>@k.Raum</td>
                     <td>@k.Standort</td>
                     <td>@k.Laufend</td>
                 </tr>

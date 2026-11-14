@@ -26,7 +26,7 @@
         <dt>Erstellt</dt>
         <dd>@Ortszeit.Anzeigen(a.ErstelltAm)</dd>
         <dt>Standort</dt>
-        <dd>@(a.Standort?.Name ?? "–")</dd>
+        <dd>@(a.Standort ?? "–")</dd>
         <dt>Gerät</dt>
         <dd>@(a.Geraet ?? "–")</dd>
         @if (a.Termin is not null)

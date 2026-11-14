@@ -2,7 +2,7 @@
 @{
     var auswahl = (Avis.Web.Pages.Auftraege.AuftragAuswahl)ViewData["Auswahl"]!;
     // Aufgeklappt, sobald dort etwas steht oder das Formular Fehler hat.
-    var weitereOffen = Model.StandortId is not null || Model.Termin is not null
+    var weitereOffen = !string.IsNullOrWhiteSpace(Model.Standort) || Model.Termin is not null
         || !string.IsNullOrWhiteSpace(Model.Geraet) || !string.IsNullOrWhiteSpace(Model.Inventarnummer)
         || !ViewData.ModelState.IsValid;
 }
@@ -48,11 +48,9 @@
     <summary>Weitere Angaben: Standort, Gerät, Termin</summary>
     <div class="reihe">
         <div class="feld">
-            <label asp-for="StandortId">Standort</label>
-            <select asp-for="StandortId" asp-items="auswahl.Standorte">
-                <option value="">–</option>
-            </select>
-            <span asp-validation-for="StandortId" class="feldfehler"></span>
+            <label asp-for="Standort">Standort</label>
+            <input asp-for="Standort" autocomplete="off" placeholder="@ViewData["StandortLeer"]" />
+            <span asp-validation-for="Standort" class="feldfehler"></span>
         </div>
         <div class="feld">
             <label asp-for="Termin">Termin</label>

@@ -38,18 +38,19 @@ public class GeraeteabgleichTests
         Assert.Equal((3, 2, 1, 0, 0), (ergebnis.Gelesen, ergebnis.Neu, ergebnis.Geaendert, ergebnis.Reaktiviert, ergebnis.Inaktiv));
         Assert.Equal(vorher + 2, await app.DatenbankAsync(db => db.Geraete.CountAsync()));
 
-        // Neu: mit Raum, und der Nutzer ist der Kunde mit dieser Adresse.
+        // Neu: mit Standort, und der Nutzer ist der Kunde mit dieser Adresse.
         var scanner = await GeraetAsync(app, "SC-7001");
         Assert.Equal(("SnipeIt", "101", "Dokumentenscanner", "Scanner", "A 105", dieter, true),
-            (scanner.Quelle, scanner.ExterneKennung, scanner.Bezeichnung, scanner.Typ, scanner.Raum, scanner.KundeId!.Value, scanner.Aktiv));
+            (scanner.Quelle, scanner.ExterneKennung, scanner.Bezeichnung, scanner.Typ, scanner.Standort, scanner.KundeId!.Value, scanner.Aktiv));
         Assert.Null((await GeraetAsync(app, "PL-7002")).KundeId);
 
-        // Übernommen: derselbe Eintrag, die Angaben aus der Quelle. Der Standort gehört AVIS und bleibt.
+        // Übernommen: derselbe Eintrag, die Angaben aus der Quelle, auch der Standort.
         var uebernommen = await app.DatenbankAsync(db => db.Geraete.AsNoTracking().SingleAsync(g => g.Id == drucker.Id));
-        Assert.Equal(("SnipeIt", "103", "dr-0042", "Farblaser 2. OG", "A 2.01", null, drucker.StandortId),
-            (uebernommen.Quelle, uebernommen.ExterneKennung, uebernommen.Inventarnummer, uebernommen.Bezeichnung, uebernommen.Raum, uebernommen.KundeId, uebernommen.StandortId));
+        Assert.Equal(("SnipeIt", "103", "dr-0042", "Farblaser 2. OG", "A 2.01", null),
+            (uebernommen.Quelle, uebernommen.ExterneKennung, uebernommen.Inventarnummer, uebernommen.Bezeichnung, uebernommen.Standort, uebernommen.KundeId));
+        Assert.Equal("A Flur 2. OG", drucker.Standort);
 
-        // Was nur in AVIS steht, bleibt unberührt, und die Suche findet auch den Raum.
+        // Was nur in AVIS steht, bleibt unberührt, und die Suche findet auch den Standort.
         Assert.Null((await GeraetAsync(app, "NB-1017")).Quelle);
         Assert.Equal(["SC-7001"], await app.DatenbankAsync(db => db.Geraete.Suchen("a 105").Select(g => g.Inventarnummer).ToListAsync()));
 
@@ -77,7 +78,7 @@ public class GeraeteabgleichTests
 
         // Der Scanner verschwindet aus der Quelle, der Plotter zieht um und bekommt einen Nutzer.
         app.Geraetequelle.Geraete.Clear();
-        app.Geraetequelle.Geraete.Add(Plotter with { Raum = "A 3.07", NutzerEmail = "eva.test@example.org" });
+        app.Geraetequelle.Geraete.Add(Plotter with { Standort = "A 3.07", NutzerEmail = "eva.test@example.org" });
         var ergebnis = await AbgleichenAsync(app);
 
         Assert.Equal((1, 0, 1, 0, 1), (ergebnis.Gelesen, ergebnis.Neu, ergebnis.Geaendert, ergebnis.Reaktiviert, ergebnis.Inaktiv));
@@ -85,7 +86,7 @@ public class GeraeteabgleichTests
         Assert.False(scanner.Aktiv);
         Assert.True(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.InventargeraetId == scanner.Id)));
         var plotter = await app.DatenbankAsync(db => db.Geraete.AsNoTracking().Include(g => g.Kunde).SingleAsync(g => g.Inventarnummer == "PL-7002"));
-        Assert.Equal(("A 3.07", "Eva Test"), (plotter.Raum, plotter.Kunde!.Name));
+        Assert.Equal(("A 3.07", "Eva Test"), (plotter.Standort, plotter.Kunde!.Name));
 
         // Ausgemustert: markiert in der Liste und nicht mehr neu verknüpfbar.
         Assert.Matches("SC-7001</a>\\s*<span class=\"hinweis\">ausgemustert</span>", await anna.GetStringAsync("/Geraete?q=sc-7001"));
@@ -153,46 +154,50 @@ public class GeraeteabgleichTests
     }
 
     [Fact]
-    public async Task Geraete_aus_der_Quelle_lassen_sich_in_AVIS_nur_im_Standort_aendern()
+    public async Task Geraete_aus_der_Quelle_lassen_sich_in_AVIS_nicht_aendern()
     {
         using var app = await OhneQuellgeraeteAsync();
         var anna = await app.AnmeldenAlsAsync("anna");
         app.Geraetequelle.Geraete.Add(Lesegeraet);
         await AbgleichenAsync(app);
         var scanner = await GeraetAsync(app, "SC-7001");
-        var standort = await app.DatenbankAsync(db => db.Standorte.Where(s => s.Name == "Nebenstelle").Select(s => s.Id).FirstAsync());
         var seite = $"/Geraete/Bearbeiten/{scanner.Id}";
 
+        // Die Seite des Geräts nennt die Quelle und bietet kein Bearbeiten an; das Formular führt dorthin zurück.
+        var details = await anna.GetStringAsync($"/Geraete/{scanner.Id}");
+        Assert.Contains("Wird in SnipeIt gepflegt", details);
+        Assert.DoesNotContain(">Bearbeiten</a>", details);
         var formular = await anna.GetStringAsync(seite);
-        Assert.Contains("Stammt aus SnipeIt.", formular);
-        Assert.Contains("Dieter Kunde – aus SnipeIt.", formular);
-        Assert.Contains("Quelle", await anna.GetStringAsync($"/Geraete/{scanner.Id}"));
+        Assert.Contains("Gerät SC-7001 stammt aus SnipeIt und wird dort gepflegt.", formular);
+        Assert.DoesNotContain("Eingabe.Inventarnummer", formular);
 
-        await anna.PostFormularAsync(seite, seite, new()
+        var abgelehnt = await anna.PostFormularAsync($"/Geraete/Bearbeiten/{(await GeraetAsync(app, "NB-1017")).Id}", seite, new()
         {
             ["Eingabe.Inventarnummer"] = "VON-HAND",
             ["Eingabe.Bezeichnung"] = "Von Hand umbenannt",
+            ["Eingabe.Standort"] = "Z 999",
             ["Eingabe.Aktiv"] = "false",
-            ["Eingabe.StandortId"] = standort.ToString(),
             ["kundeId"] = "",
         });
+        Assert.Contains("In AVIS lässt es sich nicht ändern.", await abgelehnt.Content.ReadAsStringAsync());
 
         var danach = await app.DatenbankAsync(db => db.Geraete.AsNoTracking().SingleAsync(g => g.Id == scanner.Id));
-        Assert.Equal(("SC-7001", "Dokumentenscanner", "A 105", true, scanner.KundeId, standort),
-            (danach.Inventarnummer, danach.Bezeichnung, danach.Raum, danach.Aktiv, danach.KundeId, danach.StandortId!.Value));
+        Assert.Equal(("SC-7001", "Dokumentenscanner", "A 105", true, scanner.KundeId),
+            (danach.Inventarnummer, danach.Bezeichnung, danach.Standort, danach.Aktiv, danach.KundeId));
 
-        // Ein Gerät, das nur in AVIS steht, bekommt seinen Raum von Hand.
+        // Ein Gerät, das nur in AVIS steht, bekommt seinen Standort von Hand.
         var notebook = await GeraetAsync(app, "NB-1017");
         var eigene = $"/Geraete/Bearbeiten/{notebook.Id}";
+        Assert.Contains(">Bearbeiten</a>", await anna.GetStringAsync($"/Geraete/{notebook.Id}"));
         await anna.PostFormularAsync(eigene, eigene, new()
         {
             ["Eingabe.Inventarnummer"] = "NB-1017",
             ["Eingabe.Bezeichnung"] = "Notebook 14 Zoll",
-            ["Eingabe.Raum"] = " C 0.04 ",
+            ["Eingabe.Standort"] = " C 0.04 ",
             ["Eingabe.Aktiv"] = "true",
             ["kundeId"] = "",
         });
-        Assert.Equal("C 0.04", (await GeraetAsync(app, "NB-1017")).Raum);
+        Assert.Equal("C 0.04", (await GeraetAsync(app, "NB-1017")).Standort);
         Assert.Contains("NB-1017", await anna.GetStringAsync("/Geraete?q=c+0.04"));
     }
 
@@ -244,8 +249,8 @@ public class GeraeteabgleichTests
         var geraete = await app.DatenbankAsync(db => db.Geraete.AsNoTracking().Include(g => g.Kunde).Where(g => g.Quelle == "SnipeIt").OrderBy(g => g.ExterneKennung).ToListAsync());
 
         Assert.Equal(
-            [("TB-3001", "A 105", "Hanna Verzeichnis", true), ("BE-3002", "B 0.01", null, true), ("TB-2990", "A 107", null, false)],
-            geraete.Select(g => (g.Inventarnummer, g.Raum!, g.Kunde?.Name, g.Aktiv)));
+            [("TB-3001", "A 105", "Hanna Verzeichnis", true), ("BE-3002", "B 001", null, true), ("TB-2990", "A 107", null, false)],
+            geraete.Select(g => (g.Inventarnummer, g.Standort!, g.Kunde?.Name, g.Aktiv)));
         // Die von Hand angelegten Geräte behalten ihre Nummern.
         Assert.Equal("DR-0042", await app.DatenbankAsync(db => db.Geraete.Where(g => g.Id == 1).Select(g => g.Inventarnummer).SingleAsync()));
     }

@@ -41,7 +41,7 @@
 
     <fieldset>
         <legend>Auftrag</legend>
-        <partial name="_Auftragsfelder" for="Eingabe.Felder" view-data='new ViewDataDictionary(ViewData) { ["Auswahl"] = Model.Auswahl }' />
+        <partial name="_Auftragsfelder" for="Eingabe.Felder" view-data='new ViewDataDictionary(ViewData) { ["Auswahl"] = Model.Auswahl, ["StandortLeer"] = "leer: wie beim Kunden" }' />
         <div class="feld">
             <partial name="_Dateifeld" model='"dateien"' />
             <span asp-validation-for="Dateien" class="feldfehler"></span>

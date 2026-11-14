@@ -18,7 +18,7 @@ else
 {
     <p class="erklaerung">
         Quelle: <strong>@Model.Optionen.Art</strong>@if (!string.IsNullOrWhiteSpace(Model.Optionen.Filter)) {<text>, Filter <code>@Model.Optionen.Filter</code></text>}@if (!string.IsNullOrWhiteSpace(Model.Optionen.Suchbasis)) {<text>, gesucht in <code>@Model.Optionen.Suchbasis</code></text>}.
-        Die Quelle gewinnt: Name, E-Mail, Telefon, Organisationseinheit und Raum werden überschrieben.
+        Die Quelle gewinnt: Name, E-Mail, Telefon, Organisationseinheit und Standort werden überschrieben.
         Wer dort fehlt, wird nicht gelöscht, sondern als inaktiv markiert. Kunden, die nur in AVIS angelegt wurden, bleiben unberührt.
     </p>
 

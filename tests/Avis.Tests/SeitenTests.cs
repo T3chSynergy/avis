@@ -866,6 +866,57 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Der_Standort_ist_freier_Text_und_kommt_ohne_Angabe_vom_Kunden()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var eva = await app.DatenbankAsync(db => db.Kunden.Where(k => k.Name == "Eva Test").Select(k => k.Id).SingleAsync());
+        var hotline = (await app.DatenbankAsync(db => db.Gruppen.FirstAsync(g => g.IstEingangsgruppe))).Id.ToString();
+
+        // Ein Textfeld, keine Auswahlliste; die Liste in der Verwaltung gibt es nicht mehr.
+        var formular = await anna.GetStringAsync("/Auftraege/Neu");
+        Assert.Contains("placeholder=\"leer: wie beim Kunden\"", formular);
+        Assert.DoesNotContain("StandortId", formular);
+        Assert.Equal(HttpStatusCode.NotFound, (await anna.GetAsync("/Verwaltung/Standorte")).StatusCode);
+        Assert.DoesNotContain("Standorte", await anna.GetStringAsync("/Verwaltung/Gruppen"));
+
+        async Task<int> FuerEvaAsync(string betreff, string standort)
+        {
+            var antwort = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+            {
+                ["kundeId"] = eva.ToString(),
+                ["Eingabe.Felder.Betreff"] = betreff,
+                ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+                ["Eingabe.Felder.Standort"] = standort,
+                ["Eingabe.GruppeId"] = hotline,
+            });
+            return int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
+        }
+
+        // Eva sitzt laut Testdaten in C 011. Ohne Angabe gilt das auch für den Auftrag, mit Angabe die Angabe.
+        var ohne = await FuerEvaAsync("Bildschirm flackert", "");
+        var mit = await FuerEvaAsync("Beamer im Sitzungssaal", " B 001 ");
+        Assert.Equal("C 011", (await LadenAsync(ohne)).Standort);
+        Assert.Equal("B 001", (await LadenAsync(mit)).Standort);
+        Assert.Matches("<dt>Standort</dt>\\s*<dd>C 011</dd>", await anna.GetStringAsync($"/Auftraege/{ohne}"));
+
+        // Beim Ändern steht der Standort im Feld, und die Änderung steht im Verlauf.
+        await anna.UebernehmenAsync(app, ohne);
+        var seite = $"/Auftraege/{ohne}/Bearbeiten";
+        Assert.Contains("value=\"C 011\"", await anna.GetStringAsync(seite));
+        var geaendert = await anna.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = (await LadenAsync(ohne)).Version.ToString(),
+            ["Felder.Betreff"] = "Bildschirm flackert",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.Dringlichkeit"] = "Mittel",
+            ["Felder.Wichtigkeit"] = "Mittel",
+            ["Felder.Standort"] = "A 300",
+        });
+        Assert.Contains("Standort: C 011 → A 300", await geaendert.Content.ReadAsStringAsync());
+        Assert.Equal("A 300", (await LadenAsync(ohne)).Standort);
+    }
+
+    [Fact]
     public async Task Ein_unveraendert_gespeichertes_Formular_aendert_nichts()
     {
         var anna = await app.AnmeldenAlsAsync("anna");

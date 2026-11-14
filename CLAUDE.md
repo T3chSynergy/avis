@@ -54,8 +54,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   inaktiv, nie gelöscht. Der Kern (`Kundenabgleich`) kennt die Quelle nicht.
 - **Geräte aus Snipe-IT:** nach demselben Muster (`Geraeteabgleich`), nur lesend; AVIS schreibt nie nach
   Snipe-IT. Der Nutzer eines Geräts wird über die Mailadresse einem vorhandenen Kunden zugeordnet.
-- **Raum** (etwa „A 105“) ist freier Text an Kunde und Gerät und kommt aus der Quelle. Der Standort
-  bleibt die Auswahlliste von AVIS und wird von keinem Abgleich angefasst.
+- **Standort** (etwa der Raum „A 105“) ist freier Text an Kunde, Gerät und Auftrag, keine Auswahlliste.
+  Bei Abgeglichenem kommt er aus der Quelle; der Auftrag übernimmt ohne Angabe den des Kunden.
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.
   Ausnahmen in `Startdaten`: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt

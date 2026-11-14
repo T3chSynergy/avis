@@ -160,18 +160,15 @@ public static class Startdaten
             new Kategorie { Name = "Beschaffung" },
             new Kategorie { Name = "Berechtigung" });
 
-        var haupthaus = new Standort { Name = "Haupthaus" };
-        var nebenstelle = new Standort { Name = "Nebenstelle" };
-        db.Standorte.AddRange(haupthaus, nebenstelle);
-
-        var kunde1 = new Kunde { Name = "Dieter Kunde", Email = "dieter.kunde@example.org", Telefon = "1234", Anmeldename = "dieter", Standort = haupthaus };
-        var kunde2 = new Kunde { Name = "Eva Test", Email = "eva.test@example.org", Telefon = "5678", Standort = nebenstelle };
+        // Der Standort ist freier Text, hier die Raumnummer: der Buchstabe steht für das Gebäude.
+        var kunde1 = new Kunde { Name = "Dieter Kunde", Email = "dieter.kunde@example.org", Telefon = "1234", Anmeldename = "dieter", Standort = "A 204" };
+        var kunde2 = new Kunde { Name = "Eva Test", Email = "eva.test@example.org", Telefon = "5678", Standort = "C 011" };
         db.Kunden.AddRange(
             kunde1,
             kunde2,
-            new Kunde { Name = "Özlem Übung", Email = "oezlem.uebung@example.org", Telefon = "0221 12-34", Organisationseinheit = "Personal", Standort = haupthaus },
-            new Kunde { Name = "Frank Müller", Email = "frank.mueller@example.org", Telefon = "2201", Organisationseinheit = "Finanzen", Standort = haupthaus },
-            new Kunde { Name = "Gabi Müller", Email = "gabi.mueller@example.org", Telefon = "2202", Organisationseinheit = "Personal", Standort = nebenstelle },
+            new Kunde { Name = "Özlem Übung", Email = "oezlem.uebung@example.org", Telefon = "0221 12-34", Organisationseinheit = "Personal", Standort = "A 112" },
+            new Kunde { Name = "Frank Müller", Email = "frank.mueller@example.org", Telefon = "2201", Organisationseinheit = "Finanzen", Standort = "A 210" },
+            new Kunde { Name = "Gabi Müller", Email = "gabi.mueller@example.org", Telefon = "2202", Organisationseinheit = "Personal", Standort = "C 014" },
             // Von Hand angelegt und stillgelegt.
             new Kunde { Name = "Karl Ruhestand", Telefon = "2290", Organisationseinheit = "Ordnungsamt", Aktiv = false });
 
@@ -184,11 +181,10 @@ public static class Startdaten
             Email = "hanna.verzeichnis@example.org",
             Telefon = "3101",
             Organisationseinheit = "Bauamt",
-            Raum = "A 105",
+            Standort = "A 105",
             Anmeldename = @"avis\hanna",
             Quelle = verzeichnis,
             ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b01",
-            Standort = haupthaus,
         };
         db.Kunden.AddRange(
             hanna,
@@ -198,7 +194,7 @@ public static class Startdaten
                 Email = "igor.abgleich@example.org",
                 Telefon = "3102",
                 Organisationseinheit = "Kämmerei",
-                Raum = "B 012",
+                Standort = "B 012",
                 Anmeldename = @"avis\igor",
                 Quelle = verzeichnis,
                 ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b02",
@@ -209,29 +205,29 @@ public static class Startdaten
                 Email = "jana.ehemals@example.org",
                 Telefon = "3103",
                 Organisationseinheit = "Bauamt",
-                Raum = "A 107",
+                Standort = "A 107",
                 Anmeldename = @"avis\jana",
                 Quelle = verzeichnis,
                 ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4b03",
                 Aktiv = false,
             });
 
-        var flurdrucker = new Inventargeraet { Inventarnummer = "DR-0042", Bezeichnung = "Laserdrucker Flur 2. OG", Typ = "Drucker", Standort = haupthaus };
+        var flurdrucker = new Inventargeraet { Inventarnummer = "DR-0042", Bezeichnung = "Laserdrucker Flur 2. OG", Typ = "Drucker", Standort = "A Flur 2. OG" };
         db.Geraete.AddRange(
             flurdrucker,
-            new Inventargeraet { Inventarnummer = "NB-1017", Bezeichnung = "Notebook 14 Zoll", Typ = "Notebook", Standort = haupthaus, Kunde = kunde1 },
-            new Inventargeraet { Inventarnummer = "NB-1018", Bezeichnung = "Notebook 14 Zoll", Typ = "Notebook", Standort = nebenstelle, Kunde = kunde2 },
-            new Inventargeraet { Inventarnummer = "MO-2203", Bezeichnung = "Monitor 27 Zoll", Typ = "Monitor", Standort = haupthaus, Kunde = kunde1 });
+            new Inventargeraet { Inventarnummer = "NB-1017", Bezeichnung = "Notebook 14 Zoll", Typ = "Notebook", Standort = "A 204", Kunde = kunde1 },
+            new Inventargeraet { Inventarnummer = "NB-1018", Bezeichnung = "Notebook 14 Zoll", Typ = "Notebook", Standort = "C 011", Kunde = kunde2 },
+            new Inventargeraet { Inventarnummer = "MO-2203", Bezeichnung = "Monitor 27 Zoll", Typ = "Monitor", Standort = "A 204", Kunde = kunde1 });
 
         await db.SaveChangesAsync();
 
-        // Geräte, wie sie der Abgleich mit Snipe-IT anlegt: mit der Nummer des Assets dort und dem Raum als Standort.
+        // Geräte, wie sie der Abgleich mit Snipe-IT anlegt: mit der Nummer des Assets dort und dem Standort von dort.
         // Der Nutzer ist der Kunde mit der Adresse, an die das Asset ausgegeben ist. Das dritte steht dort nicht mehr.
         const string inventar = Avis.Web.Abgleich.GeraeteabgleichOptionen.SnipeIt;
         db.Geraete.AddRange(
-            new Inventargeraet { Inventarnummer = "TB-3001", Bezeichnung = "Tablet 11 Zoll", Typ = "Tablet", Raum = "A 105", Kunde = hanna, Quelle = inventar, ExterneKennung = "9001" },
-            new Inventargeraet { Inventarnummer = "BE-3002", Bezeichnung = "Beamer Sitzungssaal", Typ = "Beamer", Raum = "B 0.01", Quelle = inventar, ExterneKennung = "9002" },
-            new Inventargeraet { Inventarnummer = "TB-2990", Bezeichnung = "Tablet 10 Zoll", Typ = "Tablet", Raum = "A 107", Quelle = inventar, ExterneKennung = "9003", Aktiv = false });
+            new Inventargeraet { Inventarnummer = "TB-3001", Bezeichnung = "Tablet 11 Zoll", Typ = "Tablet", Standort = "A 105", Kunde = hanna, Quelle = inventar, ExterneKennung = "9001" },
+            new Inventargeraet { Inventarnummer = "BE-3002", Bezeichnung = "Beamer Sitzungssaal", Typ = "Beamer", Standort = "B 001", Quelle = inventar, ExterneKennung = "9002" },
+            new Inventargeraet { Inventarnummer = "TB-2990", Bezeichnung = "Tablet 10 Zoll", Typ = "Tablet", Standort = "A 107", Quelle = inventar, ExterneKennung = "9003", Aktiv = false });
         await db.SaveChangesAsync();
 
         var drucker = Auftrag.Erfassen(
@@ -239,7 +235,7 @@ public static class Startdaten
             {
                 Geraet = "Drucker 2. OG Flur",
                 Inventargeraet = flurdrucker,
-                Standort = haupthaus,
+                Standort = "A Flur 2. OG",
             },
             kunde1, anna, hotline, Eingang.Telefon, jetzt.AddHours(-5));
 
@@ -248,11 +244,11 @@ public static class Startdaten
             {
                 Dringlichkeit = Stufe.Hoch,
                 Wichtigkeit = Stufe.Hoch,
-                Standort = nebenstelle,
+                Standort = "C 112",
             },
             kunde2, anna, hotline, Eingang.Telefon, jetzt.AddHours(-3));
         wlan.Uebernehmen(anna, jetzt.AddHours(-3).AddMinutes(5));
-        wlan.Weiterleiten(netzwerk, anna, jetzt.AddHours(-3).AddMinutes(10), bernd, "Access Point im Raum 1.12 prüfen.");
+        wlan.Weiterleiten(netzwerk, anna, jetzt.AddHours(-3).AddMinutes(10), bernd, "Access Point in C 112 prüfen.");
 
         var monitor = Auftrag.Erfassen(
             new("Zweiter Monitor für neuen Arbeitsplatz", "Für den Arbeitsplatz in Raum 3.04 wird ein zweiter Monitor benötigt.")

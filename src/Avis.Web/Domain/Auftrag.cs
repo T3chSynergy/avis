@@ -30,7 +30,9 @@ public enum AuftragStatus
 public record AuftragAngaben(string Betreff, string Beschreibung)
 {
     public Kategorie? Kategorie { get; init; }
-    public Standort? Standort { get; init; }
+
+    /// <summary>Freitext, z. B. der Raum "A 105".</summary>
+    public string? Standort { get; init; }
 
     /// <summary>Freitext, z. B. eine Inventarnummer.</summary>
     public string? Geraet { get; init; }
@@ -80,8 +82,8 @@ public class Auftrag
     public int? KategorieId { get; private set; }
     public Kategorie? Kategorie { get; private set; }
 
-    public int? StandortId { get; private set; }
-    public Standort? Standort { get; private set; }
+    /// <summary>Freitext, z. B. der Raum "A 105".</summary>
+    public string? Standort { get; private set; }
 
     /// <summary>Freitext, z. B. eine Inventarnummer.</summary>
     public string? Geraet { get; private set; }
@@ -166,7 +168,9 @@ public class Auftrag
             ErstelltAm = jetzt,
             GeaendertAm = jetzt,
         };
-        auftrag.Setzen(Bereinigt(angaben));
+        // Ohne Angabe gilt der Standort des Kunden: Dort ist in aller Regel auch das Problem.
+        var bereinigt = Bereinigt(angaben);
+        auftrag.Setzen(bereinigt with { Standort = bereinigt.Standort ?? kunde.Standort });
         auftrag.Eintragen(VerlaufArt.Erfasst, erfasstVon, jetzt, beschreibung, anhaenge: anhaenge);
         return auftrag;
     }
@@ -190,7 +194,7 @@ public class Auftrag
 
         Vergleichen("Betreff", Betreff, neu.Betreff, Betreff != neu.Betreff);
         Vergleichen("Kategorie", Kategorie?.Name, neu.Kategorie?.Name, KategorieId != neu.Kategorie?.Id);
-        Vergleichen("Standort", Standort?.Name, neu.Standort?.Name, StandortId != neu.Standort?.Id);
+        Vergleichen("Standort", Standort, neu.Standort, Standort != neu.Standort);
         Vergleichen("Gerät", Geraet, neu.Geraet, Geraet != neu.Geraet);
         Vergleichen("Gerät aus dem Inventar", Inventargeraet?.Inventarnummer, neu.Inventargeraet?.Inventarnummer, InventargeraetId != neu.Inventargeraet?.Id);
         Vergleichen("Dringlichkeit", Dringlichkeit.Text(), neu.Dringlichkeit.Text(), Dringlichkeit != neu.Dringlichkeit);
@@ -422,7 +426,6 @@ public class Auftrag
         Kategorie = angaben.Kategorie;
         KategorieId = angaben.Kategorie?.Id;
         Standort = angaben.Standort;
-        StandortId = angaben.Standort?.Id;
         Geraet = angaben.Geraet;
         Inventargeraet = angaben.Inventargeraet;
         InventargeraetId = angaben.Inventargeraet?.Id;
@@ -455,6 +458,7 @@ public class Auftrag
         {
             Betreff = betreff,
             Beschreibung = beschreibung,
+            Standort = string.IsNullOrWhiteSpace(angaben.Standort) ? null : angaben.Standort.Trim(),
             Geraet = string.IsNullOrWhiteSpace(angaben.Geraet) ? null : angaben.Geraet.Trim(),
         };
     }

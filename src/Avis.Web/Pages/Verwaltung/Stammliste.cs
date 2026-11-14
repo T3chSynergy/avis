@@ -85,10 +85,3 @@ public class KategorienModel(AvisDb db) : StammlisteModel<Kategorie>(db)
     public override string Einzahl => "Kategorie";
     public override string Erklaerung => "Kategorien ordnen Aufträge nach ihrer Art.";
 }
-
-public class StandorteModel(AvisDb db) : StammlisteModel<Standort>(db)
-{
-    public override string Titel => "Standorte";
-    public override string Einzahl => "Standort";
-    public override string Erklaerung => "Standorte stehen an Aufträgen und Kunden zur Auswahl.";
-}

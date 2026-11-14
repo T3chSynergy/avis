@@ -223,7 +223,6 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
         await anna.PostFormularAsync("/Kunden", "/Kunden", new() { ["name"] = "Karl Neu", ["email"] = "Karl.Neu@Example.org" });
         var id = await KundeIdAsync("Karl Neu");
-        var standort = await app.DatenbankAsync(db => db.Standorte.Where(s => s.Name == "Nebenstelle").Select(s => s.Id).FirstAsync());
 
         var antwort = await anna.PostFormularAsync($"/Kunden/{id}", $"/Kunden/{id}", new()
         {
@@ -231,13 +230,13 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             ["email"] = "karl.neumann@example.org",
             ["telefon"] = "4711",
             ["organisationseinheit"] = "Bauamt",
-            ["standortId"] = standort.ToString(),
+            ["standort"] = " C 0.04 ",
         });
 
         Assert.Contains("Karl Neumann wurde gespeichert.", await antwort.Content.ReadAsStringAsync());
         var kunde = await app.DatenbankAsync(db => db.Kunden.FirstAsync(k => k.Id == id));
-        Assert.Equal(("Karl Neumann", "karl.neumann@example.org", "4711", "Bauamt", standort),
-            (kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.StandortId!.Value));
+        Assert.Equal(("Karl Neumann", "karl.neumann@example.org", "4711", "Bauamt", "C 0.04"),
+            (kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.Standort));
 
         // Die Suche kennt die neuen Angaben und vergisst die alten.
         Assert.Contains("Karl Neumann", await anna.GetStringAsync("/Kunden?q=bauamt"));

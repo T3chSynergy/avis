@@ -1,16 +1,18 @@
-using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Avis.Web.Pages.Kunden;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Geraete;
 
-/// <summary>Anlegen und Bearbeiten eines Geräts. Nur für Administratoren.</summary>
+/// <summary>
+/// Anlegen und Bearbeiten eines Geräts. Nur für Administratoren. Ein Gerät
+/// aus einem externen System wird dort gepflegt und lässt sich hier nicht
+/// ändern.
+/// </summary>
 public class BearbeitenModel(AvisDb db) : PageModel
 {
     public class Formular
@@ -27,19 +29,12 @@ public class BearbeitenModel(AvisDb db) : PageModel
         public string? Typ { get; set; }
 
         [StringLength(100, ErrorMessage = "Höchstens 100 Zeichen.")]
-        public string? Raum { get; set; }
+        public string? Standort { get; set; }
 
-        public int? StandortId { get; set; }
         public bool Aktiv { get; set; } = true;
     }
 
     public int? Id { get; private set; }
-
-    /// <summary>Gesetzt, wenn das Gerät aus einem externen System stammt. Dann lässt sich nur der Standort ändern.</summary>
-    public string? Quelle { get; private set; }
-
-    /// <summary>Der Nutzer eines Geräts aus einem externen System, zur Anzeige.</summary>
-    public string? Nutzer { get; private set; }
 
     [BindProperty]
     public Formular Eingabe { get; set; } = new();
@@ -51,7 +46,6 @@ public class BearbeitenModel(AvisDb db) : PageModel
     [BindProperty]
     public string? Suche { get; set; }
 
-    public List<SelectListItem> Standorte { get; private set; } = [];
     public Kundenauswahl Kundenauswahl { get; private set; } = null!;
 
     public async Task<IActionResult> OnGetAsync(int? id)
@@ -62,27 +56,28 @@ public class BearbeitenModel(AvisDb db) : PageModel
             geraet = await db.Geraete.AsNoTracking().FirstOrDefaultAsync(g => g.Id == id);
             if (geraet is null)
                 return NotFound();
+            if (geraet.AusQuelle)
+                return AusQuelle(geraet);
 
             Eingabe = new Formular
             {
                 Inventarnummer = geraet.Inventarnummer,
                 Bezeichnung = geraet.Bezeichnung,
                 Typ = geraet.Typ,
-                Raum = geraet.Raum,
-                StandortId = geraet.StandortId,
+                Standort = geraet.Standort,
                 Aktiv = geraet.Aktiv,
             };
             KundeId = geraet.KundeId;
         }
 
-        return await SeiteAsync(id, geraet);
+        return await SeiteAsync(id);
     }
 
     /// <summary>Sucht Kunden und zeigt das Formular mit allen Eingaben wieder an.</summary>
     public async Task<IActionResult> OnPostSuchenAsync(int? id)
     {
         ModelState.Clear();
-        return await SeiteAsync(id, await LadenAsync(id));
+        return await SeiteAsync(id);
     }
 
     public async Task<IActionResult> OnPostAsync(int? id)
@@ -91,21 +86,8 @@ public class BearbeitenModel(AvisDb db) : PageModel
         if (id is not null && geraet is null)
             return NotFound();
 
-        // Was aus einem externen System stammt, wird dort gepflegt. Hier ändert sich dann nur der Standort.
         if (geraet is { AusQuelle: true })
-        {
-            Eingabe = new Formular
-            {
-                Inventarnummer = geraet.Inventarnummer,
-                Bezeichnung = geraet.Bezeichnung,
-                Typ = geraet.Typ,
-                Raum = geraet.Raum,
-                StandortId = Eingabe.StandortId,
-                Aktiv = geraet.Aktiv,
-            };
-            KundeId = geraet.KundeId;
-            ModelState.Clear();
-        }
+            return AusQuelle(geraet);
 
         if (ModelState.IsValid)
         {
@@ -113,16 +95,12 @@ public class BearbeitenModel(AvisDb db) : PageModel
             if (await db.Geraete.AnyAsync(g => g.Nummernschluessel == schluessel && g.Id != id))
                 ModelState.AddModelError("Eingabe.Inventarnummer", "Diese Inventarnummer gibt es schon.");
 
-            if (Eingabe.StandortId is not null && Eingabe.StandortId != geraet?.StandortId
-                && !await db.Standorte.AnyAsync(s => s.Id == Eingabe.StandortId && s.Aktiv))
-                ModelState.AddModelError("Eingabe.StandortId", "Dieser Standort steht nicht zur Auswahl.");
-
             if (KundeId is not null && !await db.Kunden.AnyAsync(k => k.Id == KundeId))
                 ModelState.AddModelError("", "Dieser Kunde wurde nicht gefunden.");
         }
 
         if (!ModelState.IsValid)
-            return await SeiteAsync(id, geraet);
+            return await SeiteAsync(id);
 
         if (geraet is null)
         {
@@ -133,8 +111,7 @@ public class BearbeitenModel(AvisDb db) : PageModel
         geraet.Inventarnummer = Eingabe.Inventarnummer!.Trim();
         geraet.Bezeichnung = Eingabe.Bezeichnung!.Trim();
         geraet.Typ = string.IsNullOrWhiteSpace(Eingabe.Typ) ? null : Eingabe.Typ.Trim();
-        geraet.Raum = string.IsNullOrWhiteSpace(Eingabe.Raum) ? null : Eingabe.Raum.Trim();
-        geraet.StandortId = Eingabe.StandortId;
+        geraet.Standort = string.IsNullOrWhiteSpace(Eingabe.Standort) ? null : Eingabe.Standort.Trim();
         geraet.KundeId = KundeId;
         geraet.Aktiv = Eingabe.Aktiv;
         await db.SaveChangesAsync();
@@ -146,19 +123,17 @@ public class BearbeitenModel(AvisDb db) : PageModel
     private async Task<Inventargeraet?> LadenAsync(int? id) =>
         id is null ? null : await db.Geraete.FirstOrDefaultAsync(g => g.Id == id);
 
-    private async Task<IActionResult> SeiteAsync(int? id, Inventargeraet? geraet)
+    /// <summary>Was aus einem externen System stammt, wird dort gepflegt, auch der Standort.</summary>
+    private RedirectToPageResult AusQuelle(Inventargeraet geraet)
+    {
+        TempData["Fehler"] = $"Gerät {geraet.Inventarnummer} stammt aus {geraet.Quelle} und wird dort gepflegt. In AVIS lässt es sich nicht ändern.";
+        return RedirectToPage("Details", new { id = geraet.Id });
+    }
+
+    private async Task<IActionResult> SeiteAsync(int? id)
     {
         Id = id;
-        var bisherigerStandort = geraet?.StandortId;
-        Standorte = await db.Standorte.AsNoTracking()
-            .Where(s => s.Aktiv || s.Id == bisherigerStandort)
-            .OrderBy(s => s.Name)
-            .Select(s => new SelectListItem(s.Name, s.Id.ToString(CultureInfo.InvariantCulture)))
-            .ToListAsync();
         Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "kein");
-        Quelle = geraet?.Quelle;
-        if (geraet is { AusQuelle: true, KundeId: not null })
-            Nutzer = await db.Kunden.Where(k => k.Id == geraet.KundeId).Select(k => k.Name).FirstOrDefaultAsync();
         return Page();
     }
 }

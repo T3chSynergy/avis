@@ -33,7 +33,7 @@ public class GeraeteabgleichOptionen
 /// <summary>Ein Gerät, wie es eine externe Quelle kennt.</summary>
 /// <param name="Kennung">Bleibt in der Quelle gleich, auch wenn sich die Inventarnummer ändert.</param>
 /// <param name="NutzerEmail">Adresse dessen, der das Gerät hat. Darüber wird der Kunde gefunden.</param>
-public record Quellgeraet(string Kennung, string Inventarnummer, string? Bezeichnung, string? Typ, string? Raum, string? NutzerEmail);
+public record Quellgeraet(string Kennung, string Inventarnummer, string? Bezeichnung, string? Typ, string? Standort, string? NutzerEmail);
 
 /// <summary>
 /// Liefert alle Geräte einer externen Quelle, die in Betrieb sind. Der
@@ -157,7 +157,7 @@ public class Geraeteabgleich(
             var email = Bereinigt(eintrag.NutzerEmail, 320)?.ToLowerInvariant();
             int? kunde = email is not null && kunden.TryGetValue(email, out var id) ? id : null;
 
-            var vorher = (geraet.Quelle, geraet.ExterneKennung, geraet.Inventarnummer, geraet.Bezeichnung, geraet.Typ, geraet.Raum, geraet.KundeId);
+            var vorher = (geraet.Quelle, geraet.ExterneKennung, geraet.Inventarnummer, geraet.Bezeichnung, geraet.Typ, geraet.Standort, geraet.KundeId);
             var warAktiv = geraet.Aktiv;
 
             geraet.Quelle = _quelle.Name;
@@ -165,7 +165,7 @@ public class Geraeteabgleich(
             geraet.Inventarnummer = nummer;
             geraet.Bezeichnung = Bereinigt(eintrag.Bezeichnung, 200) ?? nummer;
             geraet.Typ = Bereinigt(eintrag.Typ, 100);
-            geraet.Raum = Bereinigt(eintrag.Raum, 100);
+            geraet.Standort = Bereinigt(eintrag.Standort, 100);
             geraet.KundeId = kunde;
             geraet.Aktiv = true;
             geraet.SuchtextAktualisieren();
@@ -174,7 +174,7 @@ public class Geraeteabgleich(
                 neu++;
             else if (!warAktiv)
                 reaktiviert++;
-            else if (vorher != (geraet.Quelle, geraet.ExterneKennung, geraet.Inventarnummer, geraet.Bezeichnung, geraet.Typ, geraet.Raum, geraet.KundeId))
+            else if (vorher != (geraet.Quelle, geraet.ExterneKennung, geraet.Inventarnummer, geraet.Bezeichnung, geraet.Typ, geraet.Standort, geraet.KundeId))
                 geaendert++;
         }
 
