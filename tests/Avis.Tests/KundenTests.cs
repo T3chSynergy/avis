@@ -259,6 +259,66 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Equal("gabi.mueller@example.org", await app.DatenbankAsync(db => db.Kunden.Where(k => k.Id == gabi).Select(k => k.Email).FirstAsync()));
     }
 
+    [Fact]
+    public async Task Beim_Erfassen_laesst_sich_ein_bevorzugter_Bearbeiter_mitgeben()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var bernd = await app.AnmeldenAlsAsync("bernd");
+        var berndId = await BenutzerIdAsync("bernd");
+        Assert.Contains("Bevorzugter Bearbeiter (optional)", await anna.GetStringAsync("/Auftraege/Neu"));
+
+        var id = await ErfassenAsync(anna, "Plotter für Bernd", new()
+        {
+            ["kundeId"] = (await KundeIdAsync("Frank Müller")).ToString(),
+            ["Eingabe.BevorzugtId"] = berndId.ToString(),
+        });
+
+        var auftrag = await LadenAsync(id);
+        Assert.Equal((AuftragStatus.Offen, berndId), (auftrag.Status, auftrag.BevorzugterBearbeiterId!.Value));
+        Assert.Equal("Erfasst in Gruppe IT-Hotline, bevorzugt an Bernd Muster", Assert.Single(auftrag.Verlauf).Beschreibung);
+        Assert.Contains("bevorzugt an <strong>Bernd Muster</strong>", await anna.GetStringAsync($"/Auftraege/{id}"));
+        Assert.Contains("Plotter für Bernd", await bernd.GetStringAsync("/"));
+    }
+
+    [Fact]
+    public async Task Wer_beim_Erfassen_selbst_uebernimmt_nennt_keinen_bevorzugten_Bearbeiter()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+
+        var id = await ErfassenAsync(anna, "Plotter gleich selbst", new()
+        {
+            ["kundeId"] = (await KundeIdAsync("Frank Müller")).ToString(),
+            ["Eingabe.BevorzugtId"] = (await BenutzerIdAsync("bernd")).ToString(),
+            ["Eingabe.SofortUebernehmen"] = "true",
+        });
+
+        var auftrag = await LadenAsync(id);
+        Assert.Equal((await BenutzerIdAsync("anna"), null), (auftrag.BearbeiterId!.Value, auftrag.BevorzugterBearbeiterId));
+        Assert.Equal("Erfasst in Gruppe IT-Hotline", auftrag.Verlauf.Single(v => v.Art == VerlaufArt.Erfasst).Beschreibung);
+        Assert.False(await app.DatenbankAsync(db => db.Benachrichtigungen.AnyAsync(b => b.Verlaufseintrag.AuftragId == id && b.AnBevorzugtenBearbeiter)));
+    }
+
+    [Theory]
+    [InlineData("dieter")]
+    [InlineData(null)]
+    public async Task Bevorzugt_werden_kann_nur_ein_Bearbeiter(string? anmeldename)
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var betreff = $"Plotter für niemanden {anmeldename}";
+
+        var antwort = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        {
+            ["kundeId"] = (await KundeIdAsync("Frank Müller")).ToString(),
+            ["Eingabe.Felder.Betreff"] = betreff,
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.GruppeId"] = (await HotlineIdAsync()).ToString(),
+            ["Eingabe.BevorzugtId"] = (anmeldename is null ? 999999 : await BenutzerIdAsync(anmeldename)).ToString(),
+        });
+
+        Assert.Contains("Der bevorzugte Bearbeiter wurde nicht gefunden.", await antwort.Content.ReadAsStringAsync());
+        Assert.False(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.Betreff == betreff)));
+    }
+
     private async Task<int> ErfassenAsync(HttpClient client, string betreff, Dictionary<string, string> kunde)
     {
         var felder = new Dictionary<string, string>(kunde)
@@ -273,6 +333,9 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
     private Task<int> HotlineIdAsync() =>
         app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync());
+
+    private Task<int> BenutzerIdAsync(string anmeldename) =>
+        app.DatenbankAsync(db => db.Benutzer.Where(b => b.Anmeldename == anmeldename).Select(b => b.Id).FirstAsync());
 
     private Task<int> KundeIdAsync(string name) =>
         app.DatenbankAsync(db => db.Kunden.Where(k => k.Name == name).Select(k => k.Id).FirstAsync());

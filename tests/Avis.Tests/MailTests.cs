@@ -158,6 +158,39 @@ public class MailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Beim_Erfassen_bekommt_der_bevorzugte_Bearbeiter_einen_Hinweis_und_der_Kunde_seine_Mail()
+    {
+        var anna = await AnfangAsync();
+
+        var id = await ErfassenAsync(anna, "Beamer im Sitzungssaal flackert", "Eva Test", bevorzugt: "bernd");
+
+        var mails = await app.MailsVersendenAsync();
+        Assert.Equal(2, mails.Count);
+        var anKunden = Assert.Single(mails, m => m.Subject == $"[AVIS-{id}] Erfasst: Beamer im Sitzungssaal flackert");
+        Assert.DoesNotContain("Bernd", anKunden.TextBody);
+        Assert.DoesNotContain("bevorzugt", anKunden.TextBody);
+        var hinweis = Assert.Single(mails, m => m.Subject == $"[AVIS-{id}] Für dich: Beamer im Sitzungssaal flackert");
+        Assert.Equal("bernd.muster@example.org", hinweis.To.Mailboxes.Single().Address);
+        Assert.Contains("liegt in der Gruppe IT-Hotline und nennt dich als bevorzugten Bearbeiter", hinweis.TextBody);
+        Assert.Contains($"https://avis.test/Auftraege/{id}", hinweis.TextBody);
+    }
+
+    [Fact]
+    public async Task Der_Hinweis_beim_Erfassen_entfaellt_wenn_der_Auftrag_schon_uebernommen_ist()
+    {
+        var anna = await AnfangAsync();
+        var id = await ErfassenAsync(anna, "Leinwand fährt nicht aus", "Eva Test", bevorzugt: "bernd");
+
+        await AktionAsync(anna, $"/Auftraege/{id}", "Uebernehmen");
+
+        Assert.Equal($"[AVIS-{id}] Erfasst: Leinwand fährt nicht aus", Assert.Single(await app.MailsVersendenAsync()).Subject);
+        var entfallen = await app.DatenbankAsync(db => db.Benachrichtigungen.AsNoTracking()
+            .SingleAsync(b => b.Verlaufseintrag.AuftragId == id && b.AnBevorzugtenBearbeiter));
+        Assert.Equal(BenachrichtigungStatus.Entfallen, entfallen.Status);
+        Assert.Contains("inzwischen übernommen", entfallen.Hinweis);
+    }
+
+    [Fact]
     public async Task Der_Hinweis_entfaellt_wenn_der_Auftrag_schon_uebernommen_ist()
     {
         var anna = await AnfangAsync();
@@ -350,7 +383,7 @@ public class MailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     /// <summary>Erfasst für einen Kunden aus den Testdaten oder, ohne Namen, für einen neuen Kunden ohne Adresse.</summary>
-    private async Task<int> ErfassenAsync(HttpClient client, string betreff, string? kundeName)
+    private async Task<int> ErfassenAsync(HttpClient client, string betreff, string? kundeName, string? bevorzugt = null)
     {
         var felder = new Dictionary<string, string>
         {
@@ -358,6 +391,8 @@ public class MailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
             ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync())).ToString(),
         };
+        if (bevorzugt is not null)
+            felder["Eingabe.BevorzugtId"] = (await app.DatenbankAsync(db => db.Benutzer.Where(b => b.Anmeldename == bevorzugt).Select(b => b.Id).FirstAsync())).ToString();
         if (kundeName is null)
             felder["Eingabe.KundeName"] = "Ohne Adresse";
         else

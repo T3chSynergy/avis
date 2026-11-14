@@ -55,7 +55,7 @@ Aufträge gesperrter Gruppen auch während der Bearbeitung geschützt bleiben.
 
 | Aktion | Wer | Wirkung |
 |---|---|---|
-| Erfassen | Kunde, Bearbeiter, E-Mail-Eingang | Auftrag entsteht in einer Gruppe, Standard ist die IT-Hotline |
+| Erfassen | Kunde, Bearbeiter, E-Mail-Eingang | Auftrag entsteht in einer Gruppe, Standard ist die IT-Hotline. Ein Bearbeiter kann dabei einen bevorzugten Bearbeiter nennen |
 | Übernehmen | jeder Bearbeiter, der den Auftrag sehen darf | Bearbeiter wird gesetzt, auch wenn schon ein anderer eingetragen ist |
 | Weiterleiten | wer den Auftrag bearbeitet | neue Gruppe wird gesetzt, Bearbeiter wird geleert, optional bevorzugter Bearbeiter |
 | Interner Kommentar | wer den Auftrag bearbeitet | Eintrag im Verlauf, für den Kunden unsichtbar |
@@ -80,7 +80,9 @@ Weg über die Hotline ist der Normalfall, aber kein Zwang.
 
 Weitergeleitet wird nur an Gruppen, nie an Personen. Der bevorzugte Bearbeiter
 ist ein Hinweis: Der Auftrag ist in der Gruppenliste markiert und erscheint bei
-der genannten Person hervorgehoben, übernehmen kann ihn trotzdem jeder.
+der genannten Person hervorgehoben, übernehmen kann ihn trotzdem jeder. Das
+gilt genauso, wenn ein Bearbeiter ihn schon beim Erfassen nennt. Kunden und
+der E-Mail-Eingang nennen keinen.
 
 ### Interne Kommentare
 
@@ -130,7 +132,7 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 | Termin | Datum | optional |
 | Gruppe | Gruppe | aktuelle Zuordnung |
 | Bearbeiter | Person | leer, solange der Auftrag offen ist |
-| Bevorzugter Bearbeiter | Person | optional, wird beim Weiterleiten gesetzt |
+| Bevorzugter Bearbeiter | Person | optional, wird beim Erfassen durch einen Bearbeiter oder beim Weiterleiten gesetzt |
 | Anhänge | Dateien | am Auftrag, an Kommentaren, Nachrichten und Antworten. Anhänge an internen Kommentaren sieht der Kunde nicht. Bilder erscheinen als Vorschau und lassen sich mit Strg+V einfügen |
 | Verlauf | Einträge | automatisch |
 

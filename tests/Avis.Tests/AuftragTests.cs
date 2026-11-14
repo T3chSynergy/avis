@@ -37,6 +37,17 @@ public class AuftragTests
     }
 
     [Fact]
+    public void Beim_Erfassen_laesst_sich_ein_bevorzugter_Bearbeiter_nennen()
+    {
+        var auftrag = Auftrag.Erfassen(Angaben, _kunde, _anna, _netzwerk, Eingang.Telefon, Jetzt, bevorzugt: _bernd);
+
+        Assert.Equal(AuftragStatus.Offen, auftrag.Status);
+        Assert.Null(auftrag.Bearbeiter);
+        Assert.Same(_bernd, auftrag.BevorzugterBearbeiter);
+        Assert.Equal("Erfasst in Gruppe Netzwerk, bevorzugt an Bernd Muster", Assert.Single(auftrag.Verlauf).Beschreibung);
+    }
+
+    [Fact]
     public void Uebernehmen_setzt_den_Bearbeiter_und_behaelt_die_Gruppe()
     {
         var auftrag = Neu();

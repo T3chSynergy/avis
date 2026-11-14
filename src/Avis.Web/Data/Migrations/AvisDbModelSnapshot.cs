@@ -160,6 +160,9 @@ namespace Avis.Web.Data.Migrations
                         .HasMaxLength(320)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("AnBevorzugtenBearbeiter")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Betreff")
                         .HasMaxLength(300)
                         .HasColumnType("TEXT");
