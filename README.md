@@ -17,13 +17,15 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 - Kunden suchen, anlegen und pflegen, mit den Aufträgen eines Kunden; beim
   Erfassen erscheinen Treffer schon während des Tippens
 - Listen: Meine Aufträge, offene Aufträge (meiner Gruppen und für mich vorgemerkte), alle Aufträge
-- Meine Gruppen: selbst beitreten und austreten
+- Meine Gruppen: selbst beitreten und austreten, je Gruppe eine Mail bei
+  neuen Aufträgen ein- und ausschalten
 - Verwaltung für Administratoren: Gruppen mit Mitgliedern, Benutzer und Rollen,
   Kategorien, Standorte
 - Seiten für Kunden: eigenen Auftrag stellen, eigene Aufträge mit Stand und
   Nachrichten sehen, der IT antworten
 - Mails über SMTP: an den Kunden bei Erfassung, Nachricht und Abschluss, an
-  Bearbeiter bei einer Antwort des Kunden und als bevorzugter Bearbeiter
+  Bearbeiter bei einer Antwort des Kunden, als bevorzugter Bearbeiter und, wer
+  es für eine Gruppe einschaltet, bei jedem neuen Auftrag in der Gruppe
 - Gesperrte Gruppen, deren Aufträge nur ihre Mitglieder sehen
 - Suche über alle Aufträge mit Filtern nach Status, Gruppe und Bearbeiter
 - Gerätetabelle, mit der Aufträge über die Inventarnummer verknüpft werden

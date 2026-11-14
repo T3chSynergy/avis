@@ -48,7 +48,24 @@ public class Benachrichtigungsversand(
                 continue;
             }
 
-            var (mail, grund) = Mailtexte.Erstellen(benachrichtigung.Verlaufseintrag, o.BasisUrl, benachrichtigung.AnBevorzugtenBearbeiter);
+            // Eine Mail an die Gruppe geht nur an den, der dort noch Mitglied ist und sie
+            // noch haben will. Wurde der Auftrag inzwischen weitergeleitet, gilt die neue Gruppe.
+            Benutzer? mitglied = null;
+            if (benachrichtigung.EmpfaengerId is { } empfaengerId)
+            {
+                var gruppe = benachrichtigung.Verlaufseintrag.Auftrag.GruppeId;
+                mitglied = await db.Benutzer.FirstOrDefaultAsync(b => b.Id == empfaengerId, abbruch);
+                var gewuenscht = mitglied is { Aktiv: true, IstBearbeiter: true }
+                    && await db.Gruppenmitglieder.AnyAsync(m => m.GruppeId == gruppe && m.BenutzerId == empfaengerId && m.MailBeiNeuemAuftrag, abbruch);
+                if (!gewuenscht)
+                {
+                    Entfaellt(benachrichtigung, $"{mitglied?.Name ?? "Das Mitglied"} lässt sich über diese Gruppe nicht mehr benachrichtigen.");
+                    continue;
+                }
+            }
+
+            var (mail, grund) = Mailtexte.Erstellen(
+                benachrichtigung.Verlaufseintrag, o.BasisUrl, benachrichtigung.AnBevorzugtenBearbeiter, mitglied);
             if (mail is null)
             {
                 Entfaellt(benachrichtigung, grund);

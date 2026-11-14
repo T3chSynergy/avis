@@ -167,6 +167,9 @@ namespace Avis.Web.Data.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("EmpfaengerId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("ErstelltAm")
                         .HasColumnType("TEXT");
 
@@ -265,6 +268,26 @@ namespace Avis.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Gruppen", (string)null);
+                });
+
+            modelBuilder.Entity("Avis.Web.Domain.Gruppenmitglied", b =>
+                {
+                    b.Property<int>("GruppeId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("GruppenId");
+
+                    b.Property<int>("BenutzerId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("MitgliederId");
+
+                    b.Property<bool>("MailBeiNeuemAuftrag")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("GruppeId", "BenutzerId");
+
+                    b.HasIndex("BenutzerId");
+
+                    b.ToTable("Gruppenmitglieder", (string)null);
                 });
 
             modelBuilder.Entity("Avis.Web.Domain.Inventargeraet", b =>
@@ -494,21 +517,6 @@ namespace Avis.Web.Data.Migrations
                     b.ToTable("Verlauf", (string)null);
                 });
 
-            modelBuilder.Entity("BenutzerGruppe", b =>
-                {
-                    b.Property<int>("GruppenId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MitgliederId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("GruppenId", "MitgliederId");
-
-                    b.HasIndex("MitgliederId");
-
-                    b.ToTable("Gruppenmitglieder", (string)null);
-                });
-
             modelBuilder.Entity("Avis.Web.Domain.Anhang", b =>
                 {
                     b.HasOne("Avis.Web.Domain.Verlaufseintrag", "Verlaufseintrag")
@@ -593,6 +601,21 @@ namespace Avis.Web.Data.Migrations
                     b.Navigation("Verlaufseintrag");
                 });
 
+            modelBuilder.Entity("Avis.Web.Domain.Gruppenmitglied", b =>
+                {
+                    b.HasOne("Avis.Web.Domain.Benutzer", null)
+                        .WithMany()
+                        .HasForeignKey("BenutzerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Avis.Web.Domain.Gruppe", null)
+                        .WithMany()
+                        .HasForeignKey("GruppeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Avis.Web.Domain.Inventargeraet", b =>
                 {
                     b.HasOne("Avis.Web.Domain.Kunde", "Kunde")
@@ -647,21 +670,6 @@ namespace Avis.Web.Data.Migrations
                     b.Navigation("Auftrag");
 
                     b.Navigation("Benutzer");
-                });
-
-            modelBuilder.Entity("BenutzerGruppe", b =>
-                {
-                    b.HasOne("Avis.Web.Domain.Gruppe", null)
-                        .WithMany()
-                        .HasForeignKey("GruppenId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Avis.Web.Domain.Benutzer", null)
-                        .WithMany()
-                        .HasForeignKey("MitgliederId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Avis.Web.Domain.Auftrag", b =>
