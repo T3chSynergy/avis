@@ -74,6 +74,19 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
                 ErstelltAm = eintrag.Zeitpunkt,
                 NaechsterVersuchAm = eintrag.Zeitpunkt,
             });
+
+            // Beim Erfassen geht die erste Mail an den Kunden. Wer als
+            // bevorzugter Bearbeiter genannt ist, bekommt eine eigene.
+            if (eintrag.Art == VerlaufArt.Erfasst && eintrag.Auftrag.BevorzugterBearbeiterId is not null)
+            {
+                Benachrichtigungen.Add(new Benachrichtigung
+                {
+                    Verlaufseintrag = eintrag,
+                    AnBevorzugtenBearbeiter = true,
+                    ErstelltAm = eintrag.Zeitpunkt,
+                    NaechsterVersuchAm = eintrag.Zeitpunkt,
+                });
+            }
         }
     }
 

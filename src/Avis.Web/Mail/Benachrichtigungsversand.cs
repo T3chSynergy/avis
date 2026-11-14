@@ -48,7 +48,7 @@ public class Benachrichtigungsversand(
                 continue;
             }
 
-            var (mail, grund) = Mailtexte.Erstellen(benachrichtigung.Verlaufseintrag, o.BasisUrl);
+            var (mail, grund) = Mailtexte.Erstellen(benachrichtigung.Verlaufseintrag, o.BasisUrl, benachrichtigung.AnBevorzugtenBearbeiter);
             if (mail is null)
             {
                 Entfaellt(benachrichtigung, grund);

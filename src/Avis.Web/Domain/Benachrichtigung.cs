@@ -26,6 +26,12 @@ public class Benachrichtigung
     public int VerlaufseintragId { get; set; }
     public Verlaufseintrag Verlaufseintrag { get; set; } = null!;
 
+    /// <summary>
+    /// Der Hinweis an den bevorzugten Bearbeiter eines neu erfassten Auftrags.
+    /// Zum selben Eintrag gibt es dann noch die Mail an den Kunden.
+    /// </summary>
+    public bool AnBevorzugtenBearbeiter { get; set; }
+
     public BenachrichtigungStatus Status { get; set; }
     public DateTime ErstelltAm { get; set; }
     public DateTime NaechsterVersuchAm { get; set; }

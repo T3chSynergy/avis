@@ -16,8 +16,10 @@ public static class Mailtexte
     /// Erstellt die Mail zu einem Verlaufseintrag. Auftrag, Kunde, Gruppe,
     /// Bearbeiter und bevorzugter Bearbeiter müssen geladen sein. Gibt es
     /// nichts zu senden, ist die Mail null und der Grund gesetzt.
+    /// Mit anBevorzugten entsteht statt der Mail, die zur Art des Eintrags
+    /// gehört, der Hinweis an den bevorzugten Bearbeiter.
     /// </summary>
-    public static (Mailinhalt? Mail, string? Grund) Erstellen(Verlaufseintrag eintrag, string? basisUrl)
+    public static (Mailinhalt? Mail, string? Grund) Erstellen(Verlaufseintrag eintrag, string? basisUrl, bool anBevorzugten = false)
     {
         var auftrag = eintrag.Auftrag;
         var basis = string.IsNullOrWhiteSpace(basisUrl) ? null : basisUrl.TrimEnd('/');
@@ -27,6 +29,19 @@ public static class Mailtexte
         var anhaenge = eintrag.Anhaenge.Count == 0
             ? null
             : "Anhänge, abrufbar im Auftrag: " + string.Join(", ", eintrag.Anhaenge.OrderBy(a => a.Id).Select(a => a.Dateiname));
+
+        (Mailinhalt?, string?) FuerDich(string? text)
+        {
+            if (auftrag.Status != AuftragStatus.Offen || auftrag.BevorzugterBearbeiter is null)
+                return (null, "Der Auftrag wurde inzwischen übernommen oder erneut weitergeleitet.");
+            return AnBearbeiter(auftrag.BevorzugterBearbeiter, auftrag, "Für dich",
+                $"der Auftrag {auftrag.Id} „{auftrag.Betreff}“ liegt in der Gruppe {auftrag.Gruppe.Name} und nennt dich als bevorzugten Bearbeiter.",
+                text,
+                fuerBearbeiter);
+        }
+
+        if (anBevorzugten)
+            return FuerDich(null);
 
         switch (eintrag.Art)
         {
@@ -59,12 +74,7 @@ public static class Mailtexte
                     fuerBearbeiter);
 
             case VerlaufArt.Weitergeleitet:
-                if (auftrag.Status != AuftragStatus.Offen || auftrag.BevorzugterBearbeiter is null)
-                    return (null, "Der Auftrag wurde inzwischen übernommen oder erneut weitergeleitet.");
-                return AnBearbeiter(auftrag.BevorzugterBearbeiter, auftrag, "Für dich",
-                    $"der Auftrag {auftrag.Id} „{auftrag.Betreff}“ liegt in der Gruppe {auftrag.Gruppe.Name} und nennt dich als bevorzugten Bearbeiter.",
-                    eintrag.Text,
-                    fuerBearbeiter);
+                return FuerDich(eintrag.Text);
 
             case VerlaufArt.VomKundenWiederGeoeffnet:
                 if (auftrag.Status != AuftragStatus.Offen || auftrag.BevorzugterBearbeiter is null)

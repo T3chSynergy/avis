@@ -63,6 +63,13 @@
                 <label asp-for="Eingabe.GruppeId">Gruppe</label>
                 <select asp-for="Eingabe.GruppeId" asp-items="Model.Gruppen"></select>
             </div>
+            <div class="feld">
+                <label asp-for="Eingabe.BevorzugtId">Bevorzugter Bearbeiter (optional)</label>
+                <select asp-for="Eingabe.BevorzugtId" asp-items="Model.Bearbeiter">
+                    <option value="">–</option>
+                </select>
+                <span asp-validation-for="Eingabe.BevorzugtId" class="feldfehler"></span>
+            </div>
         </div>
     </fieldset>
 

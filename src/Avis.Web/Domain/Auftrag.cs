@@ -136,6 +136,7 @@ public class Auftrag
     /// <summary>1 (höchste) bis 5 (niedrigste), aus Dringlichkeit und Wichtigkeit.</summary>
     public int Prioritaet => 5 - (int)Dringlichkeit - (int)Wichtigkeit;
 
+    /// <summary>Der bevorzugte Bearbeiter ist wie beim Weiterleiten ein Hinweis an die Gruppe.</summary>
     public static Auftrag Erfassen(
         AuftragAngaben angaben,
         Kunde kunde,
@@ -143,8 +144,13 @@ public class Auftrag
         Gruppe gruppe,
         Eingang eingang,
         DateTime jetzt,
-        IReadOnlyList<Anhang>? anhaenge = null)
+        IReadOnlyList<Anhang>? anhaenge = null,
+        Benutzer? bevorzugt = null)
     {
+        var beschreibung = $"Erfasst in Gruppe {gruppe.Name}";
+        if (bevorzugt is not null)
+            beschreibung += $", bevorzugt an {bevorzugt.Name}";
+
         var auftrag = new Auftrag
         {
             Kunde = kunde,
@@ -153,12 +159,14 @@ public class Auftrag
             ErfasstVonId = erfasstVon.Id,
             Gruppe = gruppe,
             GruppeId = gruppe.Id,
+            BevorzugterBearbeiter = bevorzugt,
+            BevorzugterBearbeiterId = bevorzugt?.Id,
             Eingang = eingang,
             ErstelltAm = jetzt,
             GeaendertAm = jetzt,
         };
         auftrag.Setzen(Bereinigt(angaben));
-        auftrag.Eintragen(VerlaufArt.Erfasst, erfasstVon, jetzt, $"Erfasst in Gruppe {gruppe.Name}", anhaenge: anhaenge);
+        auftrag.Eintragen(VerlaufArt.Erfasst, erfasstVon, jetzt, beschreibung, anhaenge: anhaenge);
         return auftrag;
     }
 

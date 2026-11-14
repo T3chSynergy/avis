@@ -30,6 +30,10 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
 
         public Eingang Eingang { get; set; } = Eingang.Telefon;
         public int GruppeId { get; set; }
+
+        /// <summary>Wie beim Weiterleiten: ein Hinweis an die Gruppe, wer den Auftrag übernehmen soll.</summary>
+        public int? BevorzugtId { get; set; }
+
         public bool SofortUebernehmen { get; set; }
     }
 
@@ -47,6 +51,7 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
     public List<IFormFile> Dateien { get; set; } = [];
 
     public List<SelectListItem> Gruppen { get; private set; } = [];
+    public List<SelectListItem> Bearbeiter { get; private set; } = [];
     public AuftragAuswahl Auswahl { get; private set; } = null!;
     public Kundenauswahl Kundenauswahl { get; private set; } = null!;
 
@@ -99,6 +104,18 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         if (gruppe is null)
             ModelState.AddModelError("Eingabe.GruppeId", "Bitte eine Gruppe wählen.");
 
+        // Wer selbst übernimmt, braucht keinen bevorzugten Bearbeiter.
+        Benutzer? bevorzugt = null;
+        if (Eingabe.BevorzugtId is not null && !Eingabe.SofortUebernehmen)
+        {
+            bevorzugt = await db.Benutzer.FirstOrDefaultAsync(b => b.Id == Eingabe.BevorzugtId && b.Aktiv && b.IstBearbeiter);
+            if (bevorzugt is null)
+                ModelState.AddModelError("Eingabe.BevorzugtId", "Der bevorzugte Bearbeiter wurde nicht gefunden.");
+            else if (gruppe is { Gesperrt: true }
+                && !await db.Gruppen.AnyAsync(g => g.Id == gruppe.Id && g.Mitglieder.Any(m => m.Id == bevorzugt.Id)))
+                ModelState.AddModelError("Eingabe.BevorzugtId", $"{bevorzugt.Name} ist kein Mitglied der gesperrten Gruppe {gruppe.Name}.");
+        }
+
         var angaben = await Eingabe.Felder.AlsAngabenAsync(db, ModelState, "Eingabe.Felder");
         if (angaben is null || gruppe is null)
         {
@@ -122,7 +139,7 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         var jetzt = uhr.GetUtcNow().UtcDateTime;
         kunde ??= await KundeFindenOderAnlegenAsync();
 
-        var auftrag = Auftrag.Erfassen(angaben, kunde, ich, gruppe, Eingabe.Eingang, jetzt, anhaenge);
+        var auftrag = Auftrag.Erfassen(angaben, kunde, ich, gruppe, Eingabe.Eingang, jetzt, anhaenge, bevorzugt);
         if (Eingabe.SofortUebernehmen)
             auftrag.Uebernehmen(ich, jetzt);
 
@@ -164,6 +181,11 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
             .Where(g => g.Aktiv)
             .OrderByDescending(g => g.IstEingangsgruppe).ThenBy(g => g.Name)
             .Select(g => new SelectListItem(g.Name, g.Id.ToString(CultureInfo.InvariantCulture)))
+            .ToListAsync();
+        Bearbeiter = await db.Benutzer.AsNoTracking()
+            .Where(b => b.Aktiv && b.IstBearbeiter)
+            .OrderBy(b => b.Name)
+            .Select(b => new SelectListItem(b.Name, b.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         Auswahl = await AuftragAuswahl.LadenAsync(db);
         Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "neu");
