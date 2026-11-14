@@ -63,7 +63,7 @@
         {
             <nav class="bereiche" aria-label="Hauptnavigation">
                 <a asp-page="/Index" aria-current="@Aktuell("/Index")">Meine Aufträge <span class="zahl @(zahlen.Meine > 0 ? "voll" : "")">@zahlen.Meine</span></a>
-                <a asp-page="/Gruppen/Index" aria-current="@Aktuell("/Gruppen/Index")">Gruppen <span class="zahl @(zahlen.Gruppen > 0 ? "voll" : "")">@zahlen.Gruppen</span></a>
+                <a asp-page="/Gruppen/Index" aria-current="@Aktuell("/Gruppen/Index")">Offene Aufträge <span class="zahl @(zahlen.Offen > 0 ? "voll" : "")">@zahlen.Offen</span></a>
                 <a asp-page="/Auftraege/Index" aria-current="@Aktuell("/Auftraege/Index")">Alle Aufträge</a>
                 <span class="trenner" aria-hidden="true"></span>
                 <a asp-page="/Kunden/Index" aria-current="@Aktuell("/Kunden/")">Kunden</a>

@@ -5,12 +5,14 @@
 }
 <h1>Meine Aufträge</h1>
 
+@if (Model.Vorgemerkt > 0)
+{
+    @* Was nur vorgemerkt ist, steht bei den offenen Aufträgen. Von der Startseite aus soll es trotzdem auffallen. *@
+    <p>
+        <span class="hinweis mich">Für dich vorgemerkt</span>
+        <a asp-page="/Gruppen/Index">@(Model.Vorgemerkt == 1 ? "1 offener Auftrag" : $"{Model.Vorgemerkt} offene Aufträge")</a>
+    </p>
+}
+
 <h2>Bei mir in Bearbeitung</h2>
 <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.InBearbeitung, OhneBearbeiter: true)" />
-
-@if (Model.FuerMich.Count > 0)
-{
-    <h2>Für mich vorgemerkt</h2>
-    <p class="erklaerung">Diese Aufträge liegen offen in einer Gruppe und nennen dich als bevorzugten Bearbeiter.</p>
-    <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.FuerMich, OhneBearbeiter: true)" />
-}

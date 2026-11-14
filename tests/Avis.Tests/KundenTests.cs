@@ -277,7 +277,8 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Equal((AuftragStatus.Offen, berndId), (auftrag.Status, auftrag.BevorzugterBearbeiterId!.Value));
         Assert.Equal("Erfasst in Gruppe IT-Hotline, bevorzugt an Bernd Muster", Assert.Single(auftrag.Verlauf).Beschreibung);
         Assert.Contains("bevorzugt an <strong>Bernd Muster</strong>", await anna.GetStringAsync($"/Auftraege/{id}"));
-        Assert.Contains("Plotter für Bernd", await bernd.GetStringAsync("/"));
+        Assert.Contains("Plotter für Bernd", await bernd.GetStringAsync("/Gruppen"));
+        Assert.Contains("Für dich vorgemerkt", await bernd.GetStringAsync("/"));
     }
 
     [Fact]

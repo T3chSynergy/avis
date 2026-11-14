@@ -10,7 +10,12 @@ namespace Avis.Web.Pages;
 public class IndexModel(AvisDb db) : PageModel
 {
     public IReadOnlyList<Auftrag> InBearbeitung { get; private set; } = [];
-    public IReadOnlyList<Auftrag> FuerMich { get; private set; } = [];
+
+    /// <summary>
+    /// Wie viele offene Aufträge mich als bevorzugten Bearbeiter nennen. Sie
+    /// stehen bei den offenen Aufträgen, hier gibt es nur den Verweis dorthin.
+    /// </summary>
+    public int Vorgemerkt { get; private set; }
 
     public async Task<IActionResult> OnGetAsync()
     {
@@ -26,11 +31,7 @@ public class IndexModel(AvisDb db) : PageModel
             .NachPrioritaet()
             .ToListAsync();
 
-        FuerMich = await db.AuftraegeFuer(ich).FuerListe()
-            .Offen()
-            .Where(a => a.BevorzugterBearbeiterId == ich)
-            .NachPrioritaet()
-            .ToListAsync();
+        Vorgemerkt = await db.AuftraegeFuer(ich).Offen().CountAsync(a => a.BevorzugterBearbeiterId == ich);
         return Page();
     }
 }

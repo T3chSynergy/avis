@@ -1,16 +1,47 @@
 @page
 @model Avis.Web.Pages.Gruppen.IndexModel
 @{
-    ViewData["Title"] = "Gruppen";
+    ViewData["Title"] = "Offene Aufträge";
 }
-<h1>Offene Aufträge meiner Gruppen</h1>
+<h1>Offene Aufträge</h1>
+<p class="erklaerung">Noch von niemandem übernommen: was in deinen Gruppen liegt und was dich als bevorzugten Bearbeiter nennt.</p>
 
 @if (Model.Gruppen.Count == 0)
 {
     <p class="leer">Du bist in keiner Gruppe. Unter <a asp-page="/Gruppen/Meine">Meine Gruppen</a> kannst du dich eintragen.</p>
 }
-@foreach (var gruppe in Model.Gruppen)
+@if (Model.Gruppen.Count > 0 || Model.Alle.Count > 0)
 {
-    <h2>@gruppe.Name <span class="anzahl">@Model.Offen[gruppe.Id].Count</span></h2>
-    <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Offen[gruppe.Id], OhneGruppe: true, OhneBearbeiter: true)" />
+    <nav class="filter" aria-label="Ansicht">
+        <a asp-page="Index" aria-current="@Aktuell(IndexModel.NachGruppe)">Nach Gruppe</a>
+        <a asp-page="Index" asp-route-ansicht="@IndexModel.NachPrioritaet" aria-current="@Aktuell(IndexModel.NachPrioritaet)">Nach Priorität</a>
+        <a asp-page="Index" asp-route-ansicht="@IndexModel.NachLiegezeit" aria-current="@Aktuell(IndexModel.NachLiegezeit)">Nach Liegezeit</a>
+    </nav>
+
+    @if (Model.Ansicht == IndexModel.NachGruppe)
+    {
+        @* Was mich als bevorzugten Bearbeiter nennt, steht oben und nur dort, auch wenn es in einer meiner Gruppen liegt. *@
+        if (Model.FuerMich.Count > 0)
+        {
+            <h2>Für mich vorgemerkt <span class="anzahl">@Model.FuerMich.Count</span></h2>
+            <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.FuerMich, OhneBearbeiter: true)" />
+        }
+        foreach (var gruppe in Model.Gruppen)
+        {
+            <h2>@gruppe.Name <span class="anzahl">@Model.Offen[gruppe.Id].Count</span></h2>
+            <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Offen[gruppe.Id], OhneGruppe: true, OhneBearbeiter: true)" />
+        }
+    }
+    else
+    {
+        <p class="erklaerung">
+            Alles zusammen,
+            @(Model.Ansicht == IndexModel.NachLiegezeit ? "die ältesten Aufträge zuerst." : "die höchste Priorität zuerst.")
+        </p>
+        <partial name="_Auftragsliste" model="new Avis.Web.Pages.Shared.Auftragsliste(Model.Alle, OhneBearbeiter: true)" />
+    }
+}
+
+@functions {
+    string? Aktuell(string ansicht) => Model.Ansicht == ansicht ? "page" : null;
 }

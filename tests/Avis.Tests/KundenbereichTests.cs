@@ -147,9 +147,11 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
         Assert.Equal(VerlaufArt.VomKundenWiederGeoeffnet, eintrag.Art);
         Assert.Equal("Vom Kunden wieder geöffnet in Gruppe IT-Hotline, bevorzugt an Anna Beispiel", eintrag.Beschreibung);
 
-        // Die IT sieht ihn wieder in der Gruppe und Anna auf ihrer Startseite.
-        Assert.Contains("Maus springt", await anna.GetStringAsync("/Gruppen"));
-        Assert.Contains("Für mich vorgemerkt", await anna.GetStringAsync("/"));
+        // Die IT sieht ihn wieder bei den offenen Aufträgen, für Anna vorgemerkt, und ihre Startseite weist darauf hin.
+        var offene = await anna.GetStringAsync("/Gruppen");
+        Assert.Contains("Maus springt", offene);
+        Assert.Contains("Für mich vorgemerkt", offene);
+        Assert.Contains("Für dich vorgemerkt", await anna.GetStringAsync("/"));
         Assert.Contains("Die neue Maus springt auch.", await anna.GetStringAsync($"/Auftraege/{id}"));
     }
 

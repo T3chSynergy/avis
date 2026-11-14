@@ -16,7 +16,7 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
   Werten im Verlauf
 - Kunden suchen, anlegen und pflegen, mit den Aufträgen eines Kunden; beim
   Erfassen erscheinen Treffer schon während des Tippens
-- Listen: Meine Aufträge, offene Aufträge meiner Gruppen, alle Aufträge
+- Listen: Meine Aufträge, offene Aufträge (meiner Gruppen und für mich vorgemerkte), alle Aufträge
 - Meine Gruppen: selbst beitreten und austreten
 - Verwaltung für Administratoren: Gruppen mit Mitgliedern, Benutzer und Rollen,
   Kategorien, Standorte
