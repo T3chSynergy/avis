@@ -13,6 +13,10 @@ public static class Startdaten
 
         await db.Database.MigrateAsync();
 
+        var ersteNummer = app.Configuration.GetValue<int>("Auftraege:ErsteNummer");
+        if (await AuftragsnummerAnhebenAsync(db, ersteNummer))
+            app.Logger.LogInformation("Der nächste Auftrag bekommt die Nummer {Nummer} (Auftraege:ErsteNummer).", ersteNummer);
+
         if (!await db.Gruppen.AnyAsync(g => g.IstEingangsgruppe))
         {
             db.Gruppen.Add(new Gruppe { Name = "IT-Hotline", IstEingangsgruppe = true });
@@ -46,6 +50,33 @@ public static class Startdaten
             if (!await db.Benutzer.AnyAsync())
                 await TestdatenAnlegenAsync(db, TimeProvider.System.GetUtcNow().UtcDateTime);
         }
+    }
+
+    /// <summary>
+    /// Sorgt dafür, dass der nächste Auftrag mindestens diese Nummer bekommt,
+    /// um an eine vorhandene Zählung anzuschließen. Wirkt nur nach oben: Ist
+    /// die Zählung schon weiter, bleibt sie, wie sie ist. Gibt zurück, ob sie
+    /// angehoben wurde.
+    ///
+    /// Die Zählung führt SQLite selbst, in der Tabelle sqlite_sequence. Für
+    /// eine andere Datenbank ist diese Stelle neu zu schreiben.
+    /// </summary>
+    public static async Task<bool> AuftragsnummerAnhebenAsync(AvisDb db, int ersteNummer)
+    {
+        if (ersteNummer <= 1)
+            return false;
+        if (!db.Database.IsSqlite())
+            throw new NotSupportedException("Auftraege:ErsteNummer ist nur für SQLite umgesetzt.");
+
+        var tabelle = db.Model.FindEntityType(typeof(Auftrag))!.GetTableName()!;
+        var stand = ersteNummer - 1;
+
+        // Die Zeile für die Tabelle gibt es erst, wenn der erste Auftrag angelegt wurde.
+        var geaendert = await db.Database.ExecuteSqlAsync(
+            $"UPDATE sqlite_sequence SET seq = {stand} WHERE name = {tabelle} AND seq < {stand}");
+        geaendert += await db.Database.ExecuteSqlAsync(
+            $"INSERT INTO sqlite_sequence (name, seq) SELECT {tabelle}, {stand} WHERE NOT EXISTS (SELECT 1 FROM sqlite_sequence WHERE name = {tabelle})");
+        return geaendert > 0;
     }
 
     private static async Task TestdatenAnlegenAsync(AvisDb db, DateTime jetzt)

@@ -117,7 +117,7 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 
 | Feld | Art | Anmerkung |
 |---|---|---|
-| Nummer | automatisch | fortlaufend |
+| Nummer | automatisch | fortlaufend. Die erste Nummer ist einstellbar, um an eine vorhandene Zählung anzuschließen |
 | Betreff | Text | Pflicht |
 | Beschreibung | Text | Pflicht. Wie alle längeren Texte mit Markdown formatierbar |
 | Kunde | Verweis auf Kundentabelle | nicht zwingend der Erfasser |
