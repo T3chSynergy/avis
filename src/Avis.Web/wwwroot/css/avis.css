@@ -204,6 +204,23 @@ form.formular legend { font-weight: 700; padding: 0 6px; }
 .feld.ankreuz { display: flex; align-items: center; gap: 8px; padding-top: 26px; }
 .feld.ankreuz label { margin: 0; font-weight: 400; }
 .feldfehler { color: #a3261a; font-size: 13px; }
+
+/* Stufenwahl: wenige Werte als Schaltflächen nebeneinander. Dahinter stehen
+   Optionsfelder, deshalb geht es auch mit Tab und den Pfeiltasten. */
+.feldtitel { font-weight: 600; margin: 8px 0 3px; }
+.stufen { display: flex; }
+.stufen label { flex: 1 1 0; margin: 0; font-weight: 400; position: relative; }
+.stufen span {
+    display: block; padding: 6px 8px; margin-left: -1px; text-align: center; white-space: nowrap; cursor: pointer;
+    background: #fff; border: 1px solid #7b8794;
+}
+.stufen label:first-child span { margin-left: 0; border-radius: 6px 0 0 6px; }
+.stufen label:last-child span { border-radius: 0 6px 6px 0; }
+.stufen span:hover { background: #eef1f5; }
+.stufen input:checked + span {
+    position: relative; background: var(--akzent); border-color: var(--akzent-dunkel); color: var(--akzent-text); font-weight: 600;
+}
+.stufen input:focus-visible + span { position: relative; z-index: 1; outline: 3px solid #f0a000; outline-offset: 2px; }
 .knoepfe { display: flex; align-items: center; gap: 16px; }
 .knoepfe button { margin-top: 0; }
 

@@ -322,6 +322,55 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Dringlichkeit_und_Wichtigkeit_stehen_als_Stufen_zur_Wahl_und_zeigen_den_geltenden_Wert()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+
+        // Beim Erfassen ist "mittel" vorgewählt.
+        var erfassen = await anna.GetStringAsync("/Auftraege/Neu");
+        Assert.Equal(["Niedrig", "Mittel", "Hoch"], Stufen(erfassen, "Eingabe.Felder.Dringlichkeit").Select(s => s.Wert));
+        Assert.Equal("Mittel", Stufen(erfassen, "Eingabe.Felder.Dringlichkeit").Single(s => s.Gewaehlt).Wert);
+        Assert.Equal("Mittel", Stufen(erfassen, "Eingabe.Felder.Wichtigkeit").Single(s => s.Gewaehlt).Wert);
+
+        // Beim Bearbeiten ist gewählt, was der Auftrag hat, und nach einem Fehler, was eingegeben wurde.
+        var id = await ErfassenAsync(anna, "Stufen zur Wahl");
+        var seite = $"/Auftraege/{id}/Bearbeiten";
+        await anna.UebernehmenAsync(app, id);
+        await anna.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = "2",
+            ["Felder.Betreff"] = "Stufen zur Wahl",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.Dringlichkeit"] = "Hoch",
+            ["Felder.Wichtigkeit"] = "Niedrig",
+        });
+        var bearbeiten = await anna.GetStringAsync(seite);
+        Assert.Equal("Hoch", Stufen(bearbeiten, "Felder.Dringlichkeit").Single(s => s.Gewaehlt).Wert);
+        Assert.Equal("Niedrig", Stufen(bearbeiten, "Felder.Wichtigkeit").Single(s => s.Gewaehlt).Wert);
+
+        var fehler = await anna.PostFormularAsync(seite, seite, new()
+        {
+            ["Version"] = "3",
+            ["Felder.Betreff"] = "",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.Dringlichkeit"] = "Niedrig",
+            ["Felder.Wichtigkeit"] = "Hoch",
+        });
+        var nachFehler = await fehler.Content.ReadAsStringAsync();
+        Assert.Contains("Bitte einen Betreff angeben.", nachFehler);
+        Assert.Equal("Niedrig", Stufen(nachFehler, "Felder.Dringlichkeit").Single(s => s.Gewaehlt).Wert);
+        Assert.Equal("Hoch", Stufen(nachFehler, "Felder.Wichtigkeit").Single(s => s.Gewaehlt).Wert);
+    }
+
+    /// <summary>Die Optionsfelder eines Namens in der Reihenfolge der Seite.</summary>
+    private static List<(string Wert, bool Gewaehlt)> Stufen(string html, string name) =>
+        Regex.Matches(html, "<input[^>]*type=\"radio\"[^>]*>")
+            .Select(m => m.Value)
+            .Where(feld => feld.Contains($"name=\"{name}\""))
+            .Select(feld => (Regex.Match(feld, "value=\"([^\"]*)\"").Groups[1].Value, feld.Contains("checked=")))
+            .ToList();
+
+    [Fact]
     public async Task Wird_einem_der_Auftrag_beim_Schreiben_weggenommen_bleibt_der_Text_zum_Kopieren_stehen()
     {
         var anna = await app.AnmeldenAlsAsync("anna");

@@ -17,21 +17,24 @@
     <span asp-validation-for="Beschreibung" class="feldfehler"></span>
 </div>
 <div class="reihe">
+    @* Drei Stufen nebeneinander statt einer Auswahlliste: Ein Klick genügt, und man sieht, was zur Wahl steht. *@
     <div class="feld">
-        <label asp-for="Dringlichkeit">Dringlichkeit</label>
-        <select asp-for="Dringlichkeit">
-            <option value="@Stufe.Niedrig">niedrig</option>
-            <option value="@Stufe.Mittel">mittel</option>
-            <option value="@Stufe.Hoch">hoch</option>
-        </select>
+        <div class="feldtitel" id="@Html.IdFor(m => m.Dringlichkeit)-titel">Dringlichkeit</div>
+        <div class="stufen" role="radiogroup" aria-labelledby="@Html.IdFor(m => m.Dringlichkeit)-titel">
+            @foreach (var stufe in Enum.GetValues<Stufe>())
+            {
+                <label><input type="radio" asp-for="Dringlichkeit" value="@stufe" id="@Html.IdFor(m => m.Dringlichkeit)-@stufe" class="unsichtbar" /><span>@stufe.Text()</span></label>
+            }
+        </div>
     </div>
     <div class="feld">
-        <label asp-for="Wichtigkeit">Wichtigkeit</label>
-        <select asp-for="Wichtigkeit">
-            <option value="@Stufe.Niedrig">niedrig</option>
-            <option value="@Stufe.Mittel">mittel</option>
-            <option value="@Stufe.Hoch">hoch</option>
-        </select>
+        <div class="feldtitel" id="@Html.IdFor(m => m.Wichtigkeit)-titel">Wichtigkeit</div>
+        <div class="stufen" role="radiogroup" aria-labelledby="@Html.IdFor(m => m.Wichtigkeit)-titel">
+            @foreach (var stufe in Enum.GetValues<Stufe>())
+            {
+                <label><input type="radio" asp-for="Wichtigkeit" value="@stufe" id="@Html.IdFor(m => m.Wichtigkeit)-@stufe" class="unsichtbar" /><span>@stufe.Text()</span></label>
+            }
+        </div>
     </div>
     <div class="feld">
         <label asp-for="KategorieId">Kategorie</label>
