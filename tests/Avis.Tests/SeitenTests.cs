@@ -425,6 +425,46 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Im_Verlauf_stehen_reine_Ereignisse_als_schmale_Zeilen_zwischen_den_Texten()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var id = await ErfassenAsync(anna, "Verlauf mit Texten und Ereignissen");
+        var seite = $"/Auftraege/{id}";
+        var netzwerk = await app.DatenbankAsync(db => db.Gruppen.Where(g => g.Name == "Netzwerk").Select(g => g.Id).FirstAsync());
+        await anna.UebernehmenAsync(app, id);
+        await AktionAsync(anna, seite, "InternerKommentar", 2, new() { ["text"] = "Ein Text, der zählt." });
+        await anna.PostFormularAsync($"{seite}/Bearbeiten", $"{seite}/Bearbeiten", new()
+        {
+            ["Version"] = "2",
+            ["Felder.Betreff"] = "Verlauf mit Texten und Ereignissen",
+            ["Felder.Beschreibung"] = "Für einen Test.",
+            ["Felder.Dringlichkeit"] = "Hoch",
+            ["Felder.Wichtigkeit"] = "Niedrig",
+        });
+        await AktionAsync(anna, seite, "Weiterleiten", 3, new() { ["gruppeId"] = netzwerk.ToString(), ["text"] = "Hinweis an die Gruppe." });
+        await anna.UebernehmenAsync(app, id);
+        await AktionAsync(anna, seite, "Weiterleiten", 5, new() { ["gruppeId"] = netzwerk.ToString() });
+
+        var html = await anna.GetStringAsync(seite);
+        var verlauf = html[html.IndexOf("<ol class=\"verlauf\">", StringComparison.Ordinal)..html.IndexOf("</ol>", StringComparison.Ordinal)];
+        var eintraege = Regex.Matches(verlauf, "<li class=\"([^\"]*)\">(.*?)</li>", RegexOptions.Singleline)
+            .Select(m => (Art: m.Groups[1].Value, Text: Regex.Replace(Regex.Replace(m.Groups[2].Value, "<[^>]+>", " "), "\\s+", " ").Trim()))
+            .ToList();
+
+        // Neueste zuerst. Was Text hat, bleibt ein eigener Kasten; der Rest ist eine Zeile ohne Überschrift und ohne "intern".
+        Assert.Equal(
+            ["ereignis", "ereignis", "intern", "ereignis", "intern", "ereignis", "ereignis"],
+            eintraege.Select(e => e.Art));
+        Assert.StartsWith("Weitergeleitet an Gruppe Netzwerk Anna Beispiel ·", eintraege[0].Text);
+        Assert.StartsWith("Übernommen aus Gruppe Netzwerk Anna Beispiel ·", eintraege[1].Text);
+        Assert.Contains("Hinweis an die Gruppe.", eintraege[2].Text);
+        Assert.StartsWith("Geändert: Dringlichkeit: mittel → hoch; Wichtigkeit: mittel → niedrig Anna Beispiel ·", eintraege[3].Text);
+        Assert.StartsWith("Interner Kommentar Anna Beispiel ·", eintraege[4].Text);
+        Assert.StartsWith("Erfasst in Gruppe IT-Hotline Anna Beispiel ·", eintraege[6].Text);
+        Assert.All(eintraege.Where(e => e.Art == "ereignis"), e => Assert.DoesNotContain("intern", e.Text));
+    }
+
+    [Fact]
     public async Task Den_eigenen_internen_Kommentar_aendert_wer_den_Auftrag_bearbeitet()
     {
         var anna = await app.AnmeldenAlsAsync("anna");

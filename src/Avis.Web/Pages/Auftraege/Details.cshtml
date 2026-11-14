@@ -183,6 +183,16 @@
             <ol class="verlauf">
                 @foreach (var v in a.Verlauf.OrderByDescending(v => v.Zeitpunkt).ThenByDescending(v => v.Id))
                 {
+                    // Ein Eintrag ohne Text und ohne Anhang hält nur fest, was geschehen ist.
+                    // Er steht als schmale Zeile da und drängt sich nicht zwischen die Texte.
+                    if (v.Text is null && v.Anhaenge.Count == 0)
+                    {
+                        <li class="ereignis">
+                            <span class="was">@(v.Beschreibung is null ? v.Art.Text() : v.Art == VerlaufArt.Geaendert ? $"Geändert: {v.Beschreibung.Replace("\n", "; ")}" : v.Beschreibung)</span>
+                            <span>@v.Benutzer.Name · @Ortszeit.Anzeigen(v.Zeitpunkt)</span>
+                        </li>
+                        continue;
+                    }
                     <li class="@(v.FuerKundenSichtbar ? "" : "intern")">
                         <div class="kopfzeile">
                             <strong>@v.Art.Text()</strong>
