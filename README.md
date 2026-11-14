@@ -65,6 +65,10 @@ Ordner nennt auch die Seite der Testanmeldung.
 - Wer nacheinander mehrmals Dateien auswählt, behält die schon gewählten. Unter
   dem Dateifeld steht, was mitgeschickt wird; dort lässt sich jede Datei wieder
   entfernen.
+- Fehlende Pflichtangaben und zu große, leere oder zu viele Dateien meldet schon
+  der Browser, bevor das Formular abgeschickt wird. Kommt es trotzdem mit einem
+  Fehler zurück, sind die gewählten Dateien nicht mehr im Formular; die Meldung
+  nennt sie dann, damit man sie noch einmal anhängt.
 
 ## Texte mit Markdown
 

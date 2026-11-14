@@ -78,6 +78,20 @@ public class Anhangablage(IOptions<AnhangOptionen> optionen, IWebHostEnvironment
 
     public long HoechstgroesseBytes => optionen.Value.HoechstgroesseMb * 1024L * 1024L;
 
+    /// <summary>
+    /// Kommt ein Formular mit einem Fehler zurück, kann der Browser die
+    /// gewählten Dateien nicht wieder eintragen. Der Hinweis nennt sie, damit
+    /// sie nicht unbemerkt fehlen. Null, wenn keine Datei mitkam.
+    /// </summary>
+    public static string? NochmalAnhaengen(IEnumerable<IFormFile>? dateien)
+    {
+        // Ein leeres Dateifeld schickt der Browser als Datei ohne Namen mit.
+        var namen = (dateien ?? []).Where(d => !string.IsNullOrEmpty(d.FileName)).Select(d => Bereinigt(d.FileName)).ToList();
+        return namen.Count == 0
+            ? null
+            : $"Die gewählten Dateien stehen nach einem Fehler nicht mehr im Formular. Bitte noch einmal anhängen: {string.Join(", ", namen)}.";
+    }
+
     /// <summary>Speichert eine einzelne Datei, zum Beispiel den Anhang einer Mail. Die Größe prüft der Aufrufer.</summary>
     public async Task<Anhang> SpeichernAsync(string dateiname, string? inhaltstyp, Stream inhalt, CancellationToken abbruch = default)
     {
