@@ -46,7 +46,6 @@ public class Kundenauswahl
         {
             // Inaktive Kunden stehen nicht zur Wahl. Ist einer schon gewählt, bleibt er unten sichtbar.
             treffer = await db.Kunden.AsNoTracking()
-                .Include(k => k.Standort)
                 .Where(k => k.Aktiv)
                 .Suchen(begriff)
                 .OrderBy(k => k.Name)
@@ -60,7 +59,7 @@ public class Kundenauswahl
         // Der gewählte Kunde bleibt sichtbar, auch wenn die Suche ihn nicht mehr trifft.
         if (gewaehltId is not null && treffer.All(k => k.Id != gewaehltId))
         {
-            var gewaehlt = await db.Kunden.AsNoTracking().Include(k => k.Standort).FirstOrDefaultAsync(k => k.Id == gewaehltId);
+            var gewaehlt = await db.Kunden.AsNoTracking().FirstOrDefaultAsync(k => k.Id == gewaehltId);
             if (gewaehlt is not null)
                 treffer.Insert(0, gewaehlt);
             else

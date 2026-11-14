@@ -19,7 +19,6 @@ public class DetailsModel(AvisDb db) : PageModel
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var geraet = await db.Geraete.AsNoTracking()
-            .Include(g => g.Standort)
             .Include(g => g.Kunde)
             .FirstOrDefaultAsync(g => g.Id == id);
         if (geraet is null)

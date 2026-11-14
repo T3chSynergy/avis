@@ -112,8 +112,9 @@ namespace Avis.Web.Data.Migrations
                     b.Property<DateTime?>("KundeWartetSeit")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("StandortId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Standort")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Suchtext")
                         .IsRequired()
@@ -140,8 +141,6 @@ namespace Avis.Web.Data.Migrations
                     b.HasIndex("KategorieId");
 
                     b.HasIndex("KundeId");
-
-                    b.HasIndex("StandortId");
 
                     b.HasIndex("BearbeiterId", "AbgeschlossenAm");
 
@@ -325,12 +324,9 @@ namespace Avis.Web.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Raum")
+                    b.Property<string>("Standort")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("StandortId")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Suchtext")
                         .IsRequired()
@@ -346,8 +342,6 @@ namespace Avis.Web.Data.Migrations
 
                     b.HasIndex("Nummernschluessel")
                         .IsUnique();
-
-                    b.HasIndex("StandortId");
 
                     b.ToTable("Geraete", (string)null);
                 });
@@ -405,12 +399,9 @@ namespace Avis.Web.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Raum")
+                    b.Property<string>("Standort")
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
-
-                    b.Property<int?>("StandortId")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Suchtext")
                         .IsRequired()
@@ -425,8 +416,6 @@ namespace Avis.Web.Data.Migrations
                     b.HasIndex("Anmeldename");
 
                     b.HasIndex("Email");
-
-                    b.HasIndex("StandortId");
 
                     b.ToTable("Kunden", (string)null);
                 });
@@ -471,25 +460,6 @@ namespace Avis.Web.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Maileingaenge", (string)null);
-                });
-
-            modelBuilder.Entity("Avis.Web.Domain.Standort", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Aktiv")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Standorte", (string)null);
                 });
 
             modelBuilder.Entity("Avis.Web.Domain.Verlaufseintrag", b =>
@@ -582,11 +552,6 @@ namespace Avis.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Avis.Web.Domain.Standort", "Standort")
-                        .WithMany()
-                        .HasForeignKey("StandortId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Bearbeiter");
 
                     b.Navigation("BevorzugterBearbeiter");
@@ -600,8 +565,6 @@ namespace Avis.Web.Data.Migrations
                     b.Navigation("Kategorie");
 
                     b.Navigation("Kunde");
-
-                    b.Navigation("Standort");
                 });
 
             modelBuilder.Entity("Avis.Web.Domain.Benachrichtigung", b =>
@@ -637,24 +600,7 @@ namespace Avis.Web.Data.Migrations
                         .HasForeignKey("KundeId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Avis.Web.Domain.Standort", "Standort")
-                        .WithMany()
-                        .HasForeignKey("StandortId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("Kunde");
-
-                    b.Navigation("Standort");
-                });
-
-            modelBuilder.Entity("Avis.Web.Domain.Kunde", b =>
-                {
-                    b.HasOne("Avis.Web.Domain.Standort", "Standort")
-                        .WithMany()
-                        .HasForeignKey("StandortId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Standort");
                 });
 
             modelBuilder.Entity("Avis.Web.Domain.Maileingang", b =>

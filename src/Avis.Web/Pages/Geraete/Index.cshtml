@@ -7,7 +7,7 @@
 
 <form method="get" class="suchzeile" role="search">
     <div class="feld breit">
-        <label for="q">Suche nach Inventarnummer, Bezeichnung, Typ, Raum oder Nutzer</label>
+        <label for="q">Suche nach Inventarnummer, Bezeichnung, Typ, Standort oder Nutzer</label>
         <input id="q" name="q" value="@Model.Q" type="search" autocomplete="off" />
     </div>
     <button type="submit" class="haupt">Suchen</button>
@@ -29,7 +29,6 @@ else
                 <th scope="col">Inventarnummer</th>
                 <th scope="col">Bezeichnung</th>
                 <th scope="col">Typ</th>
-                <th scope="col">Raum</th>
                 <th scope="col">Standort</th>
                 <th scope="col">Nutzer</th>
                 <th scope="col">Laufende Aufträge</th>
@@ -42,7 +41,6 @@ else
                     <td><a asp-page="Details" asp-route-id="@g.Id">@g.Inventarnummer</a> @if (!g.Aktiv) { <span class="hinweis">ausgemustert</span> }</td>
                     <td>@g.Bezeichnung</td>
                     <td>@g.Typ</td>
-                    <td>@g.Raum</td>
                     <td>@g.Standort</td>
                     <td>@g.Nutzer</td>
                     <td>@g.Laufend</td>

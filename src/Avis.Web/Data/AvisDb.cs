@@ -18,7 +18,6 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     public DbSet<Gruppenmitglied> Gruppenmitglieder => Set<Gruppenmitglied>();
     public DbSet<Kunde> Kunden => Set<Kunde>();
     public DbSet<Kategorie> Kategorien => Set<Kategorie>();
-    public DbSet<Standort> Standorte => Set<Standort>();
     public DbSet<Benachrichtigung> Benachrichtigungen => Set<Benachrichtigung>();
     public DbSet<Inventargeraet> Geraete => Set<Inventargeraet>();
     public DbSet<Anhang> Anhaenge => Set<Anhang>();
@@ -193,7 +192,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.Property(k => k.Telefon).HasMaxLength(50);
             e.Property(k => k.Organisationseinheit).HasMaxLength(200);
             e.Property(k => k.Anmeldename).HasMaxLength(200);
-            e.Property(k => k.Raum).HasMaxLength(100);
+            e.Property(k => k.Standort).HasMaxLength(100);
             e.Property(k => k.ExterneKennung).HasMaxLength(200);
             e.Property(k => k.Quelle).HasMaxLength(100);
             e.HasIndex(k => k.Email);
@@ -206,16 +205,11 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.Property(k => k.Name).HasMaxLength(100);
         });
 
-        model.Entity<Standort>(e =>
-        {
-            e.ToTable("Standorte");
-            e.Property(s => s.Name).HasMaxLength(100);
-        });
-
         model.Entity<Auftrag>(e =>
         {
             e.ToTable("Auftraege");
             e.Property(a => a.Betreff).HasMaxLength(200);
+            e.Property(a => a.Standort).HasMaxLength(100);
             e.Property(a => a.Geraet).HasMaxLength(200);
             e.Property(a => a.Version).IsConcurrencyToken();
             e.HasMany(a => a.Verlauf).WithOne(v => v.Auftrag).HasForeignKey(v => v.AuftragId);
@@ -255,7 +249,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.Property(g => g.Nummernschluessel).HasMaxLength(50);
             e.Property(g => g.Bezeichnung).HasMaxLength(200);
             e.Property(g => g.Typ).HasMaxLength(100);
-            e.Property(g => g.Raum).HasMaxLength(100);
+            e.Property(g => g.Standort).HasMaxLength(100);
             e.Property(g => g.ExterneKennung).HasMaxLength(200);
             e.Property(g => g.Quelle).HasMaxLength(100);
             e.HasIndex(g => g.Nummernschluessel).IsUnique();

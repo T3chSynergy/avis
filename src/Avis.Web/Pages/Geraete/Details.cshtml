@@ -29,10 +29,8 @@
             <dd>@g.Bezeichnung</dd>
             <dt>Typ</dt>
             <dd>@(g.Typ ?? "–")</dd>
-            <dt>Raum</dt>
-            <dd>@(g.Raum ?? "–")</dd>
             <dt>Standort</dt>
-            <dd>@(g.Standort?.Name ?? "–")</dd>
+            <dd>@(g.Standort ?? "–")</dd>
             <dt>Nutzer</dt>
             <dd>
                 @if (g.Kunde is null) {<text>–</text>}
@@ -46,7 +44,11 @@
                 <dd>@g.Quelle</dd>
             }
         </dl>
-        @if (User.IstAdministrator())
+        @if (g.AusQuelle)
+        {
+            <p class="erklaerung">Wird in @g.Quelle gepflegt und beim Abgleich überschrieben. In AVIS lässt sich das Gerät nicht ändern.</p>
+        }
+        else if (User.IstAdministrator())
         {
             <p><a asp-page="Bearbeiten" asp-route-id="@g.Id">Bearbeiten</a></p>
         }

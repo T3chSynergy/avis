@@ -43,7 +43,7 @@ public class KundenabgleichOptionen
 
 /// <summary>Ein Kunde, wie ihn eine externe Quelle kennt.</summary>
 /// <param name="Kennung">Bleibt in der Quelle gleich, auch wenn sich Name oder Anmeldename ändern.</param>
-public record Quellkunde(string Kennung, string? Anmeldename, string? Name, string? Email, string? Telefon, string? Organisationseinheit, string? Raum = null);
+public record Quellkunde(string Kennung, string? Anmeldename, string? Name, string? Email, string? Telefon, string? Organisationseinheit, string? Standort = null);
 
 /// <summary>
 /// Liefert alle Kunden einer externen Quelle. Der Abgleich weiß nicht, woher
@@ -168,7 +168,7 @@ public class Kundenabgleich(
                 email = kunde.Email == email ? null : kunde.Email;
             }
 
-            var vorher = (kunde.Quelle, kunde.ExterneKennung, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.Anmeldename, kunde.Raum);
+            var vorher = (kunde.Quelle, kunde.ExterneKennung, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.Anmeldename, kunde.Standort);
             var warAktiv = kunde.Aktiv;
 
             kunde.Quelle = _quelle.Name;
@@ -177,7 +177,7 @@ public class Kundenabgleich(
             kunde.Email = email;
             kunde.Telefon = Bereinigt(eintrag.Telefon, 50);
             kunde.Organisationseinheit = Bereinigt(eintrag.Organisationseinheit, 200);
-            kunde.Raum = Bereinigt(eintrag.Raum, 100);
+            kunde.Standort = Bereinigt(eintrag.Standort, 100);
             kunde.Anmeldename = anmeldename;
             kunde.Aktiv = true;
 
@@ -185,7 +185,7 @@ public class Kundenabgleich(
                 neu++;
             else if (!warAktiv)
                 reaktiviert++;
-            else if (vorher != (kunde.Quelle, kunde.ExterneKennung, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.Anmeldename, kunde.Raum))
+            else if (vorher != (kunde.Quelle, kunde.ExterneKennung, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.Anmeldename, kunde.Standort))
                 geaendert++;
         }
 

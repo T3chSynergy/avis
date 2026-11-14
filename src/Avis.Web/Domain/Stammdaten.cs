@@ -66,14 +66,11 @@ public class Kunde
     public string? Organisationseinheit { get; set; }
     public string? Anmeldename { get; set; }
 
-    public int? StandortId { get; set; }
-    public Standort? Standort { get; set; }
-
     /// <summary>
     /// Wo der Kunde sitzt, zum Beispiel "A 105" für Raum 105 in Gebäude A.
     /// Freier Text; bei Kunden aus dem Verzeichnis steht er dort.
     /// </summary>
-    public string? Raum { get; set; }
+    public string? Standort { get; set; }
 
     /// <summary>Kennung in einem externen System, für einen späteren Abgleich.</summary>
     public string? ExterneKennung { get; set; }
@@ -107,7 +104,7 @@ public class Kunde
     public void SuchtextAktualisieren()
     {
         var ziffern = new string((Telefon ?? "").Where(char.IsDigit).ToArray());
-        var teile = new[] { Name, Email, Telefon, ziffern, Organisationseinheit, Anmeldename, Raum };
+        var teile = new[] { Name, Email, Telefon, ziffern, Organisationseinheit, Anmeldename, Standort };
         Suchtext = string.Join(' ', teile.Where(t => !string.IsNullOrWhiteSpace(t))).ToLowerInvariant();
     }
 }
@@ -121,13 +118,6 @@ public interface IStammwert
 }
 
 public class Kategorie : IStammwert
-{
-    public int Id { get; set; }
-    public string Name { get; set; } = "";
-    public bool Aktiv { get; set; } = true;
-}
-
-public class Standort : IStammwert
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";

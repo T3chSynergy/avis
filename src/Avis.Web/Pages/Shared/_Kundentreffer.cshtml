@@ -19,8 +19,7 @@ else if (!Model.Gesucht && Model.Treffer.Count == 0)
                 @if (k.Email is not null) {<text> · @k.Email</text>}
                 @if (k.Telefon is not null) {<text> · Tel. @k.Telefon</text>}
                 @if (k.Organisationseinheit is not null) {<text> · @k.Organisationseinheit</text>}
-                @if (k.Raum is not null) {<text> · Raum @k.Raum</text>}
-                @if (k.Standort is not null) {<text> · @k.Standort.Name</text>}
+                @if (k.Standort is not null) {<text> · @k.Standort</text>}
             </label>
         </li>
     }

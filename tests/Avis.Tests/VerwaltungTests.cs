@@ -12,7 +12,6 @@ public class VerwaltungTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     [InlineData("/Verwaltung/Benutzer")]
     [InlineData("/Verwaltung/Benutzer/1")]
     [InlineData("/Verwaltung/Kategorien")]
-    [InlineData("/Verwaltung/Standorte")]
     public async Task Seiten_der_Verwaltung_antworten_fuer_Administratoren(string pfad)
     {
         var anna = await app.AnmeldenAlsAsync("anna");
@@ -135,16 +134,16 @@ public class VerwaltungTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
-    public async Task Ein_doppelter_Standort_wird_abgelehnt()
+    public async Task Eine_doppelte_Kategorie_wird_abgelehnt()
     {
         var anna = await app.AnmeldenAlsAsync("anna");
-        const string seite = "/Verwaltung/Standorte";
+        const string seite = "/Verwaltung/Kategorien";
 
-        var antwort = await anna.PostFormularAsync(seite, $"{seite}?handler=Anlegen", new() { ["name"] = "haupthaus" });
+        var antwort = await anna.PostFormularAsync(seite, $"{seite}?handler=Anlegen", new() { ["name"] = "beschaffung" });
 
         Assert.Contains("gibt es schon", await antwort.Content.ReadAsStringAsync());
-        var standorte = await app.DatenbankAsync(db => db.Standorte.Select(s => s.Name).ToListAsync());
-        Assert.Single(standorte, n => n.Equals("haupthaus", StringComparison.OrdinalIgnoreCase));
+        var kategorien = await app.DatenbankAsync(db => db.Kategorien.Select(k => k.Name).ToListAsync());
+        Assert.Single(kategorien, n => n.Equals("beschaffung", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

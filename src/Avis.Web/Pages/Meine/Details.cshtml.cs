@@ -49,7 +49,6 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
             .AsNoTracking()
             .AsSplitQuery()
             .Include(a => a.Bearbeiter)
-            .Include(a => a.Standort)
             .Include(a => a.Verlauf).ThenInclude(v => v.Benutzer)
             .Include(a => a.Verlauf).ThenInclude(v => v.Anhaenge)
             .FirstOrDefaultAsync(a => a.Id == id && a.KundeId == kunde.Id);

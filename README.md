@@ -8,8 +8,7 @@ Was AVIS können soll und warum, steht im [Konzept](docs/konzept.md).
 
 Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 
-- Datenmodell mit Aufträgen, Verlauf, Gruppen, Benutzern, Kunden, Kategorien und
-  Standorten
+- Datenmodell mit Aufträgen, Verlauf, Gruppen, Benutzern, Kunden und Kategorien
 - Aufträge erfassen, übernehmen, weiterleiten, intern kommentieren, Nachricht
   an den Kunden, abschließen und wieder öffnen
 - Angaben und Kunde eines Auftrags nachträglich ändern, mit den bisherigen
@@ -20,7 +19,7 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 - Meine Gruppen: selbst beitreten und austreten, je Gruppe eine Mail bei
   neuen Aufträgen ein- und ausschalten
 - Verwaltung für Administratoren: Gruppen mit Mitgliedern, Benutzer und Rollen,
-  Kategorien, Standorte
+  Kategorien
 - Seiten für Kunden: eigenen Auftrag stellen, eigene Aufträge mit Stand und
   Nachrichten sehen, der IT antworten
 - Mails über SMTP: an den Kunden bei Erfassung, Nachricht und Abschluss, an
@@ -294,9 +293,9 @@ Mit `Kundenabgleich:Suchbasis` lässt sich die Suche auf einen Teil des
 Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
 
 - Das Verzeichnis gewinnt: Name, E-Mail, Telefon, Organisationseinheit und
-  Raum werden überschrieben und lassen sich in AVIS nicht ändern. Der Raum
-  ist das Attribut `physicalDeliveryOfficeName` (in der Verwaltung des
-  Verzeichnisses „Büro“), zum Beispiel `A 105`.
+  Standort werden überschrieben und lassen sich in AVIS nicht ändern. Der
+  Standort ist das Attribut `physicalDeliveryOfficeName` (in der Verwaltung
+  des Verzeichnisses „Büro“), zum Beispiel `A 105`.
 - Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
   wiedererkannt und übernommen.
 - Auf wen der Filter nicht mehr passt oder wessen Konto deaktiviert ist, der
@@ -325,11 +324,11 @@ Lauf getan hat, und er lässt sich dort sofort anstoßen.
 | Asset Tag | Inventarnummer |
 | Name des Assets, sonst der Name des Modells | Bezeichnung |
 | Kategorie | Typ |
-| Standort, sonst der Standardstandort | Raum |
+| Standort, sonst der Standardstandort | Standort |
 | Mailadresse des Benutzers, an den das Asset ausgegeben ist | Nutzer: der Kunde mit dieser Adresse |
 
-- Snipe-IT gewinnt: Diese Angaben werden überschrieben und lassen sich in AVIS
-  nicht ändern. Nur der Standort eines Geräts gehört weiter AVIS.
+- Snipe-IT gewinnt: Diese Angaben werden überschrieben. Ein Gerät aus
+  Snipe-IT lässt sich in AVIS nicht ändern.
 - Ein Gerät, das schon mit derselben Inventarnummer in AVIS steht, wird
   übernommen, nicht verdoppelt.
 - Der Nutzer wird nur gesetzt, wenn es in AVIS einen Kunden mit der
@@ -354,13 +353,18 @@ Die Abfrage ist nach dem Quelltext von Snipe-IT geschrieben und mit
 nachgestellten Antworten geprüft, aber noch nicht an einer echten Installation
 erprobt.
 
-## Raum
+## Standort
 
-Kunden und Geräte tragen einen Raum, zum Beispiel `A 105`. Bei abgeglichenen
-Einträgen kommt er aus der Quelle, bei den übrigen wird er von Hand
-eingetragen. Er steht in den Listen, am Auftrag beim Kunden und wird von der
-Suche nach Kunden und Geräten gefunden. Der Standort bleibt daneben die
-Auswahlliste, die der Administrator pflegt.
+Kunden, Geräte und Aufträge tragen einen Standort als freien Text, zum
+Beispiel den Raum `A 105`. Eine Liste, aus der man wählt, gibt es nicht.
+
+- Bei abgeglichenen Kunden und Geräten kommt der Standort aus der Quelle, bei
+  den übrigen wird er von Hand eingetragen. Die Suche nach Kunden und Geräten
+  findet ihn.
+- Ein Auftrag bekommt beim Erfassen den Standort des Kunden, wenn keiner
+  angegeben ist. Das gilt für alle Wege: am Telefon erfasst, vom Kunden
+  gestellt oder per Mail eingegangen. Am Auftrag lässt er sich ändern; zieht
+  der Kunde später um, bleibt der Auftrag, wie er ist.
 
 ## Anhänge
 

@@ -12,7 +12,7 @@ public class IndexModel(AvisDb db) : PageModel
 {
     public const int Hoechstzahl = 50;
 
-    public record Zeile(int Id, string Name, string? Email, string? Telefon, string? Organisationseinheit, string? Raum, string? Standort, int Laufend, bool Aktiv);
+    public record Zeile(int Id, string Name, string? Email, string? Telefon, string? Organisationseinheit, string? Standort, int Laufend, bool Aktiv);
 
     [BindProperty(SupportsGet = true)]
     public string? Q { get; set; }
@@ -33,8 +33,7 @@ public class IndexModel(AvisDb db) : PageModel
                 k.Email,
                 k.Telefon,
                 k.Organisationseinheit,
-                k.Raum,
-                k.Standort!.Name,
+                k.Standort,
                 sichtbar.Count(a => a.KundeId == k.Id && a.AbgeschlossenAm == null),
                 k.Aktiv))
             .ToListAsync();
@@ -46,7 +45,7 @@ public class IndexModel(AvisDb db) : PageModel
     public async Task<IActionResult> OnPostAsync(string? name, string? email, string? telefon)
     {
         var kunde = new Kunde();
-        var fehler = await KundeRegeln.UebernehmenAsync(db, kunde, name, email, telefon, organisationseinheit: null, standortId: null);
+        var fehler = await KundeRegeln.UebernehmenAsync(db, kunde, name, email, telefon, organisationseinheit: null, standort: null);
         if (fehler is not null)
         {
             TempData["Fehler"] = fehler;
@@ -67,11 +66,11 @@ internal static class KundeRegeln
     /// Fehler die Meldung zurück und ändert dann nichts.
     /// </summary>
     public static async Task<string?> UebernehmenAsync(
-        AvisDb db, Kunde kunde, string? name, string? email, string? telefon, string? organisationseinheit, int? standortId, string? raum = null)
+        AvisDb db, Kunde kunde, string? name, string? email, string? telefon, string? organisationseinheit, string? standort)
     {
-        var zimmer = Bereinigen(raum);
-        if (zimmer?.Length > 100)
-            return "Der Raum darf höchstens 100 Zeichen lang sein.";
+        var ort = Bereinigen(standort);
+        if (ort?.Length > 100)
+            return "Der Standort darf höchstens 100 Zeichen lang sein.";
         var bereinigterName = name?.Trim() ?? "";
         var adresse = Bereinigen(email)?.ToLowerInvariant();
         var nummer = Bereinigen(telefon);
@@ -94,16 +93,11 @@ internal static class KundeRegeln
                 return $"Die E-Mail-Adresse gehört schon zum Kunden {anderer.Name}.";
         }
 
-        if (standortId is not null && standortId != kunde.StandortId
-            && !await db.Standorte.AnyAsync(s => s.Id == standortId && s.Aktiv))
-            return "Dieser Standort steht nicht zur Auswahl.";
-
         kunde.Name = bereinigterName;
         kunde.Email = adresse;
         kunde.Telefon = nummer;
         kunde.Organisationseinheit = einheit;
-        kunde.Raum = zimmer;
-        kunde.StandortId = standortId;
+        kunde.Standort = ort;
         return null;
     }
 

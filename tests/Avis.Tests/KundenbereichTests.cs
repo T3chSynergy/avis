@@ -39,9 +39,10 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
     public async Task Ein_Kunde_stellt_einen_Auftrag_und_er_liegt_bei_der_Hotline()
     {
         var dieter = await app.AnmeldenAlsAsync("dieter");
-        var standort = await app.DatenbankAsync(db => db.Standorte.Where(s => s.Name == "Haupthaus").Select(s => s.Id).FirstAsync());
 
-        var id = await StellenAsync(dieter, "Beamer zeigt kein Bild", new() { ["Eingabe.StandortId"] = standort.ToString(), ["Eingabe.Geraet"] = "Beamer Raum 1.01" });
+        // Das Formular schlägt den Standort des Kunden vor; er nennt einen anderen.
+        Assert.Contains("value=\"A 204\"", await dieter.GetStringAsync("/Meine/Neu"));
+        var id = await StellenAsync(dieter, "Beamer zeigt kein Bild", new() { ["Eingabe.Standort"] = " B 001 ", ["Eingabe.Geraet"] = "Beamer Raum 1.01" });
 
         var auftrag = await LadenAsync(id);
         Assert.Equal(AuftragStatus.Offen, auftrag.Status);
@@ -49,7 +50,7 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
         Assert.Equal(Eingang.Web, auftrag.Eingang);
         Assert.Equal("Dieter Kunde", auftrag.Kunde.Name);
         Assert.Equal("Beamer Raum 1.01", auftrag.Geraet);
-        Assert.Equal(standort, auftrag.StandortId);
+        Assert.Equal("B 001", auftrag.Standort);
 
         var anna = await app.AnmeldenAlsAsync("anna");
         Assert.Contains("Beamer zeigt kein Bild", await anna.GetStringAsync("/Gruppen"));

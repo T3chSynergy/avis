@@ -199,7 +199,7 @@ public class GeraeteTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var vorschlaege = await anna.GetStringAsync("/Geraete/Vorschlaege?q=nb-10");
 
         Assert.DoesNotContain("<html", vorschlaege);
-        Assert.Contains("<option value=\"NB-1017\">Notebook 14 Zoll · Haupthaus · Dieter Kunde</option>", vorschlaege);
+        Assert.Contains("<option value=\"NB-1017\">Notebook 14 Zoll · A 204 · Dieter Kunde</option>", vorschlaege);
         Assert.Contains("NB-1018", vorschlaege);
         Assert.Equal("", (await anna.GetStringAsync("/Geraete/Vorschlaege?q=n")).Trim());
     }

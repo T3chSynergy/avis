@@ -22,11 +22,9 @@
         </div>
         <div class="reihe">
             <div class="feld">
-                <label asp-for="Eingabe.StandortId">Standort</label>
-                <select asp-for="Eingabe.StandortId" asp-items="Model.Standorte">
-                    <option value="">–</option>
-                </select>
-                <span asp-validation-for="Eingabe.StandortId" class="feldfehler"></span>
+                <label asp-for="Eingabe.Standort">Standort, zum Beispiel der Raum (optional)</label>
+                <input asp-for="Eingabe.Standort" autocomplete="off" />
+                <span asp-validation-for="Eingabe.Standort" class="feldfehler"></span>
             </div>
             <div class="feld">
                 <label asp-for="Eingabe.Geraet">Betroffenes Gerät (optional)</label>

@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.ComponentModel.DataAnnotations;
 using Avis.Web.Anhaenge;
 using Avis.Web.Anmeldung;
@@ -6,7 +5,6 @@ using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Meine;
@@ -26,7 +24,8 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
         [Required(ErrorMessage = "Bitte eine Beschreibung angeben.")]
         public string? Beschreibung { get; set; }
 
-        public int? StandortId { get; set; }
+        [StringLength(100, ErrorMessage = "Höchstens 100 Zeichen.")]
+        public string? Standort { get; set; }
 
         [StringLength(200, ErrorMessage = "Höchstens 200 Zeichen.")]
         public string? Geraet { get; set; }
@@ -38,30 +37,18 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
     [BindProperty]
     public List<IFormFile> Dateien { get; set; } = [];
 
-    public List<SelectListItem> Standorte { get; private set; } = [];
     public string? Email { get; private set; }
 
     public async Task OnGetAsync()
     {
         var kunde = await zuordnung.FuerBenutzerAsync(User.BenutzerId());
-        Eingabe.StandortId = await db.Standorte
-            .Where(s => s.Id == kunde.StandortId && s.Aktiv)
-            .Select(s => (int?)s.Id)
-            .FirstOrDefaultAsync();
-        await SeiteVorbereitenAsync(kunde);
+        Eingabe.Standort = kunde.Standort;
+        Email = kunde.Email;
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
         var kunde = await zuordnung.FuerBenutzerAsync(User.BenutzerId());
-
-        Standort? standort = null;
-        if (Eingabe.StandortId is not null)
-        {
-            standort = await db.Standorte.FirstOrDefaultAsync(s => s.Id == Eingabe.StandortId && s.Aktiv);
-            if (standort is null)
-                ModelState.AddModelError("Eingabe.StandortId", "Dieser Standort steht nicht zur Auswahl.");
-        }
 
         var eingang = await db.Gruppen.FirstOrDefaultAsync(g => g.IstEingangsgruppe && g.Aktiv);
         if (eingang is null)
@@ -70,7 +57,7 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
         if (!ModelState.IsValid || eingang is null)
         {
             DateienVerloren();
-            await SeiteVorbereitenAsync(kunde);
+            Email = kunde.Email;
             return Page();
         }
 
@@ -82,13 +69,13 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
         catch (AuftragException ex)
         {
             DateienVerloren(ex.Message);
-            await SeiteVorbereitenAsync(kunde);
+            Email = kunde.Email;
             return Page();
         }
 
         var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
         var auftrag = Auftrag.Erfassen(
-            new AuftragAngaben(Eingabe.Betreff!, Eingabe.Beschreibung!) { Standort = standort, Geraet = Eingabe.Geraet },
+            new AuftragAngaben(Eingabe.Betreff!, Eingabe.Beschreibung!) { Standort = Eingabe.Standort, Geraet = Eingabe.Geraet },
             kunde,
             ich,
             eingang,
@@ -109,16 +96,6 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
 
         TempData["Meldung"] = $"Der Auftrag {auftrag.Id} ist bei der IT-Hotline eingegangen.";
         return RedirectToPage("Details", new { id = auftrag.Id });
-    }
-
-    private async Task SeiteVorbereitenAsync(Kunde kunde)
-    {
-        Email = kunde.Email;
-        Standorte = await db.Standorte.AsNoTracking()
-            .Where(s => s.Aktiv)
-            .OrderBy(s => s.Name)
-            .Select(s => new SelectListItem(s.Name, s.Id.ToString(CultureInfo.InvariantCulture)))
-            .ToListAsync();
     }
 
     /// <summary>

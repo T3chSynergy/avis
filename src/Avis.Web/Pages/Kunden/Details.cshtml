@@ -43,7 +43,7 @@
         <h3>Angaben</h3>
         @if (k.AusQuelle)
         {
-            <p class="erklaerung">Stammt aus @k.Quelle. Name, E-Mail, Telefon, Organisationseinheit und Raum werden dort gepflegt und beim Abgleich überschrieben.</p>
+            <p class="erklaerung">Stammt aus @k.Quelle. Name, E-Mail, Telefon, Organisationseinheit und Standort werden dort gepflegt und beim Abgleich überschrieben. In AVIS lassen sie sich nicht ändern.</p>
         }
         <label for="name">Name</label>
         <input id="name" name="name" value="@k.Name" maxlength="200" required autocomplete="off" disabled="@k.AusQuelle" />
@@ -53,17 +53,16 @@
         <input id="telefon" name="telefon" value="@k.Telefon" maxlength="50" autocomplete="off" disabled="@k.AusQuelle" />
         <label for="organisationseinheit">Organisationseinheit</label>
         <input id="organisationseinheit" name="organisationseinheit" value="@k.Organisationseinheit" maxlength="200" autocomplete="off" disabled="@k.AusQuelle" />
-        <label for="raum">Raum</label>
-        <input id="raum" name="raum" value="@k.Raum" maxlength="100" autocomplete="off" disabled="@k.AusQuelle" />
-        <label for="standortId">Standort</label>
-        <select id="standortId" name="standortId" asp-items="Model.Standorte">
-            <option value="">–</option>
-        </select>
+        <label for="standort">Standort, zum Beispiel der Raum</label>
+        <input id="standort" name="standort" value="@k.Standort" maxlength="100" autocomplete="off" disabled="@k.AusQuelle" />
         @if (k.Anmeldename is not null)
         {
             <p class="erklaerung">Anmeldename: @k.Anmeldename</p>
         }
-        <button type="submit" class="haupt">Speichern</button>
+        @if (!k.AusQuelle)
+        {
+            <button type="submit" class="haupt">Speichern</button>
+        }
     </form>
 
     @if (!k.AusQuelle)

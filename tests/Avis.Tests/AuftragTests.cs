@@ -37,6 +37,19 @@ public class AuftragTests
     }
 
     [Fact]
+    public void Ohne_Angabe_gilt_beim_Erfassen_der_Standort_des_Kunden()
+    {
+        var mitStandort = new Kunde { Id = 2, Name = "Eva Test", Standort = "C 011" };
+        Auftrag Fuer(Kunde kunde, string? standort) =>
+            Auftrag.Erfassen(Angaben with { Standort = standort }, kunde, _anna, _hotline, Eingang.EMail, Jetzt);
+
+        Assert.Equal("C 011", Fuer(mitStandort, null).Standort);
+        Assert.Equal("C 011", Fuer(mitStandort, "  ").Standort);
+        Assert.Equal("B 001", Fuer(mitStandort, " B 001 ").Standort);
+        Assert.Null(Fuer(_kunde, null).Standort);
+    }
+
+    [Fact]
     public void Beim_Erfassen_laesst_sich_ein_bevorzugter_Bearbeiter_nennen()
     {
         var auftrag = Auftrag.Erfassen(Angaben, _kunde, _anna, _netzwerk, Eingang.Telefon, Jetzt, bevorzugt: _bernd);
@@ -371,7 +384,6 @@ public class AuftragTests
     {
         var stoerung = new Kategorie { Id = 1, Name = "Störung" };
         var anfrage = new Kategorie { Id = 2, Name = "Anfrage" };
-        var haupthaus = new Standort { Id = 1, Name = "Haupthaus" };
         var auftrag = Neu(Angaben with { Kategorie = stoerung, Geraet = "PC-0815" });
         auftrag.Uebernehmen(_bernd, Jetzt);
 
@@ -379,7 +391,7 @@ public class AuftragTests
             new("Drucker im Flur defekt", "Druckt nicht.")
             {
                 Kategorie = anfrage,
-                Standort = haupthaus,
+                Standort = " A 105 ",
                 Dringlichkeit = Stufe.Hoch,
                 Termin = new DateOnly(2026, 11, 20),
             },
@@ -399,7 +411,7 @@ public class AuftragTests
             [
                 "Betreff: Drucker defekt → Drucker im Flur defekt",
                 "Kategorie: Störung → Anfrage",
-                "Standort: – → Haupthaus",
+                "Standort: – → A 105",
                 "Gerät: PC-0815 → –",
                 "Dringlichkeit: mittel → hoch",
                 "Termin: – → 20.11.2026",

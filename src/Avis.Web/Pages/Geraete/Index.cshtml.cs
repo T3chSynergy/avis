@@ -10,7 +10,7 @@ public class IndexModel(AvisDb db) : PageModel
 {
     public const int Hoechstzahl = 100;
 
-    public record Zeile(int Id, string Inventarnummer, string Bezeichnung, string? Typ, string? Raum, string? Standort, string? Nutzer, bool Aktiv, int Laufend);
+    public record Zeile(int Id, string Inventarnummer, string Bezeichnung, string? Typ, string? Standort, string? Nutzer, bool Aktiv, int Laufend);
 
     [BindProperty(SupportsGet = true)]
     public string? Q { get; set; }
@@ -30,8 +30,7 @@ public class IndexModel(AvisDb db) : PageModel
                 g.Inventarnummer,
                 g.Bezeichnung,
                 g.Typ,
-                g.Raum,
-                g.Standort!.Name,
+                g.Standort,
                 g.Kunde!.Name,
                 g.Aktiv,
                 sichtbar.Count(a => a.InventargeraetId == g.Id && a.AbgeschlossenAm == null)))

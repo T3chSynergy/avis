@@ -1,10 +1,8 @@
-using System.Globalization;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Kunden;
@@ -17,7 +15,6 @@ public class DetailsModel(AvisDb db) : PageModel
     public IReadOnlyList<Auftrag> Laufend { get; private set; } = [];
     public IReadOnlyList<Auftrag> Abgeschlossen { get; private set; } = [];
     public bool Gekuerzt { get; private set; }
-    public List<SelectListItem> Standorte { get; private set; } = [];
     public IReadOnlyList<Inventargeraet> Geraete { get; private set; } = [];
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -44,25 +41,19 @@ public class DetailsModel(AvisDb db) : PageModel
             .Where(g => g.KundeId == id && g.Aktiv)
             .OrderBy(g => g.Inventarnummer)
             .ToListAsync();
-
-        Standorte = await db.Standorte.AsNoTracking()
-            .Where(s => s.Aktiv || s.Id == kunde.StandortId)
-            .OrderBy(s => s.Name)
-            .Select(s => new SelectListItem(s.Name, s.Id.ToString(CultureInfo.InvariantCulture), s.Id == kunde.StandortId))
-            .ToListAsync();
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(int id, string? name, string? email, string? telefon, string? organisationseinheit, int? standortId, string? raum)
+    public async Task<IActionResult> OnPostAsync(int id, string? name, string? email, string? telefon, string? organisationseinheit, string? standort)
     {
         var kunde = await db.Kunden.FirstOrDefaultAsync(k => k.Id == id);
         if (kunde is null)
             return NotFound();
 
-        // Was aus einer externen Quelle stammt, wird dort gepflegt. Hier ändert sich dann nur der Standort.
+        // Was aus einer externen Quelle stammt, wird dort gepflegt, auch der Standort.
         var fehler = kunde.AusQuelle
-            ? await KundeRegeln.UebernehmenAsync(db, kunde, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, standortId, kunde.Raum)
-            : await KundeRegeln.UebernehmenAsync(db, kunde, name, email, telefon, organisationseinheit, standortId, raum);
+            ? $"{kunde.Name} stammt aus {kunde.Quelle}. Die Angaben werden dort gepflegt und lassen sich in AVIS nicht ändern."
+            : await KundeRegeln.UebernehmenAsync(db, kunde, name, email, telefon, organisationseinheit, standort);
         if (fehler is not null)
         {
             TempData["Fehler"] = fehler;

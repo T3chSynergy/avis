@@ -11,64 +11,42 @@
     <button type="submit" class="unsichtbar" tabindex="-1" aria-hidden="true">Speichern</button>
     <div asp-validation-summary="ModelOnly" class="meldung fehler"></div>
 
-    @{ var gesperrt = Model.Quelle is not null; }
     <fieldset>
         <legend>Gerät</legend>
-        @if (gesperrt)
-        {
-            <p class="erklaerung">Stammt aus @Model.Quelle. Inventarnummer, Bezeichnung, Typ, Raum, Nutzer und ob das Gerät in Betrieb ist, werden dort gepflegt und beim Abgleich überschrieben. Hier lässt sich nur der Standort ändern.</p>
-        }
         <div class="reihe">
             <div class="feld">
                 <label asp-for="Eingabe.Inventarnummer">Inventarnummer</label>
-                <input asp-for="Eingabe.Inventarnummer" autocomplete="off" disabled="@gesperrt" />
+                <input asp-for="Eingabe.Inventarnummer" autocomplete="off" />
                 <span asp-validation-for="Eingabe.Inventarnummer" class="feldfehler"></span>
             </div>
             <div class="feld">
                 <label asp-for="Eingabe.Bezeichnung">Bezeichnung</label>
-                <input asp-for="Eingabe.Bezeichnung" autocomplete="off" disabled="@gesperrt" />
+                <input asp-for="Eingabe.Bezeichnung" autocomplete="off" />
                 <span asp-validation-for="Eingabe.Bezeichnung" class="feldfehler"></span>
             </div>
         </div>
         <div class="reihe">
             <div class="feld">
                 <label asp-for="Eingabe.Typ">Typ (optional)</label>
-                <input asp-for="Eingabe.Typ" autocomplete="off" disabled="@gesperrt" />
+                <input asp-for="Eingabe.Typ" autocomplete="off" />
                 <span asp-validation-for="Eingabe.Typ" class="feldfehler"></span>
             </div>
             <div class="feld">
-                <label asp-for="Eingabe.Raum">Raum (optional)</label>
-                <input asp-for="Eingabe.Raum" autocomplete="off" disabled="@gesperrt" />
-                <span asp-validation-for="Eingabe.Raum" class="feldfehler"></span>
-            </div>
-            <div class="feld">
-                <label asp-for="Eingabe.StandortId">Standort</label>
-                <select asp-for="Eingabe.StandortId" asp-items="Model.Standorte">
-                    <option value="">–</option>
-                </select>
-                <span asp-validation-for="Eingabe.StandortId" class="feldfehler"></span>
+                <label asp-for="Eingabe.Standort">Standort, zum Beispiel der Raum (optional)</label>
+                <input asp-for="Eingabe.Standort" autocomplete="off" />
+                <span asp-validation-for="Eingabe.Standort" class="feldfehler"></span>
             </div>
         </div>
         <div class="ankreuz">
-            <input asp-for="Eingabe.Aktiv" disabled="@gesperrt" />
+            <input asp-for="Eingabe.Aktiv" />
             <label asp-for="Eingabe.Aktiv">In Betrieb. Ausgemusterte Geräte lassen sich nicht mehr neu verknüpfen.</label>
         </div>
     </fieldset>
 
-    @if (gesperrt)
-    {
-        <fieldset>
-            <legend>Nutzer</legend>
-            <p class="erklaerung">@(Model.Nutzer ?? "Kein Kunde") – aus @Model.Quelle.</p>
-        </fieldset>
-    }
-    else
-    {
-        <fieldset class="kunde">
-            <legend>Nutzer</legend>
-            <partial name="_Kundenauswahl" model="Model.Kundenauswahl" />
-        </fieldset>
-    }
+    <fieldset class="kunde">
+        <legend>Nutzer</legend>
+        <partial name="_Kundenauswahl" model="Model.Kundenauswahl" />
+    </fieldset>
 
     <div class="knoepfe">
         <button type="submit" class="haupt">Speichern</button>
