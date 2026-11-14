@@ -1,9 +1,10 @@
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-namespace Avis.Web.Kundenabgleich;
+namespace Avis.Web.Abgleich;
 
 public class KundenabgleichOptionen
 {
@@ -42,7 +43,7 @@ public class KundenabgleichOptionen
 
 /// <summary>Ein Kunde, wie ihn eine externe Quelle kennt.</summary>
 /// <param name="Kennung">Bleibt in der Quelle gleich, auch wenn sich Name oder Anmeldename ändern.</param>
-public record Quellkunde(string Kennung, string? Anmeldename, string? Name, string? Email, string? Telefon, string? Organisationseinheit);
+public record Quellkunde(string Kennung, string? Anmeldename, string? Name, string? Email, string? Telefon, string? Organisationseinheit, string? Raum = null);
 
 /// <summary>
 /// Liefert alle Kunden einer externen Quelle. Der Abgleich weiß nicht, woher
@@ -69,10 +70,11 @@ public record Abgleichergebnis(
     IReadOnlyList<string>? Hinweise = null,
     string? Fehler = null);
 
-/// <summary>Merkt sich das Ergebnis des letzten Abgleichs seit dem Start, für die Verwaltung.</summary>
+/// <summary>Merkt sich die Ergebnisse der letzten Abgleiche seit dem Start, für die Verwaltung.</summary>
 public class Abgleichstand
 {
-    public Abgleichergebnis? Letztes { get; set; }
+    public Abgleichergebnis? Kunden { get; set; }
+    public Abgleichergebnis? Geraete { get; set; }
 }
 
 /// <summary>
@@ -95,7 +97,7 @@ public class Kundenabgleich(
     public async Task<Abgleichergebnis> AusfuehrenAsync(CancellationToken abbruch = default)
     {
         var ergebnis = await AbgleichenAsync(abbruch);
-        stand.Letztes = ergebnis;
+        stand.Kunden = ergebnis;
         if (ergebnis.Fehler is not null)
             log.LogError("Der Kundenabgleich ist gescheitert, es wurde nichts geändert: {Fehler}", ergebnis.Fehler);
         else
@@ -166,7 +168,7 @@ public class Kundenabgleich(
                 email = kunde.Email == email ? null : kunde.Email;
             }
 
-            var vorher = (kunde.Quelle, kunde.ExterneKennung, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.Anmeldename);
+            var vorher = (kunde.Quelle, kunde.ExterneKennung, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.Anmeldename, kunde.Raum);
             var warAktiv = kunde.Aktiv;
 
             kunde.Quelle = _quelle.Name;
@@ -175,6 +177,7 @@ public class Kundenabgleich(
             kunde.Email = email;
             kunde.Telefon = Bereinigt(eintrag.Telefon, 50);
             kunde.Organisationseinheit = Bereinigt(eintrag.Organisationseinheit, 200);
+            kunde.Raum = Bereinigt(eintrag.Raum, 100);
             kunde.Anmeldename = anmeldename;
             kunde.Aktiv = true;
 
@@ -182,7 +185,7 @@ public class Kundenabgleich(
                 neu++;
             else if (!warAktiv)
                 reaktiviert++;
-            else if (vorher != (kunde.Quelle, kunde.ExterneKennung, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.Anmeldename))
+            else if (vorher != (kunde.Quelle, kunde.ExterneKennung, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, kunde.Anmeldename, kunde.Raum))
                 geaendert++;
         }
 
@@ -241,7 +244,7 @@ public static class KundenabgleichExtensions
     {
         var abschnitt = builder.Configuration.GetSection("Kundenabgleich");
         builder.Services.Configure<KundenabgleichOptionen>(abschnitt);
-        builder.Services.AddSingleton<Abgleichstand>();
+        builder.Services.TryAddSingleton<Abgleichstand>();
         builder.Services.AddScoped<Kundenabgleich>();
 
         var optionen = abschnitt.Get<KundenabgleichOptionen>() ?? new KundenabgleichOptionen();

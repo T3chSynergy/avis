@@ -1,7 +1,7 @@
 using System.Net;
 using Avis.Web.Data;
 using Avis.Web.Domain;
-using Avis.Web.Kundenabgleich;
+using Avis.Web.Abgleich;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -173,6 +173,36 @@ public class KundenabgleichTests
     }
 
     [Fact]
+    public async Task Der_Raum_kommt_aus_der_Quelle_und_wird_sonst_von_Hand_eingetragen()
+    {
+        using var app = await OhneVerzeichniskundenAsync();
+        var anna = await app.AnmeldenAlsAsync("anna");
+        app.Kundenquelle.Kunden.Add(Hans with { Raum = " A 105 " });
+        await AbgleichenAsync(app);
+        var hans = await KundeAsync(app, "Neu, Hans");
+        Assert.Equal("A 105", hans.Raum);
+
+        // Er steht in der Liste, in der Auswahl beim Erfassen, und die Suche findet ihn.
+        Assert.Contains("Neu, Hans", await anna.GetStringAsync("/Kunden?q=a+105"));
+        Assert.Contains("Raum A 105", await anna.GetStringAsync("/Kunden/Treffer?q=hans&leer=neu"));
+
+        // Von Hand lässt er sich bei einem Kunden aus der Quelle nicht ändern; ein Umzug kommt mit dem nächsten Abgleich.
+        await anna.PostFormularAsync($"/Kunden/{hans.Id}", $"/Kunden/{hans.Id}", new() { ["name"] = "Neu, Hans", ["raum"] = "Z 999" });
+        Assert.Equal("A 105", (await KundeAsync(app, "Neu, Hans")).Raum);
+        app.Kundenquelle.Kunden.Clear();
+        app.Kundenquelle.Kunden.Add(Hans with { Raum = "B 0.12" });
+        var ergebnis = await AbgleichenAsync(app);
+        Assert.Equal(1, ergebnis.Geaendert);
+        Assert.Equal("B 0.12", (await KundeAsync(app, "Neu, Hans")).Raum);
+
+        // Bei einem Kunden, der nur in AVIS steht, trägt ihn ein Bearbeiter ein.
+        var frank = await KundeAsync(app, "Frank Müller");
+        await anna.PostFormularAsync($"/Kunden/{frank.Id}", $"/Kunden/{frank.Id}", new() { ["name"] = "Frank Müller", ["email"] = frank.Email ?? "", ["raum"] = " C 0.04 " });
+        Assert.Equal("C 0.04", (await KundeAsync(app, "Frank Müller")).Raum);
+        Assert.Contains("Frank Müller", await anna.GetStringAsync("/Kunden?q=c+0.04"));
+    }
+
+    [Fact]
     public async Task Die_Verwaltung_zeigt_den_letzten_Abgleich_und_stoesst_einen_an()
     {
         using var app = await OhneVerzeichniskundenAsync();
@@ -257,6 +287,8 @@ public class KundenabgleichTests
     private static async Task<AvisAnwendung> OhneVerzeichniskundenAsync()
     {
         var app = new AvisAnwendung();
+        // Zuerst die Geräte aus Snipe-IT: Eines davon nennt einen dieser Kunden als Nutzer.
+        await app.DatenbankAsync(db => db.Geraete.Where(g => g.Quelle != null).ExecuteDeleteAsync());
         await app.DatenbankAsync(db => db.Kunden.Where(k => k.Quelle != null).ExecuteDeleteAsync());
         return app;
     }

@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
-using Avis.Web.Kundenabgleich;
+using Avis.Web.Abgleich;
 using Avis.Web.Mail;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -31,8 +31,11 @@ public class AvisAnwendung : WebApplicationFactory<Program>
     /// <summary>Steht für das Active Directory.</summary>
     public Testverzeichnis Verzeichnis { get; } = new();
 
-    /// <summary>Steht für die Gruppe im Active Directory, deren Mitglieder die Kunden sind.</summary>
+    /// <summary>Steht für das Active Directory als Quelle der Kunden.</summary>
     public Testkundenquelle Kundenquelle { get; } = new();
+
+    /// <summary>Steht für Snipe-IT als Quelle der Geräte.</summary>
+    public Testgeraetequelle Geraetequelle { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -54,6 +57,7 @@ public class AvisAnwendung : WebApplicationFactory<Program>
             services.AddSingleton<IMailversand>(Postfach);
             services.AddSingleton<IVerzeichnis>(Verzeichnis);
             services.AddSingleton<IKundenquelle>(Kundenquelle);
+            services.AddSingleton<IGeraetequelle>(Geraetequelle);
         });
     }
 
@@ -132,6 +136,21 @@ public class Testkundenquelle : IKundenquelle
 
     public IReadOnlyList<Quellkunde> Lesen() =>
         Gestoert ? throw new InvalidOperationException("Der Server ist nicht funktionstüchtig.") : Kunden.ToList();
+}
+
+public class Testgeraetequelle : IGeraetequelle
+{
+    public string Name => "SnipeIt";
+
+    public List<Quellgeraet> Geraete { get; } = [];
+
+    /// <summary>Solange gesetzt, lässt sich die Quelle nicht lesen.</summary>
+    public bool Gestoert { get; set; }
+
+    public Task<IReadOnlyList<Quellgeraet>> LesenAsync(CancellationToken abbruch) =>
+        Gestoert
+            ? throw new InvalidOperationException("Snipe-IT hat den Zugangsschlüssel abgelehnt.")
+            : Task.FromResult<IReadOnlyList<Quellgeraet>>(Geraete.ToList());
 }
 
 public class Testverzeichnis : IVerzeichnis

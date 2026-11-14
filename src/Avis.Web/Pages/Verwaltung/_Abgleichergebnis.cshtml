@@ -1,0 +1,39 @@
+@model Avis.Web.Pages.Verwaltung.Abgleichanzeige
+@{
+    var letztes = Model.Ergebnis;
+}
+@if (letztes is null)
+{
+    <p class="leer">Seit dem Start von AVIS wurde noch nicht abgeglichen.</p>
+}
+else if (letztes.Fehler is not null)
+{
+    <p class="meldung fehler">Letzter Abgleich am @Ortszeit.Anzeigen(letztes.Zeitpunkt): @letztes.Fehler</p>
+}
+else
+{
+    <dl class="angaben">
+        <dt>Letzter Abgleich</dt>
+        <dd>@Ortszeit.Anzeigen(letztes.Zeitpunkt)</dd>
+        <dt>Aus der Quelle gelesen</dt>
+        <dd>@letztes.Gelesen</dd>
+        <dt>Neu angelegt</dt>
+        <dd>@letztes.Neu</dd>
+        <dt>Geändert</dt>
+        <dd>@letztes.Geaendert</dd>
+        <dt>@Model.Reaktiviert</dt>
+        <dd>@letztes.Reaktiviert</dd>
+        <dt>@Model.Inaktiv</dt>
+        <dd>@letztes.Inaktiv</dd>
+    </dl>
+    @if (letztes.Hinweise is { Count: > 0 } hinweise)
+    {
+        <h3>Hinweise</h3>
+        <ul>
+            @foreach (var hinweis in hinweise)
+            {
+                <li>@hinweis</li>
+            }
+        </ul>
+    }
+}

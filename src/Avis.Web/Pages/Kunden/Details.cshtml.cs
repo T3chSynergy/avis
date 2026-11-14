@@ -53,7 +53,7 @@ public class DetailsModel(AvisDb db) : PageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(int id, string? name, string? email, string? telefon, string? organisationseinheit, int? standortId)
+    public async Task<IActionResult> OnPostAsync(int id, string? name, string? email, string? telefon, string? organisationseinheit, int? standortId, string? raum)
     {
         var kunde = await db.Kunden.FirstOrDefaultAsync(k => k.Id == id);
         if (kunde is null)
@@ -61,8 +61,8 @@ public class DetailsModel(AvisDb db) : PageModel
 
         // Was aus einer externen Quelle stammt, wird dort gepflegt. Hier ändert sich dann nur der Standort.
         var fehler = kunde.AusQuelle
-            ? await KundeRegeln.UebernehmenAsync(db, kunde, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, standortId)
-            : await KundeRegeln.UebernehmenAsync(db, kunde, name, email, telefon, organisationseinheit, standortId);
+            ? await KundeRegeln.UebernehmenAsync(db, kunde, kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit, standortId, kunde.Raum)
+            : await KundeRegeln.UebernehmenAsync(db, kunde, name, email, telefon, organisationseinheit, standortId, raum);
         if (fehler is not null)
         {
             TempData["Fehler"] = fehler;

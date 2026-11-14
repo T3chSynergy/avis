@@ -43,7 +43,7 @@
         <h3>Angaben</h3>
         @if (k.AusQuelle)
         {
-            <p class="erklaerung">Stammt aus @k.Quelle. Name, E-Mail, Telefon und Organisationseinheit werden dort gepflegt und beim Abgleich überschrieben.</p>
+            <p class="erklaerung">Stammt aus @k.Quelle. Name, E-Mail, Telefon, Organisationseinheit und Raum werden dort gepflegt und beim Abgleich überschrieben.</p>
         }
         <label for="name">Name</label>
         <input id="name" name="name" value="@k.Name" maxlength="200" required autocomplete="off" disabled="@k.AusQuelle" />
@@ -53,6 +53,8 @@
         <input id="telefon" name="telefon" value="@k.Telefon" maxlength="50" autocomplete="off" disabled="@k.AusQuelle" />
         <label for="organisationseinheit">Organisationseinheit</label>
         <input id="organisationseinheit" name="organisationseinheit" value="@k.Organisationseinheit" maxlength="200" autocomplete="off" disabled="@k.AusQuelle" />
+        <label for="raum">Raum</label>
+        <input id="raum" name="raum" value="@k.Raum" maxlength="100" autocomplete="off" disabled="@k.AusQuelle" />
         <label for="standortId">Standort</label>
         <select id="standortId" name="standortId" asp-items="Model.Standorte">
             <option value="">–</option>
