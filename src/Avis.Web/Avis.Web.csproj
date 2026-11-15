@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Die Hilfetexte liest AVIS zur Laufzeit; sie gehören zur ausgelieferten Anwendung. -->
+    <Content Include="Hilfe\*.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Die Lizenzvermerke der mitgelieferten Komponenten gehören zum Build. -->
     <None Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>

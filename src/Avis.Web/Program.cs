@@ -34,6 +34,7 @@ builder.AddAvisKundenabgleich();
 builder.AddAvisGeraeteabgleich();
 builder.Services.Configure<AnhangOptionen>(builder.Configuration.GetSection("Anhaenge"));
 builder.Services.AddSingleton<Anhangablage>();
+builder.Services.AddSingleton<Avis.Web.Hilfe.Hilfetexte>();
 
 builder.Services.AddRazorPages(o =>
 {
@@ -42,6 +43,7 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizePage("/Geraete/Bearbeiten", Rollen.Administrator);
     o.Conventions.AuthorizeFolder("/Meine", Richtlinien.Angemeldet);
     o.Conventions.AuthorizeFolder("/Anhaenge", Richtlinien.Angemeldet);
+    o.Conventions.AuthorizeFolder("/Hilfe", Richtlinien.Angemeldet);
     o.Conventions.AuthorizePage("/Index", Richtlinien.Angemeldet);
     o.Conventions.AllowAnonymousToPage("/Anmeldung");
     o.Conventions.AllowAnonymousToPage("/Fehler");

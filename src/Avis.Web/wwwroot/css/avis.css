@@ -64,6 +64,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .kopf a.neu span { font-size: 18px; line-height: 1; margin-right: 2px; }
 
 /* Konto mit Menü. Öffnet und schließt ohne Skript, das Skript schließt es zusätzlich bei Klick daneben. */
+.kopf a.hilfe { color: #fff; font-weight: 600; text-underline-offset: 3px; }
+.kopf a.hilfe[aria-current="page"] { text-decoration-thickness: 2px; }
 .konto { position: relative; font-weight: 600; }
 details.konto summary { cursor: pointer; list-style: none; padding: 6px 2px; white-space: nowrap; }
 details.konto summary::-webkit-details-marker { display: none; }
@@ -365,6 +367,24 @@ ol.verlauf .md { margin: 4px 0 0; }
 .md blockquote { border-left: 3px solid #9aa7b6; padding-left: 10px; color: var(--gedaempft); }
 .md hr { border: 0; border-top: 1px solid var(--linie); margin: 10px 0; }
 li.intern .md code, li.intern .md pre { background: #f3e6b8; }
+
+/* Die Hilfe: der Text links, das Inhaltsverzeichnis rechts. */
+.hilfe article.md { max-width: 820px; }
+.hilfe article.md h2 { font-size: 1.3em; margin: 28px 0 8px; padding-top: 6px; border-top: 1px solid var(--linie); }
+.hilfe article.md h2:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.hilfe article.md h3 { font-size: 1.1em; margin: 18px 0 6px; }
+.hilfe article.md p, .hilfe article.md ul, .hilfe article.md ol, .hilfe article.md table { margin-bottom: 12px; }
+.hilfe article.md li { margin-bottom: 4px; }
+.hilfe .md table { border-collapse: collapse; background: var(--flaeche); }
+.hilfe .md th, .hilfe .md td { border: 1px solid var(--linie); padding: 6px 10px; text-align: left; vertical-align: top; }
+.hilfe .md th { background: #eef1f5; }
+.hilfe :target { scroll-margin-top: 12px; background: #fff6dc; }
+.hilfe .eigen { max-width: 820px; margin: 0 0 20px; }
+.inhaltsverzeichnis { position: sticky; top: 12px; }
+.inhaltsverzeichnis h2 { font-size: 1em; margin: 0 0 6px; }
+.inhaltsverzeichnis ul { list-style: none; margin: 0; padding: 0; }
+.inhaltsverzeichnis li { margin: 4px 0; }
+@media (max-width: 900px) { .hilfe .inhaltsverzeichnis { position: static; order: -1; } }
 
 /* Eine Datei wird über das Textfeld gezogen. */
 textarea.ablegen { outline: 3px dashed var(--akzent); outline-offset: 2px; }

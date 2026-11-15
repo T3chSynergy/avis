@@ -255,6 +255,7 @@ passenden Geräteeintrag erfassen. Das Gerät steht dann nur im Text.
 
 - Neuer Auftrag
 - Meine Aufträge (Stand, Nachrichten, Abschluss)
+- Hilfe für Kunden
 
 **Bearbeiter**
 
@@ -272,6 +273,9 @@ passenden Geräteeintrag erfassen. Das Gerät steht dann nur im Text.
 - Kunden und Geräte: suchen, ansehen, zugehörige Aufträge
 - Meine Gruppen: beitreten und austreten, je Gruppe die Mail bei einem neuen
   Auftrag ein- und ausschalten
+- Hilfe: eine Anleitung für Bearbeiter und eine für Kunden. „Hilfe“ im Kopf
+  führt von jeder Seite zum passenden Abschnitt. Eigener Text des Hauses
+  steht in einer Datei auf dem Server, nicht in der Anwendung
 
 **Administrator**
 
