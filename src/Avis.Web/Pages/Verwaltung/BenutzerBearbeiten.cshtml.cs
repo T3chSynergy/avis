@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Avis.Web.Abgleich;
 using Avis.Web.Anmeldung;
 using Avis.Web.Data;
 using Avis.Web.Domain;
@@ -37,8 +38,11 @@ public class BenutzerBearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
         var anzeigename = name?.Trim() ?? "";
         var adresse = string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
 
+        // Bei einem Konto aus einer externen Quelle sind Name und E-Mail gesperrt und kommen nicht mit.
         string? fehler = null;
-        if (anzeigename.Length is 0 or > 200)
+        if (benutzer.AusQuelle)
+            fehler = null;
+        else if (anzeigename.Length is 0 or > 200)
             fehler = "Bitte einen Namen mit höchstens 200 Zeichen angeben.";
         else if (adresse is not null && (adresse.Length > 320 || !new EmailAddressAttribute().IsValid(adresse)))
             fehler = "Das ist keine gültige E-Mail-Adresse.";
@@ -49,19 +53,31 @@ public class BenutzerBearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
             return RedirectToPage(new { id });
         }
 
-        benutzer.Name = anzeigename;
-        benutzer.Email = adresse;
+        // Was aus einer externen Quelle stammt, wird dort gepflegt: Name, E-Mail und ob jemand Bearbeiter ist.
+        if (!benutzer.AusQuelle)
+        {
+            benutzer.Name = anzeigename;
+            benutzer.Email = adresse;
+        }
 
         // Am eigenen Konto ändert niemand Rolle oder Status. So bleibt immer
         // mindestens ein Administrator übrig.
         var zurueck = 0;
         if (id != User.BenutzerId())
         {
-            benutzer.RolleSetzen(rolle);
+            if (!benutzer.AusQuelle)
+                benutzer.RolleSetzen(rolle);
+            else if (rolle == Rolle.Administrator)
+                benutzer.RolleSetzen(Rolle.Administrator);
+            else
+                benutzer.IstAdministrator = false;
             benutzer.Aktiv = aktiv;
 
             if (!benutzer.Aktiv || !benutzer.IstBearbeiter)
-                zurueck = await AusDerBearbeitungNehmenAsync(benutzer);
+            {
+                var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
+                zurueck = await db.AusDerBearbeitungNehmenAsync(benutzer, ich, uhr.GetUtcNow().UtcDateTime, $"{benutzer.Name} ist kein Bearbeiter mehr.");
+            }
         }
 
         await db.SaveChangesAsync();
@@ -73,28 +89,5 @@ public class BenutzerBearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
             _ => $" {zurueck} Aufträge liegen wieder offen in ihren Gruppen.",
         };
         return RedirectToPage(new { id });
-    }
-
-    /// <summary>
-    /// Gibt die Aufträge des Benutzers an ihre Gruppen zurück und trägt ihn
-    /// aus allen Gruppen aus.
-    /// </summary>
-    private async Task<int> AusDerBearbeitungNehmenAsync(Benutzer benutzer)
-    {
-        var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
-        var jetzt = uhr.GetUtcNow().UtcDateTime;
-
-        var auftraege = await db.Auftraege
-            .InBearbeitung()
-            .Where(a => a.BearbeiterId == benutzer.Id)
-            .Include(a => a.Gruppe)
-            .Include(a => a.Bearbeiter)
-            .ToListAsync();
-
-        foreach (var auftrag in auftraege)
-            auftrag.ZurueckAnGruppe(ich, jetzt, $"{benutzer.Name} ist kein Bearbeiter mehr.");
-
-        benutzer.Gruppen.Clear();
-        return auftraege.Count;
     }
 }

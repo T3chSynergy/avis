@@ -31,6 +31,13 @@ Leitsatz: Was das alte AVIS nicht brauchte, braucht das neue auch nicht.
 | Bearbeiter | Aufträge erfassen, alle Aufträge sehen (außer gesperrte Gruppen), übernehmen, weiterleiten, abschließen, sich selbst Gruppen zuordnen, Kunden anlegen und pflegen |
 | Administrator | Gruppen, Kategorien und Geräte pflegen, Mitglieder gesperrter Gruppen zuordnen, Rollen vergeben |
 
+Wer Bearbeiter ist, legt ein Administrator fest oder, wenn der
+Bearbeiterabgleich eingeschaltet ist, das Active Directory: Ein LDAP-Filter,
+in der Regel die Mitgliedschaft in einer Gruppe, bestimmt die Bearbeiter. Wen
+das Verzeichnis nicht mehr nennt, der verliert die Rolle; seine Aufträge gehen
+zurück in ihre Gruppen, sein Konto bleibt. Von Hand ernannte Bearbeiter und
+Administratoren bleiben unberührt.
+
 „Kunde" ist der Anwender, für den ein Auftrag bearbeitet wird.
 
 ## 3. Kernmodell

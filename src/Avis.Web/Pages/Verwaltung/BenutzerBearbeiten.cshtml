@@ -19,15 +19,31 @@
         <dd>@Model.InBearbeitung</dd>
     </dl>
 
+    @if (b.AusQuelle)
+    {
+        <p class="erklaerung">
+            Stammt aus @b.Quelle. Name, E-Mail und ob jemand Bearbeiter ist, werden dort gepflegt und beim Abgleich überschrieben.
+            Zum Administrator machst du jemanden weiter hier.
+        </p>
+    }
     <label for="name">Name</label>
-    <input id="name" name="name" value="@b.Name" maxlength="200" required autocomplete="off" />
+    <input id="name" name="name" value="@b.Name" maxlength="200" required autocomplete="off" disabled="@b.AusQuelle" />
     <label for="email">E-Mail (optional)</label>
-    <input id="email" name="email" type="email" value="@b.Email" maxlength="320" autocomplete="off" />
+    <input id="email" name="email" type="email" value="@b.Email" maxlength="320" autocomplete="off" disabled="@b.AusQuelle" />
 
     <label for="rolle">Rolle</label>
     <select id="rolle" name="rolle" disabled="@Model.IstEigenesKonto">
-        <option value="@Rolle.Keine" selected="@(rolle == Rolle.Keine)">keine</option>
-        <option value="@Rolle.Bearbeiter" selected="@(rolle == Rolle.Bearbeiter)">Bearbeiter</option>
+        @if (b.AusQuelle)
+        {
+            @* Ob jemand Bearbeiter ist, entscheidet die Quelle. Zur Wahl steht nur, ob er darüber hinaus Administrator ist. *@
+            var ohne = b.IstBearbeiter ? Rolle.Bearbeiter : Rolle.Keine;
+            <option value="@ohne" selected="@(rolle != Rolle.Administrator)">@ohne.Text() (laut @b.Quelle)</option>
+        }
+        else
+        {
+            <option value="@Rolle.Keine" selected="@(rolle == Rolle.Keine)">keine</option>
+            <option value="@Rolle.Bearbeiter" selected="@(rolle == Rolle.Bearbeiter)">Bearbeiter</option>
+        }
         <option value="@Rolle.Administrator" selected="@(rolle == Rolle.Administrator)">Administrator</option>
     </select>
 

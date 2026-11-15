@@ -51,6 +51,7 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **E-Mail-Eingang** über IMAP (EWS wäre im Haus möglich, wurde nicht gewählt).
 - **Kunden aus dem AD:** AVIS zieht selbst, keine API. Ein LDAP-Filter bestimmt, wer Kunde ist (eine
   dynamische Verteilergruppe führt keine Mitglieder). Das AD gewinnt; wer fehlt, wird inaktiv, nie gelöscht.
+- **Bearbeiter aus dem AD** ebenso über einen Filter. Wer fehlt, verliert nur die Rolle; Administratoren nie.
 - **Geräte aus Snipe-IT:** nur lesend, sonst wie die Kunden. Nutzer ist der Kunde mit derselben Mailadresse.
 - **Abgleiche laufen einmal täglich** zur festen Uhrzeit, nie beim Start: Snipe-IT ist langsam. Tagsüber
   nur das Geänderte zu holen (Sortierung nach `updated_at`) ist möglich, aber zurückgestellt.
@@ -70,7 +71,6 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Fremde Komponenten:** Bei jedem neuen oder entfernten Paket `THIRD-PARTY-NOTICES.md` anpassen. Das
   Favicon ist selbst gezeichnet (Flächen, keine Schrift); fremde Grafiken nicht übernehmen.
 - **`SECURITY.md`** sagt bewusst keine Antwortfrist zu.
-- **Lizenz:** noch nicht entschieden, es gibt keine `LICENSE`.
 
 ## Erkenntnisse
 
@@ -100,7 +100,7 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert werden:
 
 - Windows-Anmeldung (`Anmeldung:Art = Windows`) unter IIS
-- Abgleich mit Active Directory (`ActiveDirectoryVerzeichnis`, `ActiveDirectoryKundenquelle`)
+- Abgleich mit Active Directory (`ActiveDirectoryVerzeichnis`, `ActiveDirectoryKonten`)
 - Abgleich mit Snipe-IT (`SnipeItGeraetequelle`): nach dessen Quelltext geschrieben, nie dagegen gelaufen
 - SMTP und IMAP gegen Exchange – IMAP lief bisher nur gegen einen lokalen Dovecot-Server
   (Test mit der Umgebungsvariable `AVIS_TEST_IMAP`)
@@ -114,7 +114,7 @@ In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert
    Workflows.
 3. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
-4. Lizenz wählen.
+4. Lizenz wählen: noch nicht entschieden, es gibt keine `LICENSE`.
 5. Anmeldung der Kunden an den Kundenabgleich binden: vom Nutzer angedacht, nicht gebaut.
 6. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen; Anhänge lassen sich nicht löschen;
    im Browser eingefügte Bilder stehen unter dem Text, nicht mittendrin; keine Markdown-Vorschau.

@@ -14,6 +14,19 @@ public class Benutzer
     public bool IstAdministrator { get; set; }
     public bool Aktiv { get; set; } = true;
 
+    /// <summary>Kennung in einem externen System, bei Konten aus dem Bearbeiterabgleich.</summary>
+    public string? ExterneKennung { get; set; }
+
+    /// <summary>Name des externen Systems, aus dem der Eintrag stammt.</summary>
+    public string? Quelle { get; set; }
+
+    /// <summary>
+    /// Ob Name, E-Mail und die Rolle Bearbeiter in einem externen System
+    /// gepflegt werden. Dann gewinnt dieses System: Der Abgleich überschreibt
+    /// sie, und wer dort nicht mehr genannt ist, verliert die Rolle.
+    /// </summary>
+    public bool AusQuelle => Quelle is not null;
+
     public List<Gruppe> Gruppen { get; } = [];
 }
 

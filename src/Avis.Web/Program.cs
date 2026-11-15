@@ -29,6 +29,7 @@ builder.AddAvisAnmeldung();
 builder.AddAvisVerzeichnis();
 builder.AddAvisMail();
 builder.AddAvisPosteingang();
+builder.AddAvisBearbeiterabgleich();
 builder.AddAvisKundenabgleich();
 builder.AddAvisGeraeteabgleich();
 builder.Services.Configure<AnhangOptionen>(builder.Configuration.GetSection("Anhaenge"));

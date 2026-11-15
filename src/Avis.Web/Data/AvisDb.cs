@@ -237,6 +237,8 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             e.Property(b => b.Anmeldename).HasMaxLength(200);
             e.Property(b => b.Name).HasMaxLength(200);
             e.Property(b => b.Email).HasMaxLength(320);
+            e.Property(b => b.ExterneKennung).HasMaxLength(200);
+            e.Property(b => b.Quelle).HasMaxLength(100);
             e.HasIndex(b => b.Anmeldename).IsUnique();
         });
 

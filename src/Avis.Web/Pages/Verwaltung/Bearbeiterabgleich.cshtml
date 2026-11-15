@@ -1,0 +1,33 @@
+@page
+@model BearbeiterabgleichModel
+@{
+    ViewData["Title"] = "Bearbeiterabgleich";
+}
+<h1>Verwaltung</h1>
+<partial name="_Bereiche" />
+<h2>Bearbeiterabgleich</h2>
+
+@if (!Model.Eingerichtet)
+{
+    <p class="erklaerung">
+        Der Abgleich ist ausgeschaltet (<code>Bearbeiterabgleich:Art = @Model.Optionen.Art</code>). Wer Bearbeiter ist, legst du unter „Benutzer“ fest.
+        Mit <code>ActiveDirectory</code> und einem LDAP-Filter in <code>Bearbeiterabgleich:Filter</code> sind die Benutzerkonten, auf die der Filter passt, die Bearbeiter,
+        zum Beispiel die Mitglieder einer Gruppe.
+    </p>
+}
+else
+{
+    <p class="erklaerung">
+        Quelle: <strong>@Model.Optionen.Art</strong>@if (!string.IsNullOrWhiteSpace(Model.Optionen.Filter)) {<text>, Filter <code>@Model.Optionen.Filter</code></text>}@if (!string.IsNullOrWhiteSpace(Model.Optionen.Suchbasis)) {<text>, gesucht in <code>@Model.Optionen.Suchbasis</code></text>}.
+        Die Quelle gewinnt: Wen sie nennt, der ist Bearbeiter, mit Name und E-Mail von dort; ein fehlendes Konto wird angelegt.
+        Wen sie nicht mehr nennt, der verliert die Rolle: Seine Aufträge gehen zurück in ihre Gruppen, und er wird aus allen Gruppen ausgetragen. Das Konto bleibt.
+        Bearbeiter, die du nur hier dazu gemacht hast, und Administratoren bleiben unberührt.
+    </p>
+    <p class="erklaerung">Der Abgleich läuft täglich um @Model.Optionen.Laufzeit.ToString("HH:mm") Uhr. Lief AVIS zu dieser Zeit nicht, wird er nachgeholt.</p>
+
+    <partial name="_Abgleichergebnis" model='new Abgleichanzeige(Model.Letztes, "Wieder Bearbeiter", "Nicht mehr Bearbeiter")' />
+
+    <form method="post">
+        <button type="submit" class="haupt">Jetzt abgleichen</button>
+    </form>
+}
