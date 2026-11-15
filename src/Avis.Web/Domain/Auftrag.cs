@@ -30,16 +30,6 @@ public enum AuftragStatus
 public record AuftragAngaben(string Betreff, string Beschreibung)
 {
     public Kategorie? Kategorie { get; init; }
-
-    /// <summary>Freitext, z. B. der Raum "A 105".</summary>
-    public string? Standort { get; init; }
-
-    /// <summary>Freitext, z. B. eine Inventarnummer.</summary>
-    public string? Geraet { get; init; }
-
-    /// <summary>Verknüpfung mit einem Gerät aus dem Inventar, zusätzlich zum Freitext.</summary>
-    public Inventargeraet? Inventargeraet { get; init; }
-
     public Stufe Dringlichkeit { get; init; } = Stufe.Mittel;
     public Stufe Wichtigkeit { get; init; } = Stufe.Mittel;
     public DateOnly? Termin { get; init; }
@@ -62,6 +52,7 @@ public class AuftragException(string message) : Exception(message);
 public class Auftrag
 {
     private readonly List<Verlaufseintrag> _verlauf = [];
+    private readonly List<Inventargeraet> _geraete = [];
 
     private Auftrag() { }
 
@@ -81,15 +72,6 @@ public class Auftrag
 
     public int? KategorieId { get; private set; }
     public Kategorie? Kategorie { get; private set; }
-
-    /// <summary>Freitext, z. B. der Raum "A 105".</summary>
-    public string? Standort { get; private set; }
-
-    /// <summary>Freitext, z. B. eine Inventarnummer.</summary>
-    public string? Geraet { get; private set; }
-
-    public int? InventargeraetId { get; private set; }
-    public Inventargeraet? Inventargeraet { get; private set; }
 
     public Stufe Dringlichkeit { get; private set; } = Stufe.Mittel;
     public Stufe Wichtigkeit { get; private set; } = Stufe.Mittel;
@@ -123,13 +105,33 @@ public class Auftrag
     public int Version { get; private set; }
 
     /// <summary>
-    /// Betreff, Beschreibung und Gerät in Kleinbuchstaben. Die Suche
+    /// Betreff und Beschreibung in Kleinbuchstaben. Die Suche
     /// vergleicht nur mit diesem Feld und verhält sich dadurch in jeder
     /// Datenbank gleich, auch bei Umlauten.
     /// </summary>
     public string Suchtext { get; private set; } = "";
 
     public IReadOnlyList<Verlaufseintrag> Verlauf => _verlauf;
+
+    /// <summary>
+    /// Die Geräte aus dem Inventar, um die es geht: alle, die im Betreff, in
+    /// der Beschreibung oder in einem Text des Verlaufs mit "INV" und ihrer
+    /// Inventarnummer genannt sind (siehe <see cref="Geraetebezug"/>). Die
+    /// Liste wird beim Speichern aus den Texten bestimmt, nicht von Hand.
+    /// </summary>
+    public IReadOnlyList<Inventargeraet> Geraete => _geraete;
+
+    /// <summary>
+    /// Übernimmt die Geräte, die in den Texten des Auftrags genannt sind.
+    /// Ein ausgemustertes Gerät wird nicht neu verknüpft, bleibt aber, wenn
+    /// es schon verknüpft war.
+    /// </summary>
+    internal void GeraeteSetzen(IEnumerable<Inventargeraet> genannt)
+    {
+        var bleiben = genannt.Where(g => g.Aktiv || _geraete.Contains(g)).Distinct().ToList();
+        _geraete.RemoveAll(g => !bleiben.Contains(g));
+        _geraete.AddRange(bleiben.Where(g => !_geraete.Contains(g)));
+    }
 
     public AuftragStatus Status =>
         AbgeschlossenAm is not null ? AuftragStatus.Abgeschlossen
@@ -168,9 +170,7 @@ public class Auftrag
             ErstelltAm = jetzt,
             GeaendertAm = jetzt,
         };
-        // Ohne Angabe gilt der Standort des Kunden: Dort ist in aller Regel auch das Problem.
-        var bereinigt = Bereinigt(angaben);
-        auftrag.Setzen(bereinigt with { Standort = bereinigt.Standort ?? kunde.Standort });
+        auftrag.Setzen(Bereinigt(angaben));
         auftrag.Eintragen(VerlaufArt.Erfasst, erfasstVon, jetzt, beschreibung, anhaenge: anhaenge);
         return auftrag;
     }
@@ -194,9 +194,6 @@ public class Auftrag
 
         Vergleichen("Betreff", Betreff, neu.Betreff, Betreff != neu.Betreff);
         Vergleichen("Kategorie", Kategorie?.Name, neu.Kategorie?.Name, KategorieId != neu.Kategorie?.Id);
-        Vergleichen("Standort", Standort, neu.Standort, Standort != neu.Standort);
-        Vergleichen("Gerät", Geraet, neu.Geraet, Geraet != neu.Geraet);
-        Vergleichen("Gerät aus dem Inventar", Inventargeraet?.Inventarnummer, neu.Inventargeraet?.Inventarnummer, InventargeraetId != neu.Inventargeraet?.Id);
         Vergleichen("Dringlichkeit", Dringlichkeit.Text(), neu.Dringlichkeit.Text(), Dringlichkeit != neu.Dringlichkeit);
         Vergleichen("Wichtigkeit", Wichtigkeit.Text(), neu.Wichtigkeit.Text(), Wichtigkeit != neu.Wichtigkeit);
         Vergleichen("Termin", Termin?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), neu.Termin?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), Termin != neu.Termin);
@@ -425,10 +422,6 @@ public class Auftrag
         Beschreibung = angaben.Beschreibung;
         Kategorie = angaben.Kategorie;
         KategorieId = angaben.Kategorie?.Id;
-        Standort = angaben.Standort;
-        Geraet = angaben.Geraet;
-        Inventargeraet = angaben.Inventargeraet;
-        InventargeraetId = angaben.Inventargeraet?.Id;
         Dringlichkeit = angaben.Dringlichkeit;
         Wichtigkeit = angaben.Wichtigkeit;
         Termin = angaben.Termin;
@@ -438,7 +431,7 @@ public class Auftrag
     /// <summary>Setzt den Suchtext neu, auch für die geladenen Verlaufseinträge.</summary>
     public void SuchtextAktualisieren()
     {
-        Suchtext = string.Join(' ', new[] { Betreff, Beschreibung, Geraet }.Where(t => !string.IsNullOrWhiteSpace(t))).ToLowerInvariant();
+        Suchtext = string.Join(' ', new[] { Betreff, Beschreibung }.Where(t => !string.IsNullOrWhiteSpace(t))).ToLowerInvariant();
         foreach (var eintrag in _verlauf)
             eintrag.SuchtextAktualisieren();
     }
@@ -458,8 +451,6 @@ public class Auftrag
         {
             Betreff = betreff,
             Beschreibung = beschreibung,
-            Standort = string.IsNullOrWhiteSpace(angaben.Standort) ? null : angaben.Standort.Trim(),
-            Geraet = string.IsNullOrWhiteSpace(angaben.Geraet) ? null : angaben.Geraet.Trim(),
         };
     }
 

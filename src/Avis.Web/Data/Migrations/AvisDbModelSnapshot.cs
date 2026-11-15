@@ -17,6 +17,21 @@ namespace Avis.Web.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.15");
 
+            modelBuilder.Entity("Auftragsgeraete", b =>
+                {
+                    b.Property<int>("AuftragId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("GeraetId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AuftragId", "GeraetId");
+
+                    b.HasIndex("GeraetId");
+
+                    b.ToTable("Auftragsgeraete");
+                });
+
             modelBuilder.Entity("Avis.Web.Domain.Abgleichlauf", b =>
                 {
                     b.Property<string>("Art")
@@ -131,14 +146,7 @@ namespace Avis.Web.Data.Migrations
                     b.Property<DateTime>("GeaendertAm")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Geraet")
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("GruppeId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("InventargeraetId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("KategorieId")
@@ -148,10 +156,6 @@ namespace Avis.Web.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("KundeWartetSeit")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Standort")
-                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Suchtext")
@@ -173,8 +177,6 @@ namespace Avis.Web.Data.Migrations
                     b.HasIndex("BevorzugterBearbeiterId");
 
                     b.HasIndex("ErfasstVonId");
-
-                    b.HasIndex("InventargeraetId");
 
                     b.HasIndex("KategorieId");
 
@@ -539,6 +541,21 @@ namespace Avis.Web.Data.Migrations
                     b.ToTable("Verlauf", (string)null);
                 });
 
+            modelBuilder.Entity("Auftragsgeraete", b =>
+                {
+                    b.HasOne("Avis.Web.Domain.Auftrag", null)
+                        .WithMany()
+                        .HasForeignKey("AuftragId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Avis.Web.Domain.Inventargeraet", null)
+                        .WithMany()
+                        .HasForeignKey("GeraetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Avis.Web.Domain.Anhang", b =>
                 {
                     b.HasOne("Avis.Web.Domain.Verlaufseintrag", "Verlaufseintrag")
@@ -574,11 +591,6 @@ namespace Avis.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Avis.Web.Domain.Inventargeraet", "Inventargeraet")
-                        .WithMany()
-                        .HasForeignKey("InventargeraetId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Avis.Web.Domain.Kategorie", "Kategorie")
                         .WithMany()
                         .HasForeignKey("KategorieId")
@@ -597,8 +609,6 @@ namespace Avis.Web.Data.Migrations
                     b.Navigation("ErfasstVon");
 
                     b.Navigation("Gruppe");
-
-                    b.Navigation("Inventargeraet");
 
                     b.Navigation("Kategorie");
 

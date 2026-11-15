@@ -64,7 +64,7 @@ public static class Abfragen
                 a.Id == nummer
                 || a.Suchtext.Contains(wort)
                 || a.Kunde.Suchtext.Contains(wort)
-                || a.Inventargeraet!.Suchtext.Contains(wort)
+                || a.Geraete.Any(g => g.Suchtext.Contains(wort))
                 || a.Verlauf.Any(v => v.Suchtext != null && v.Suchtext.Contains(wort)));
         }
         return auftraege;

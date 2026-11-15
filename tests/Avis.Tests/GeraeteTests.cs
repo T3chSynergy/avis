@@ -11,7 +11,6 @@ public class GeraeteTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     [InlineData("/Geraete")]
     [InlineData("/Geraete?q=drucker")]
     [InlineData("/Geraete/1")]
-    [InlineData("/Geraete/Vorschlaege?q=nb")]
     public async Task Seiten_antworten_fuer_Bearbeiter(string pfad)
     {
         var bernd = await app.AnmeldenAlsAsync("bernd");
@@ -103,64 +102,91 @@ public class GeraeteTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.DoesNotContain("field-validation-error", text);
     }
 
+    [Theory]
+    [InlineData("Der Monitor INV MO-2203 flackert.", "mo-2203")]
+    [InlineData("inv 4532436 und INV:4532437, dazu (INV-4532438).", "4532436|4532437|4532438")]
+    [InlineData("INV4711 ohne Abstand, Inv. 4712 mit Punkt, INV #4713 mit Raute", "4711|4712|4713")]
+    [InlineData("**INV NB-1017** in fetter Schrift\nund am Zeilenende INV NB-1018", "nb-1017|nb-1018")]
+    [InlineData("INV A_1.2-3, dann geht der Satz weiter.", "a_1.2-3")]
+    [InlineData("Das Inventar, eine Investition und die Inventarnummer 4711 sind nicht gemeint. KINV 5 auch nicht.", "")]
+    [InlineData("INV", "")]
+    public void Geraete_werden_mit_INV_und_ihrer_Inventarnummer_genannt(string text, string erwartet)
+    {
+        var nummern = Geraetebezug.Nummern([text, null, ""]);
+
+        // Zu jeder Nennung gehören auch die Schreibweisen, bei denen die Nummer im Inventar selbst mit "INV" beginnt.
+        var genannt = nummern.Where(n => !n.StartsWith("inv", StringComparison.Ordinal)).Order().ToArray();
+        Assert.Equal(erwartet.Split('|', StringSplitOptions.RemoveEmptyEntries).Order(), genannt);
+        Assert.All(genannt, n => Assert.Superset(new HashSet<string> { "inv" + n, "inv-" + n }, nummern));
+    }
+
     [Fact]
-    public async Task Ein_Auftrag_wird_ueber_die_Inventarnummer_mit_einem_Geraet_verknuepft()
+    public async Task Wer_Geraete_im_Text_nennt_verknuepft_sie_mit_dem_Auftrag()
     {
         var anna = await app.AnmeldenAlsAsync("anna");
 
-        var id = await ErfassenAsync(anna, "Monitor zeigt Streifen", "mo-2203");
+        var id = await ErfassenAsync(anna, "Monitor zeigt Streifen", "Der Monitor INV mo-2203 zeigt Streifen, am Notebook (INV NB-1017) auch. INV ZZ-0000 kennt niemand.");
 
-        var auftrag = await LadenAsync(id);
-        Assert.Equal("MO-2203", auftrag.Inventargeraet!.Inventarnummer);
+        // Zwei Geräte sind verknüpft. Die unbekannte Nummer bleibt Text und stört nicht.
+        Assert.Equal(["MO-2203", "NB-1017"], await GeraeteAsync(id));
+        var monitor = await GeraetIdAsync("MO-2203");
         var seite = await anna.GetStringAsync($"/Auftraege/{id}");
-        Assert.Contains($"/Geraete/{auftrag.InventargeraetId}", seite);
+        Assert.Contains($"/Geraete/{monitor}", seite);
         Assert.Contains("Monitor 27 Zoll", seite);
-        Assert.Contains("Monitor zeigt Streifen", await anna.GetStringAsync($"/Geraete/{auftrag.InventargeraetId}"));
-        // Die Suche findet den Auftrag über die Inventarnummer.
-        Assert.Contains("Monitor zeigt Streifen", await anna.GetStringAsync("/Auftraege?q=MO-2203"));
+        Assert.Contains("Notebook 14 Zoll", seite);
+
+        // Am Gerät steht der Auftrag, die Liste zählt ihn, und die Suche findet ihn über die Inventarnummer.
+        Assert.Contains("Monitor zeigt Streifen", await anna.GetStringAsync($"/Geraete/{monitor}"));
+        // Andere Tests dieser Klasse nennen den Monitor auch; die Suche liefert nur seine Zeile.
+        Assert.Matches("MO-2203</a>(?s:.*?)<td>[1-9]\\d*</td>\\s*</tr>", await anna.GetStringAsync("/Geraete?q=mo-2203"));
+        Assert.Contains("Monitor zeigt Streifen", await anna.GetStringAsync("/Auftraege?q=NB-1017"));
+
+        // Auch der Betreff zählt.
+        Assert.Equal(["NB-1018"], await GeraeteAsync(await ErfassenAsync(anna, "INV NB-1018 startet nicht", "Für einen Test.")));
     }
 
     [Fact]
-    public async Task Eine_unbekannte_Inventarnummer_wird_abgelehnt()
+    public async Task Spaetere_Texte_verknuepfen_weitere_Geraete_und_gestrichene_Nennungen_loesen_sie()
     {
         var anna = await app.AnmeldenAlsAsync("anna");
-        var vorher = await app.DatenbankAsync(db => db.Auftraege.CountAsync());
-
-        var antwort = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
-        {
-            ["Eingabe.KundeName"] = "Test Kunde",
-            ["Eingabe.Felder.Betreff"] = "Unbekanntes Gerät",
-            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
-            ["Eingabe.Felder.Inventarnummer"] = "ZZ-0000",
-            ["Eingabe.GruppeId"] = (await HotlineAsync()).ToString(),
-        });
-
-        Assert.Contains("Im Inventar gibt es kein Gerät mit dieser Nummer.", await antwort.Content.ReadAsStringAsync());
-        Assert.Equal(vorher, await app.DatenbankAsync(db => db.Auftraege.CountAsync()));
-    }
-
-    [Fact]
-    public async Task Die_Verknuepfung_laesst_sich_aendern_und_loesen_und_steht_im_Verlauf()
-    {
-        var anna = await app.AnmeldenAlsAsync("anna");
-        var id = await ErfassenAsync(anna, "Notebook lädt nicht", "NB-1017");
+        var id = await ErfassenAsync(anna, "Notebook lädt nicht", "Es geht um INV NB-1017.");
         await anna.UebernehmenAsync(app, id);
-        var seite = $"/Auftraege/{id}/Bearbeiten";
-        Assert.Contains("value=\"NB-1017\"", await anna.GetStringAsync(seite));
+        var seite = $"/Auftraege/{id}";
 
-        await BearbeitenAsync(anna, id, "NB-1018");
-        var geaendert = await LadenAsync(id);
-        Assert.Equal("NB-1018", geaendert.Inventargeraet!.Inventarnummer);
-        Assert.Equal("Gerät aus dem Inventar: NB-1017 → NB-1018", geaendert.Verlauf.OrderBy(v => v.Id).Last().Beschreibung);
+        // Ein interner Kommentar nennt das Ersatzgerät, eine Nachricht an den Kunden den Monitor.
+        await AktionAsync(anna, id, "InternerKommentar", "Getauscht gegen INV NB-1018.");
+        await AktionAsync(anna, id, "NachrichtAnKunden", "Bitte auch INV MO-2203 mitbringen.");
+        Assert.Equal(["MO-2203", "NB-1017", "NB-1018"], await GeraeteAsync(id));
 
-        await BearbeitenAsync(anna, id, "");
-        var geloest = await LadenAsync(id);
-        Assert.Null(geloest.InventargeraetId);
-        Assert.Equal("Gerät aus dem Inventar: NB-1018 → –", geloest.Verlauf.OrderBy(v => v.Id).Last().Beschreibung);
+        // Die Beschreibung nennt das Notebook nicht mehr: Es ist gelöst. Ihr früherer Text steht im Verlauf,
+        // zählt aber nicht. Was in Kommentar und Nachricht steht, bleibt.
+        var auftrag = await LadenAsync(id);
+        await anna.PostFormularAsync($"{seite}/Bearbeiten", $"{seite}/Bearbeiten", new()
+        {
+            ["Version"] = auftrag.Version.ToString(),
+            ["Felder.Betreff"] = auftrag.Betreff,
+            ["Felder.Beschreibung"] = "Das Gerät lädt nicht.",
+        });
+        auftrag = await LadenAsync(id);
+        Assert.Contains(auftrag.Verlauf, v => v.Art == VerlaufArt.Geaendert && v.Text == "Es geht um INV NB-1017.");
+        Assert.Equal(["MO-2203", "NB-1018"], await GeraeteAsync(id));
+
+        // Der Verfasser ändert seinen internen Kommentar: Auch das löst die Verknüpfung.
+        var kommentar = auftrag.Verlauf.Single(v => v.Art == VerlaufArt.InternerKommentar).Id;
+        await anna.PostFormularAsync($"{seite}/Eintrag/{kommentar}", $"{seite}/Eintrag/{kommentar}", new() { ["Text"] = "Doch nicht getauscht." });
+        Assert.Equal(["MO-2203"], await GeraeteAsync(id));
+
+        // Der Kunde antwortet und nennt ein Gerät. Seine Seite zeigt die verknüpften Geräte nicht.
+        var dieter = await app.AnmeldenAlsAsync("dieter");
+        var eigener = await StellenAsync(dieter, "Mein Notebook ist langsam", "Auf dem Aufkleber steht INV NB-1017.");
+        Assert.Equal(["NB-1017"], await GeraeteAsync(eigener));
+        await dieter.PostFormularAsync($"/Meine/{eigener}", $"/Meine/{eigener}", new() { ["text"] = "Der Monitor INV MO-2203 hängt daran." });
+        Assert.Equal(["MO-2203", "NB-1017"], await GeraeteAsync(eigener));
+        Assert.DoesNotContain("Monitor 27 Zoll", await dieter.GetStringAsync($"/Meine/{eigener}"));
     }
 
     [Fact]
-    public async Task Ein_ausgemustertes_Geraet_bleibt_am_Auftrag_laesst_sich_aber_nicht_neu_verknuepfen()
+    public async Task Ein_ausgemustertes_Geraet_bleibt_am_Auftrag_wird_aber_nicht_neu_verknuepft()
     {
         var anna = await app.AnmeldenAlsAsync("anna");
         await anna.PostFormularAsync("/Geraete/Bearbeiten", "/Geraete/Bearbeiten", new()
@@ -169,69 +195,59 @@ public class GeraeteTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             ["Eingabe.Bezeichnung"] = "Alter Arbeitsplatzrechner",
             ["Eingabe.Aktiv"] = "true",
         });
-        var id = await ErfassenAsync(anna, "Alter Rechner piept", "PC-0001");
+        var id = await ErfassenAsync(anna, "Alter Rechner piept", "INV PC-0001 piept beim Start.");
         await app.DatenbankAsync(db => db.Geraete.Where(g => g.Inventarnummer == "PC-0001").ExecuteUpdateAsync(g => g.SetProperty(x => x.Aktiv, false)));
 
-        // Am bestehenden Auftrag bleibt es beim Bearbeiten erhalten.
-        await BearbeitenAsync(anna, id, "PC-0001", betreff: "Alter Rechner piept dreimal");
-        var auftrag = await LadenAsync(id);
-        Assert.Equal(("Alter Rechner piept dreimal", "PC-0001"), (auftrag.Betreff, auftrag.Inventargeraet!.Inventarnummer));
+        // Am bestehenden Auftrag bleibt es, auch wenn weiter geschrieben wird, und ist als ausgemustert markiert.
+        await anna.UebernehmenAsync(app, id);
+        await AktionAsync(anna, id, "InternerKommentar", "Netzteil geprüft.");
+        Assert.Equal(["PC-0001"], await GeraeteAsync(id));
+        Assert.Matches("PC-0001</a>(?s:.*?)ausgemustert", await anna.GetStringAsync($"/Auftraege/{id}"));
 
-        // Neu verknüpfen lässt es sich nicht, und es wird nicht mehr vorgeschlagen.
-        var antwort = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
-        {
-            ["Eingabe.KundeName"] = "Test Kunde",
-            ["Eingabe.Felder.Betreff"] = "Noch ein alter Rechner",
-            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
-            ["Eingabe.Felder.Inventarnummer"] = "PC-0001",
-            ["Eingabe.GruppeId"] = (await HotlineAsync()).ToString(),
-        });
-        Assert.Contains("Im Inventar gibt es kein Gerät mit dieser Nummer.", await antwort.Content.ReadAsStringAsync());
-        Assert.DoesNotContain("PC-0001", await anna.GetStringAsync("/Geraete/Vorschlaege?q=pc-00"));
+        // Ein neuer Auftrag, der es nennt, wird erfasst, aber nicht mit ihm verknüpft.
+        Assert.Empty(await GeraeteAsync(await ErfassenAsync(anna, "Noch ein alter Rechner", "Wieder INV PC-0001.")));
         Assert.Contains("ausgemustert", await anna.GetStringAsync("/Geraete?q=pc-0001"));
     }
 
-    [Fact]
-    public async Task Vorschlaege_kommen_ohne_Seitenrahmen()
-    {
-        var anna = await app.AnmeldenAlsAsync("anna");
-
-        var vorschlaege = await anna.GetStringAsync("/Geraete/Vorschlaege?q=nb-10");
-
-        Assert.DoesNotContain("<html", vorschlaege);
-        Assert.Contains("<option value=\"NB-1017\">Notebook 14 Zoll · A 204 · Dieter Kunde</option>", vorschlaege);
-        Assert.Contains("NB-1018", vorschlaege);
-        Assert.Equal("", (await anna.GetStringAsync("/Geraete/Vorschlaege?q=n")).Trim());
-    }
-
-    private async Task<int> ErfassenAsync(HttpClient client, string betreff, string inventarnummer)
+    private async Task<int> ErfassenAsync(HttpClient client, string betreff, string beschreibung)
     {
         var antwort = await client.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
         {
             ["Eingabe.KundeName"] = "Test Kunde",
             ["Eingabe.Felder.Betreff"] = betreff,
-            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
-            ["Eingabe.Felder.Inventarnummer"] = inventarnummer,
+            ["Eingabe.Felder.Beschreibung"] = beschreibung,
             ["Eingabe.GruppeId"] = (await HotlineAsync()).ToString(),
         });
         return int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
     }
 
-    private async Task BearbeitenAsync(HttpClient client, int id, string inventarnummer, string? betreff = null)
+    private static async Task<int> StellenAsync(HttpClient client, string betreff, string beschreibung)
     {
-        if ((await LadenAsync(id)).BearbeiterId is null)
-            await client.UebernehmenAsync(app, id);
-        var auftrag = await LadenAsync(id);
-        var seite = $"/Auftraege/{id}/Bearbeiten";
-        var antwort = await client.PostFormularAsync(seite, seite, new()
+        var antwort = await client.PostFormularAsync("/Meine/Neu", "/Meine/Neu", new()
         {
-            ["Version"] = auftrag.Version.ToString(),
-            ["Felder.Betreff"] = betreff ?? auftrag.Betreff,
-            ["Felder.Beschreibung"] = auftrag.Beschreibung,
-            ["Felder.Inventarnummer"] = inventarnummer,
+            ["Eingabe.Betreff"] = betreff,
+            ["Eingabe.Beschreibung"] = beschreibung,
         });
-        Assert.Equal($"/Auftraege/{id}", antwort.RequestMessage!.RequestUri!.AbsolutePath);
+        return int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
     }
+
+    private async Task AktionAsync(HttpClient client, int id, string aktion, string text)
+    {
+        var version = (await LadenAsync(id)).Version;
+        var antwort = await client.PostFormularAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler={aktion}", new() { ["version"] = version.ToString(), ["text"] = text });
+        Assert.DoesNotContain("meldung fehler", await antwort.Content.ReadAsStringAsync());
+    }
+
+    /// <summary>Die Inventarnummern der Geräte, die mit dem Auftrag verknüpft sind.</summary>
+    private Task<List<string>> GeraeteAsync(int id) => app.DatenbankAsync(db => db.Auftraege
+        .Where(a => a.Id == id)
+        .SelectMany(a => a.Geraete)
+        .Select(g => g.Inventarnummer)
+        .OrderBy(n => n)
+        .ToListAsync());
+
+    private Task<int> GeraetIdAsync(string inventarnummer) =>
+        app.DatenbankAsync(db => db.Geraete.Where(g => g.Inventarnummer == inventarnummer).Select(g => g.Id).SingleAsync());
 
     private Task<int> HotlineAsync() =>
         app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync());
@@ -241,7 +257,6 @@ public class GeraeteTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
     private Task<Auftrag> LadenAsync(int id) => app.DatenbankAsync(db => db.Auftraege
         .AsNoTracking()
-        .Include(a => a.Inventargeraet)
         .Include(a => a.Verlauf)
         .FirstAsync(a => a.Id == id));
 }

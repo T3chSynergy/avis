@@ -52,8 +52,8 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
         Assert.True(auftrag.Gruppe.IstEingangsgruppe);
         Assert.Equal(Eingang.Web, auftrag.Eingang);
         Assert.Equal("Dieter Kunde", auftrag.Kunde.Name);
-        // Der Standort ist der des Kunden aus den Testdaten.
-        Assert.Equal(("A 204", null), (auftrag.Standort, auftrag.Geraet));
+        // Am Auftrag steht beim Kunden dessen Standort aus den Testdaten.
+        Assert.Contains("Standort A 204", await (await app.AnmeldenAlsAsync("anna")).GetStringAsync($"/Auftraege/{id}"));
 
         var anna = await app.AnmeldenAlsAsync("anna");
         Assert.Contains("Beamer zeigt kein Bild", await anna.GetStringAsync("/Gruppen"));

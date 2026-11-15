@@ -37,7 +37,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
             .Include(a => a.Bearbeiter)
             .Include(a => a.BevorzugterBearbeiter)
             .Include(a => a.Kategorie)
-            .Include(a => a.Inventargeraet)
+            .Include(a => a.Geraete)
             .Include(a => a.Verlauf).ThenInclude(v => v.Benutzer)
             .Include(a => a.Verlauf).ThenInclude(v => v.Anhaenge)
             .FirstOrDefaultAsync(a => a.Id == id);

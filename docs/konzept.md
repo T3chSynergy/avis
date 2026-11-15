@@ -125,9 +125,7 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 | Erfasst von | Person | automatisch |
 | Eingang | Web, E-Mail, Telefon | automatisch bzw. Vorgabe |
 | Kategorie | Auswahlliste | vom Administrator gepflegt |
-| Standort | Freitext | zum Beispiel der Raum. Ohne Angabe der Standort des Kunden |
-| Gerät | Freitext | immer möglich |
-| Gerät (verknüpft) | Verweis auf Gerätetabelle | optional, siehe Abschnitt 5 |
+| Geräte | Verweise auf die Gerätetabelle | alle, die im Auftrag mit „INV“ und Inventarnummer genannt sind, siehe Abschnitt 5 |
 | Dringlichkeit | 3 Stufen | siehe Matrix |
 | Wichtigkeit | 3 Stufen | siehe Matrix |
 | Termin | Datum | optional |
@@ -137,8 +135,9 @@ ein feines Berechtigungssystem: Es ist immer nachvollziehbar, wer was getan hat.
 | Anhänge | Dateien | am Auftrag, an Kommentaren, Nachrichten und Antworten. Anhänge an internen Kommentaren sieht der Kunde nicht. Bilder erscheinen als Vorschau und lassen sich mit Strg+V einfügen |
 | Verlauf | Einträge | automatisch |
 
-Das Kundenformular zeigt nur Betreff, Beschreibung und Anhänge. Der Standort
-kommt vom Kunden, alles andere ergänzt die Hotline.
+Das Kundenformular zeigt nur Betreff, Beschreibung und Anhänge. Alles andere
+ergänzt die Hotline. Einen eigenen Standort hat ein Auftrag nicht: An ihm
+steht der Standort des Kunden.
 
 ### Priorität
 
@@ -198,10 +197,13 @@ können, ohne dass sich am Auftrag etwas ändert.
 
 - Inventarnummer, Bezeichnung, Typ, Standort, optional der Kunde, der das
   Gerät nutzt
-- Ein Auftrag kann über die Inventarnummer mit einem Gerät verknüpft werden,
-  muss aber nicht. Das Freitextfeld bleibt daneben bestehen.
-- Ausgemusterte Geräte bleiben an ihren Aufträgen, lassen sich aber nicht mehr
-  neu verknüpfen.
+- Ein Auftrag ist mit den Geräten verknüpft, die in ihm genannt sind: „INV“
+  und die Inventarnummer, etwa „INV 4532436“, im Betreff, in der Beschreibung
+  oder in einem späteren Text. Es gibt dafür kein Feld, und es können
+  mehrere Geräte sein. Eine unbekannte Nummer bleibt Text.
+- Wird eine Nennung gestrichen, ist die Verknüpfung gelöst.
+- Ausgemusterte Geräte bleiben an ihren Aufträgen, werden aber nicht mehr
+  neu verknüpft.
 - Am Gerät sind seine bisherigen Aufträge sichtbar.
 
 ### Abgleich der Geräte mit Snipe-IT
@@ -226,11 +228,10 @@ können, ohne dass sich am Auftrag etwas ändert.
 
 ### Standort
 
-Kunden, Geräte und Aufträge tragen einen Standort als freien Text, zum
-Beispiel den Raum „A 105“. Eine Auswahlliste gibt es dafür nicht. Bei
-abgeglichenen Kunden und Geräten liefert ihn die Quelle, sonst wird er von
-Hand eingetragen. Ein Auftrag bekommt beim Erfassen den Standort des Kunden,
-wenn keiner angegeben ist.
+Kunden und Geräte tragen einen Standort als freien Text, zum Beispiel den
+Raum „A 105“. Eine Auswahlliste gibt es dafür nicht. Bei abgeglichenen Kunden
+und Geräten liefert ihn die Quelle, sonst wird er von Hand eingetragen. Ein
+Auftrag hat keinen eigenen Standort; an ihm steht der des Kunden.
 
 ### Externe Quellen
 
@@ -239,7 +240,7 @@ Damit lassen sich die Kunden aus dem Active Directory und die Geräte aus
 Snipe-IT abgleichen (siehe oben).
 
 Die Verknüpfung ist nie Pflicht: Ein Auftrag lässt sich immer auch ohne
-passenden Geräteeintrag erfassen.
+passenden Geräteeintrag erfassen. Das Gerät steht dann nur im Text.
 
 ## 6. Seiten
 

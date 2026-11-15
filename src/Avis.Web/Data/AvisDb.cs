@@ -34,15 +34,91 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     {
         BenachrichtigungenVormerken();
         SuchtexteAktualisieren();
+        foreach (var auftrag in AuftraegeMitNeuemText())
+        {
+            var texte = GenannteTexte(auftrag, GespeicherteTexte(auftrag)?.ToList());
+            var nummern = Geraetebezug.Nummern(texte);
+            if (Entry(auftrag).State != EntityState.Added)
+                Entry(auftrag).Collection(a => a.Geraete).Load();
+            auftrag.GeraeteSetzen(nummern.Count == 0 ? [] : Geraete.Where(g => nummern.Contains(g.Nummernschluessel)).ToList());
+        }
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         BenachrichtigungenVormerken();
         SuchtexteAktualisieren();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        foreach (var auftrag in AuftraegeMitNeuemText())
+        {
+            var gespeichert = GespeicherteTexte(auftrag) is { } abfrage ? await abfrage.ToListAsync(cancellationToken) : null;
+            var nummern = Geraetebezug.Nummern(GenannteTexte(auftrag, gespeichert));
+            if (Entry(auftrag).State != EntityState.Added)
+                await Entry(auftrag).Collection(a => a.Geraete).LoadAsync(cancellationToken);
+            auftrag.GeraeteSetzen(nummern.Count == 0 ? [] : await Geraete.Where(g => nummern.Contains(g.Nummernschluessel)).ToListAsync(cancellationToken));
+        }
+        return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
+
+    /// <summary>
+    /// Die Aufträge, an deren Texten dieses Speichern etwas ändert. Für sie
+    /// wird neu bestimmt, welche Geräte genannt sind (siehe
+    /// <see cref="Geraetebezug"/>). Das geschieht hier an einer Stelle, damit
+    /// es für jeden Weg gilt, auf dem Text an einen Auftrag kommt: Seiten,
+    /// Posteingang, Testdaten.
+    /// </summary>
+    private List<Auftrag> AuftraegeMitNeuemText()
+    {
+        ChangeTracker.DetectChanges();
+        var auftraege = new HashSet<Auftrag>();
+        foreach (var eintrag in ChangeTracker.Entries<Auftrag>())
+        {
+            if (eintrag.State == EntityState.Added
+                || (eintrag.State == EntityState.Modified
+                    && (eintrag.Property(a => a.Betreff).IsModified || eintrag.Property(a => a.Beschreibung).IsModified)))
+                auftraege.Add(eintrag.Entity);
+        }
+
+        foreach (var eintrag in ChangeTracker.Entries<Verlaufseintrag>())
+        {
+            if (eintrag.State == EntityState.Added || (eintrag.State == EntityState.Modified && eintrag.Property(v => v.Text).IsModified))
+                auftraege.Add(eintrag.Entity.Auftrag);
+        }
+        return [.. auftraege];
+    }
+
+    /// <summary>
+    /// Die Texte des Verlaufs, die schon in der Datenbank stehen. Nicht jede
+    /// Seite lädt den ganzen Verlauf, bevor sie etwas anfügt. Null bei einem
+    /// neuen Auftrag: Dort gibt es noch nichts Gespeichertes.
+    /// </summary>
+    private IQueryable<GespeicherterText>? GespeicherteTexte(Auftrag auftrag) =>
+        Entry(auftrag).State == EntityState.Added
+            ? null
+            : Verlauf.AsNoTracking()
+                .Where(v => v.AuftragId == auftrag.Id && v.Art != VerlaufArt.Geaendert && v.Text != null)
+                .Select(v => new GespeicherterText(v.Id, v.Text));
+
+    /// <summary>
+    /// Alles, worin ein Gerät genannt sein kann: Betreff, Beschreibung und
+    /// die Texte des Verlaufs, im geladenen Stand, wo er vom gespeicherten
+    /// abweicht. Ausgenommen ist der frühere Text einer geänderten
+    /// Beschreibung: Was dort gestrichen wurde, soll nicht mehr zählen.
+    /// </summary>
+    private static List<string?> GenannteTexte(Auftrag auftrag, List<GespeicherterText>? gespeichert)
+    {
+        var geladen = auftrag.Verlauf.Where(v => v.Art != VerlaufArt.Geaendert).ToList();
+        var geladeneIds = geladen.Select(v => v.Id).Where(id => id != 0).ToHashSet();
+        return
+        [
+            auftrag.Betreff,
+            auftrag.Beschreibung,
+            .. (gespeichert ?? []).Where(t => !geladeneIds.Contains(t.Id)).Select(t => t.Text),
+            .. geladen.Select(v => v.Text),
+        ];
+    }
+
+    private sealed record GespeicherterText(int Id, string? Text);
 
     /// <summary>
     /// Merkt zu jedem neuen Verlaufseintrag, der jemanden betrifft, eine Mail
@@ -210,10 +286,12 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
         {
             e.ToTable("Auftraege");
             e.Property(a => a.Betreff).HasMaxLength(200);
-            e.Property(a => a.Standort).HasMaxLength(100);
-            e.Property(a => a.Geraet).HasMaxLength(200);
             e.Property(a => a.Version).IsConcurrencyToken();
             e.HasMany(a => a.Verlauf).WithOne(v => v.Auftrag).HasForeignKey(v => v.AuftragId);
+            e.HasMany(a => a.Geraete).WithMany().UsingEntity<Dictionary<string, object>>(
+                "Auftragsgeraete",
+                rechts => rechts.HasOne<Inventargeraet>().WithMany().HasForeignKey("GeraetId"),
+                links => links.HasOne<Auftrag>().WithMany().HasForeignKey("AuftragId"));
             e.HasIndex(a => new { a.GruppeId, a.AbgeschlossenAm });
             e.HasIndex(a => new { a.BearbeiterId, a.AbgeschlossenAm });
         });

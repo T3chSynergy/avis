@@ -231,12 +231,8 @@ public static class Startdaten
         await db.SaveChangesAsync();
 
         var drucker = Auftrag.Erfassen(
-            new("Drucker im Flur druckt nicht", "Seit heute Morgen bleibt jeder Druckauftrag in der Warteschlange hängen.")
-            {
-                Geraet = "Drucker 2. OG Flur",
-                Inventargeraet = flurdrucker,
-                Standort = "A Flur 2. OG",
-            },
+            // Ein Gerät kommt an den Auftrag, indem es mit "INV" und seiner Inventarnummer genannt wird.
+            new("Drucker im Flur druckt nicht", "Seit heute Morgen bleibt jeder Druckauftrag am Drucker im 2. OG (INV DR-0042) in der Warteschlange hängen."),
             kunde1, anna, hotline, Eingang.Telefon, jetzt.AddHours(-5));
 
         var wlan = Auftrag.Erfassen(
@@ -244,7 +240,6 @@ public static class Startdaten
             {
                 Dringlichkeit = Stufe.Hoch,
                 Wichtigkeit = Stufe.Hoch,
-                Standort = "C 112",
             },
             kunde2, anna, hotline, Eingang.Telefon, jetzt.AddHours(-3));
         wlan.Uebernehmen(anna, jetzt.AddHours(-3).AddMinutes(5));

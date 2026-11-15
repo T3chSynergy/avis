@@ -54,8 +54,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Geräte aus Snipe-IT:** nur lesend, sonst wie die Kunden. Nutzer ist der Kunde mit derselben Mailadresse.
 - **Abgleiche laufen einmal täglich** zur festen Uhrzeit, nie beim Start: Snipe-IT ist langsam. Tagsüber
   nur das Geänderte zu holen (Sortierung nach `updated_at`) ist möglich, aber zurückgestellt.
-- **Standort** (etwa der Raum „A 105“) ist freier Text an Kunde, Gerät und Auftrag, keine Auswahlliste.
-  Bei Abgeglichenem kommt er aus der Quelle; der Auftrag übernimmt ohne Angabe den des Kunden.
+- **Standort** (etwa der Raum „A 105“) ist freier Text an Kunde und Gerät. Der Auftrag hat keinen eigenen.
+- **Geräte am Auftrag** nur über „INV <Nummer>“ in seinen Texten (`Geraetebezug`), kein Feld dafür.
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.
   Ausnahmen in `Startdaten`: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt

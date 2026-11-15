@@ -37,19 +37,6 @@ public class AuftragTests
     }
 
     [Fact]
-    public void Ohne_Angabe_gilt_beim_Erfassen_der_Standort_des_Kunden()
-    {
-        var mitStandort = new Kunde { Id = 2, Name = "Eva Test", Standort = "C 011" };
-        Auftrag Fuer(Kunde kunde, string? standort) =>
-            Auftrag.Erfassen(Angaben with { Standort = standort }, kunde, _anna, _hotline, Eingang.EMail, Jetzt);
-
-        Assert.Equal("C 011", Fuer(mitStandort, null).Standort);
-        Assert.Equal("C 011", Fuer(mitStandort, "  ").Standort);
-        Assert.Equal("B 001", Fuer(mitStandort, " B 001 ").Standort);
-        Assert.Null(Fuer(_kunde, null).Standort);
-    }
-
-    [Fact]
     public void Beim_Erfassen_laesst_sich_ein_bevorzugter_Bearbeiter_nennen()
     {
         var auftrag = Auftrag.Erfassen(Angaben, _kunde, _anna, _netzwerk, Eingang.Telefon, Jetzt, bevorzugt: _bernd);
@@ -384,14 +371,13 @@ public class AuftragTests
     {
         var stoerung = new Kategorie { Id = 1, Name = "Störung" };
         var anfrage = new Kategorie { Id = 2, Name = "Anfrage" };
-        var auftrag = Neu(Angaben with { Kategorie = stoerung, Geraet = "PC-0815" });
+        var auftrag = Neu(Angaben with { Kategorie = stoerung });
         auftrag.Uebernehmen(_bernd, Jetzt);
 
         var geaendert = auftrag.Aendern(
             new("Drucker im Flur defekt", "Druckt nicht.")
             {
                 Kategorie = anfrage,
-                Standort = " A 105 ",
                 Dringlichkeit = Stufe.Hoch,
                 Termin = new DateOnly(2026, 11, 20),
             },
@@ -400,7 +386,6 @@ public class AuftragTests
         Assert.True(geaendert);
         Assert.Equal("Drucker im Flur defekt", auftrag.Betreff);
         Assert.Same(anfrage, auftrag.Kategorie);
-        Assert.Null(auftrag.Geraet);
         Assert.Equal(2, auftrag.Prioritaet);
 
         var eintrag = auftrag.Verlauf[^1];
@@ -411,8 +396,6 @@ public class AuftragTests
             [
                 "Betreff: Drucker defekt → Drucker im Flur defekt",
                 "Kategorie: Störung → Anfrage",
-                "Standort: – → A 105",
-                "Gerät: PC-0815 → –",
                 "Dringlichkeit: mittel → hoch",
                 "Termin: – → 20.11.2026",
             ],
@@ -435,12 +418,12 @@ public class AuftragTests
     [Fact]
     public void Aendern_ohne_Unterschied_schreibt_nichts_in_den_Verlauf()
     {
-        var auftrag = BeiAnna(new("Drucker defekt", "Zeile eins\nZeile zwei") { Geraet = "PC-0815" });
+        var auftrag = BeiAnna(new("Drucker defekt", "Zeile eins\nZeile zwei"));
         var eintraege = auftrag.Verlauf.Count;
 
         // So kommt ein unverändertes Formular aus dem Browser zurück.
         var geaendert = auftrag.Aendern(
-            new(" Drucker defekt ", "Zeile eins\r\nZeile zwei\r\n") { Geraet = "PC-0815 " }, _anna, Jetzt);
+            new(" Drucker defekt ", "Zeile eins\r\nZeile zwei\r\n"), _anna, Jetzt);
 
         Assert.False(geaendert);
         Assert.Equal(eintraege, auftrag.Verlauf.Count);

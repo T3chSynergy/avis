@@ -25,7 +25,7 @@ public class DetailsModel(AvisDb db) : PageModel
             return NotFound();
 
         Geraet = geraet;
-        var auftraege = db.AuftraegeFuer(User.BenutzerId()).FuerListe().Where(a => a.InventargeraetId == id);
+        var auftraege = db.AuftraegeFuer(User.BenutzerId()).FuerListe().Where(a => a.Geraete.Any(g => g.Id == id));
         Laufend = await auftraege.Where(a => a.AbgeschlossenAm == null).NachPrioritaet().ToListAsync();
 
         var abgeschlossen = await auftraege

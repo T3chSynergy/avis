@@ -1,10 +1,6 @@
 @model Avis.Web.Pages.Auftraege.AuftragFelder
 @{
     var auswahl = (Avis.Web.Pages.Auftraege.AuftragAuswahl)ViewData["Auswahl"]!;
-    // Aufgeklappt, sobald dort etwas steht oder das Formular Fehler hat.
-    var weitereOffen = !string.IsNullOrWhiteSpace(Model.Standort) || Model.Termin is not null
-        || !string.IsNullOrWhiteSpace(Model.Geraet) || !string.IsNullOrWhiteSpace(Model.Inventarnummer)
-        || !ViewData.ModelState.IsValid;
 }
 <div class="feld">
     <label asp-for="Betreff">Betreff</label>
@@ -15,6 +11,7 @@
     <label asp-for="Beschreibung">Beschreibung</label>
     <textarea asp-for="Beschreibung" rows="6" data-markdown required></textarea>
     <span asp-validation-for="Beschreibung" class="feldfehler"></span>
+    <span class="erklaerung">Geräte verknüpfst du im Text: „INV“ und die Inventarnummer, zum Beispiel <code>INV 4532436</code>.</span>
 </div>
 <div class="reihe">
     @* Drei Stufen nebeneinander statt einer Auswahlliste: Ein Klick genügt, und man sieht, was zur Wahl steht. *@
@@ -43,31 +40,8 @@
         </select>
         <span asp-validation-for="KategorieId" class="feldfehler"></span>
     </div>
+    <div class="feld">
+        <label asp-for="Termin">Termin (optional)</label>
+        <input asp-for="Termin" type="date" />
+    </div>
 </div>
-<details class="weitere" open="@weitereOffen">
-    <summary>Weitere Angaben: Standort, Gerät, Termin</summary>
-    <div class="reihe">
-        <div class="feld">
-            <label asp-for="Standort">Standort</label>
-            <input asp-for="Standort" autocomplete="off" placeholder="@ViewData["StandortLeer"]" />
-            <span asp-validation-for="Standort" class="feldfehler"></span>
-        </div>
-        <div class="feld">
-            <label asp-for="Termin">Termin</label>
-            <input asp-for="Termin" type="date" />
-        </div>
-    </div>
-    <div class="reihe">
-        <div class="feld">
-            <label asp-for="Inventarnummer">Gerät aus dem Inventar (Inventarnummer)</label>
-            <input asp-for="Inventarnummer" list="geraetevorschlaege" autocomplete="off" />
-            <datalist id="geraetevorschlaege" data-url="@Url.Page("/Geraete/Vorschlaege")"></datalist>
-            <span asp-validation-for="Inventarnummer" class="feldfehler"></span>
-        </div>
-        <div class="feld">
-            <label asp-for="Geraet">Gerät (Freitext)</label>
-            <input asp-for="Geraet" />
-            <span asp-validation-for="Geraet" class="feldfehler"></span>
-        </div>
-    </div>
-</details>

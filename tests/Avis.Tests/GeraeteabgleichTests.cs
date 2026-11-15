@@ -70,8 +70,7 @@ public class GeraeteabgleichTests
         {
             ["Eingabe.KundeName"] = "Test Kunde",
             ["Eingabe.Felder.Betreff"] = "Scanner zieht schief ein",
-            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
-            ["Eingabe.Felder.Inventarnummer"] = "SC-7001",
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test mit INV SC-7001.",
             ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync())).ToString(),
         });
         Assert.Contains("Scanner zieht schief ein", await erfasst.Content.ReadAsStringAsync());
@@ -84,20 +83,20 @@ public class GeraeteabgleichTests
         Assert.Equal((1, 0, 1, 0, 1), (ergebnis.Gelesen, ergebnis.Neu, ergebnis.Geaendert, ergebnis.Reaktiviert, ergebnis.Inaktiv));
         var scanner = await GeraetAsync(app, "SC-7001");
         Assert.False(scanner.Aktiv);
-        Assert.True(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.InventargeraetId == scanner.Id)));
+        Assert.True(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.Geraete.Any(g => g.Id == scanner.Id))));
         var plotter = await app.DatenbankAsync(db => db.Geraete.AsNoTracking().Include(g => g.Kunde).SingleAsync(g => g.Inventarnummer == "PL-7002"));
         Assert.Equal(("A 3.07", "Eva Test"), (plotter.Standort, plotter.Kunde!.Name));
 
         // Ausgemustert: markiert in der Liste und nicht mehr neu verknüpfbar.
         Assert.Matches("SC-7001</a>\\s*<span class=\"hinweis\">ausgemustert</span>", await anna.GetStringAsync("/Geraete?q=sc-7001"));
-        var verknuepfen = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
         {
             ["Eingabe.KundeName"] = "Test Kunde",
             ["Eingabe.Felder.Betreff"] = "Für ein ausgemustertes Gerät",
-            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
-            ["Eingabe.Felder.Inventarnummer"] = "SC-7001",
+            ["Eingabe.Felder.Beschreibung"] = "Noch einmal INV SC-7001.",
+            ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync())).ToString(),
         });
-        Assert.Contains("Im Inventar gibt es kein Gerät mit dieser Nummer.", await verknuepfen.Content.ReadAsStringAsync());
+        Assert.Equal(1, await app.DatenbankAsync(db => db.Auftraege.CountAsync(a => a.Geraete.Any(g => g.Id == scanner.Id))));
 
         // Steht der Scanner wieder in der Quelle, ist er wieder in Betrieb, derselbe Eintrag.
         app.Geraetequelle.Geraete.Add(Lesegeraet);
