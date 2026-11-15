@@ -141,7 +141,12 @@ Anfang, mit erfundenen Namen:
 - **Den E-Mail-Eingang zuerst an einem Testpostfach prüfen.** AVIS markiert
   abgeholte Mails als gelesen oder verschiebt sie.
 
-Nach einer Änderung an der Datei den Anwendungspool neu starten.
+Nach einer Änderung an der Datei den Anwendungspool neu starten. Ob die Datei
+gültig ist, zeigt PowerShell; bei einem Tippfehler nennt es die Stelle:
+
+```powershell
+Get-Content .\appsettings.Production.json -Raw | ConvertFrom-Json
+```
 
 ### Kennwörter und Schlüssel
 
@@ -159,6 +164,89 @@ Snipe-IT stehen nicht im Paket. Es gibt zwei Wege:
   Konfiguration von IIS, nicht im Ordner der Anwendung.
 
 Umgebungsvariablen in der `web.config` überleben kein Update.
+
+## Testfassung mit Testanmeldung und Testdaten
+
+Zum Ansehen und Ausprobieren lässt sich AVIS auch auf dem Server so starten
+wie in der Entwicklung: mit erfundenen Testdaten und einer Anmeldung, bei der
+man einen Testbenutzer auswählt. Mit Active Directory, Mailserver und
+Snipe-IT hat diese Fassung nichts zu tun.
+
+**Jeder, der die Seite erreicht, kann sich ohne Kennwort als Administrator
+anmelden.** Sie gehört deshalb nur dorthin, wo allein Befugte hinkommen, und
+nie in denselben Ordner wie eine echte Installation: „Datenbank neu anlegen“
+auf der Anmeldeseite leert die Datenbank vollständig.
+
+1. **Eigenen Ordner, eigenen Anwendungspool und eigene Website anlegen**, wie
+   unter „Einrichten“, Schritte 1 bis 4.
+2. **Authentifizierung** der Website: anonyme Authentifizierung (Anonymous
+   Authentication) aktivieren. Die Windows-Authentifizierung wird hier nicht
+   gebraucht.
+3. **Die Datei `appsettings.Development.json` anlegen**, im Ordner der
+   Anwendung neben `appsettings.json`, mit genau diesem Inhalt. Bei `BasisUrl`
+   steht die Adresse, unter der die Testseite erreichbar ist.
+
+   ```json
+   {
+     "Anmeldung": {
+       "Art": "Entwicklung"
+     },
+     "Testdaten": {
+       "Anlegen": true
+     },
+     "Verzeichnis": {
+       "Art": "Keines"
+     },
+     "Mail": {
+       "Art": "Ordner",
+       "Absender": "it-hotline@example.org",
+       "BasisUrl": "https://avis-test.example.org"
+     }
+   }
+   ```
+
+4. **Die Umgebung auf „Development“ stellen.** Dazu den Inhalt der Datei
+   `web.config` im Ordner der Anwendung durch diesen ersetzen. Er
+   unterscheidet sich von der ausgelieferten Datei nur durch den Block
+   `environmentVariables`.
+
+   ```xml
+   <?xml version="1.0" encoding="utf-8"?>
+   <configuration>
+     <location path="." inheritInChildApplications="false">
+       <system.webServer>
+         <handlers>
+           <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
+         </handlers>
+         <aspNetCore processPath=".\Avis.Web.exe" stdoutLogEnabled="false" stdoutLogFile=".\logs\stdout" hostingModel="inprocess">
+           <environmentVariables>
+             <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Development" />
+           </environmentVariables>
+         </aspNetCore>
+       </system.webServer>
+     </location>
+   </configuration>
+   ```
+
+5. **Anwendungspool neu starten und die Seite aufrufen.** Es erscheint die
+   Anmeldeseite mit den Testbenutzern.
+
+Zur Sicherheit vor Tippfehlern lässt sich die Datei mit den Einstellungen
+prüfen; bei einem Fehler nennt PowerShell die Stelle:
+
+```powershell
+Get-Content .\appsettings.Development.json -Raw | ConvertFrom-Json
+```
+
+- Ohne Schritt 4 bricht AVIS den Start ab: Die Testanmeldung und die
+  Testdaten sind nur in der Umgebung „Development“ erlaubt.
+- In dieser Umgebung liest AVIS `appsettings.Development.json` und nicht
+  `appsettings.Production.json`.
+- Mails gehen an niemanden; sie liegen als Dateien in `App_Data\Mails`.
+- Bei einem Fehler zeigt AVIS in dieser Umgebung die technischen Einzelheiten
+  im Browser.
+- Ein Update ersetzt die `web.config`. Schritt 4 ist danach zu wiederholen;
+  `appsettings.Development.json` und `App_Data` bleiben.
 
 ## Update
 
