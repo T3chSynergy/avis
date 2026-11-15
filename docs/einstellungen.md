@@ -188,9 +188,9 @@ zählen und deaktivierte Konten nicht, ergänzt AVIS selbst. Beispiele:
 | `(mail=*@example.org)` | alle Konten mit einer Adresse dieser Domäne |
 | `(memberOf=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | die Mitglieder dieser Gruppe |
 | `(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | ihre Mitglieder samt verschachtelter Gruppen |
-| `(&(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))` | alle Konten, bei denen Telefon, Büro, E-Mail und Abteilung eingetragen sind |
+| `(&(objectCategory=person)(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))` | alle Personen, bei denen Telefon, Büro, E-Mail und Abteilung eingetragen sind |
 
-Zum Herauskopieren in die `appsettings.Production.json`: alle Konten, bei
+Zum Herauskopieren in die `appsettings.Production.json`: alle Personen, bei
 denen Telefonnummer, Büro, E-Mail-Adresse und Abteilung ausgefüllt sind.
 Funktionskonten und technische Konten fallen damit meist von selbst heraus.
 `(&` am Anfang verlangt, dass alle Bedingungen zugleich gelten; `=*` heißt
@@ -199,8 +199,17 @@ Funktionskonten und technische Konten fallen damit meist von selbst heraus.
 ```json
 "Kundenabgleich": {
   "Art": "ActiveDirectory",
-  "Filter": "(&(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))"
+  "Filter": "(&(objectCategory=person)(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))"
 }
+```
+
+Die Bedingung `(objectCategory=person)` ergänzt AVIS zwar selbst. Mit ihr
+trifft der Filter aber auch außerhalb von AVIS dasselbe, zum Beispiel wenn
+man ihn vorher ausprobiert. Dieser Befehl zählt die Konten, die er trifft;
+deaktivierte zählt er mit, AVIS lässt sie später weg:
+
+```powershell
+(Get-ADUser -LDAPFilter "(&(objectCategory=person)(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))").Count
 ```
 
 Mit `Kundenabgleich:Suchbasis` lässt sich die Suche auf einen Teil des

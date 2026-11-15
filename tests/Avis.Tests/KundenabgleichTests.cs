@@ -263,7 +263,7 @@ public class KundenabgleichTests
     // Die Beispiele aus docs/einstellungen.md, die man dort herauskopiert.
     [Theory]
     [InlineData("(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)")]
-    [InlineData("(&(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))")]
+    [InlineData("(&(objectCategory=person)(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))")]
     public void Die_Filter_aus_der_Dokumentation_sind_gueltig_und_bleiben_in_sich_geschlossen(string filter)
     {
         ActiveDirectoryKonten.FilterPruefen(filter, "Kundenabgleich");
