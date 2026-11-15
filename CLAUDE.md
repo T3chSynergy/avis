@@ -42,7 +42,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   (interner Kommentar, Hinweis beim Weiterleiten), und nur solange er den Auftrag bearbeitet. Der alte
   Text wird ersetzt, der Eintrag trägt „geändert“. Was ein Kunde gesehen oder per Mail bekommen hat,
   bleibt unveränderlich. So vom Nutzer entschieden.
-- **Texte:** Markdown ohne Formatierleiste (vom Nutzer verworfen). Bilder einfügen mit Strg+V bleibt.
+- **Texte:** Markdown ohne Formatierleiste (vom Nutzer verworfen: wirkt überladen), kein fremder Editor wie
+  EasyMDE. Dafür eine Schaltfläche „Vorschau“, die der Server rendert. Bilder einfügen mit Strg+V bleibt.
 - **HTML-Mails:** Nur eindeutige Auszeichnungen (fett, kursiv, Überschrift, Link, Listen) und kleine,
   einfache Tabellen werden zu Markdown; alles andere wird schlichter Text.
 - **Oberfläche:** Blau nur für Anklickbares, damit Schaltflächen sich vom Schmuck unterscheiden.
@@ -110,11 +111,10 @@ In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert
 
 1. Probelauf in der Zielumgebung (siehe „Nicht geprüft“).
 2. Testumgebung: Der Nutzer überlegt, automatisch auszuliefern. Offen ist, wofür sie dienen soll (Oberfläche
-   zeigen oder Zielumgebung testen). Erster Schritt wäre ein Paket aus `dotnet publish` als Artefakt des
-   Workflows.
+   zeigen oder Zielumgebung testen). Erster Schritt: ein Paket aus `dotnet publish` als Artefakt des Workflows.
 3. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
 4. Lizenz wählen: noch nicht entschieden, es gibt keine `LICENSE`.
 5. Anmeldung der Kunden an den Kundenabgleich binden: vom Nutzer angedacht, nicht gebaut.
 6. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen; Anhänge lassen sich nicht löschen;
-   im Browser eingefügte Bilder stehen unter dem Text, nicht mittendrin; keine Markdown-Vorschau.
+   im Browser eingefügte Bilder stehen unter dem Text, nicht mittendrin.

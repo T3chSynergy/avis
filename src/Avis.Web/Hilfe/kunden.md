@@ -84,3 +84,6 @@ nicht.
 | `*kursiv*` | *kursiv* |
 | `- Punkt` am Zeilenanfang | eine Liste |
 | `1. Schritt` am Zeilenanfang | eine nummerierte Liste |
+
+Die Schaltfläche „Vorschau“ unter dem Textfeld zeigt den Text so, wie die IT
+ihn sehen wird. „Weiter schreiben“ führt zurück zum Textfeld.

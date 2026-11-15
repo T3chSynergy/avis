@@ -105,7 +105,15 @@ Ein Verweis der Form `![Name](anhang:…)` setzt ein Bild aus den Anhängen
 desselben Eintrags an diese Stelle im Text. So stehen Bilder aus Mails an
 ihrem Platz. Sie erscheinen dann nicht noch einmal in der Liste der Anhänge.
 
-Die Tastenkürzel brauchen JavaScript. Ohne funktioniert alles andere genauso.
+Unter jedem dieser Textfelder steht die Schaltfläche „Vorschau“. Sie zeigt
+den Text an der Stelle des Felds so, wie er später im Auftrag steht, und
+schaltet mit „Weiter schreiben“ zurück. Die Umwandlung macht der Server über
+die Seite `/Vorschau` mit derselben Umsetzung wie bei der Anzeige; gespeichert
+wird dabei nichts. Bilder, die noch nicht hochgeladen sind, zeigt die
+Vorschau nicht, ein Verweis `anhang:…` erscheint als „[Bild: Name]“.
+
+Die Vorschau und die Tastenkürzel brauchen JavaScript. Ohne funktioniert alles
+andere genauso.
 
 Blau steht in der Oberfläche für alles, was man anklicken kann: Schaltflächen
 und Links. Der Kopf und Markierungen nutzen es nicht.

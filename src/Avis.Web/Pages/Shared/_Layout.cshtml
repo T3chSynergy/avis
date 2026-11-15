@@ -6,7 +6,8 @@
     <title>@ViewData["Title"] – AVIS</title>
     <link rel="stylesheet" href="~/css/avis.css" asp-append-version="true" />
 </head>
-<body>
+@* Die Adresse der Vorschau steht hier, damit das Skript der Textfelder sie auch unter einem Unterpfad findet. Ohne Anmeldung bleibt sie leer. *@
+<body data-vorschau="@(User.IstAngemeldet() ? Url.Page("/Vorschau") : null)">
     <a class="sprung" href="#inhalt">Zum Inhalt</a>
     @{
         var seite = ViewContext.RouteData.Values["page"] as string ?? "";

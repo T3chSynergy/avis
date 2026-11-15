@@ -1,15 +1,102 @@
+// Zugaben für die Textfelder mit Markdown.
+//
+// Vorschau: Unter jedem Textfeld steht eine Schaltfläche, die den Text so
+// zeigt, wie er später im Auftrag steht. Die Umwandlung macht der Server,
+// damit Vorschau und Ergebnis übereinstimmen.
+//
 // Bilder in Textfelder einfügen: Ein Bild aus der Zwischenablage (Strg+V) und
 // hineingezogene Dateien werden Anhänge dieses Eintrags. Unter dem Dateifeld
 // steht, was mitgeschickt wird. Wer nacheinander mehrmals Dateien wählt,
 // behält die schon gewählten. Zu große, leere und zu viele Dateien werden
 // gleich abgelehnt: Käme das Formular deswegen mit einem Fehler zurück,
 // wären alle gewählten Dateien weg.
-// Ohne dieses Skript wählt man Dateien über das Dateifeld, alle auf einmal.
+// Ohne dieses Skript wählt man Dateien über das Dateifeld, alle auf einmal,
+// und es gibt keine Vorschau.
 (function () {
+    const vorschauadresse = document.body.dataset.vorschau;
+
     document.querySelectorAll('textarea[data-markdown]').forEach(feld => {
         const dateifeld = feld.form && feld.form.querySelector('input[type="file"][name="dateien"]');
         if (dateifeld) bilder(feld, dateifeld);
+        if (vorschauadresse && feld.form && !feld.readOnly) vorschau(feld);
     });
+
+    function vorschau(feld) {
+        const flaeche = document.createElement('div');
+        flaeche.className = 'vorschau';
+        flaeche.hidden = true;
+        flaeche.setAttribute('role', 'region');
+        flaeche.setAttribute('aria-label', 'Vorschau');
+        flaeche.setAttribute('aria-live', 'polite');
+        const knopf = document.createElement('button');
+        knopf.type = 'button';
+        knopf.className = 'vorschauknopf';
+        knopf.textContent = 'Vorschau';
+        feld.after(flaeche, knopf);
+
+        function hinweis(text) {
+            const absatz = document.createElement('p');
+            absatz.className = 'erklaerung';
+            absatz.textContent = text;
+            flaeche.replaceChildren(absatz);
+        }
+
+        function schreiben() {
+            if (feld.hidden) {
+                feld.hidden = false;
+                flaeche.hidden = true;
+                knopf.textContent = 'Vorschau';
+            }
+        }
+
+        function zeigen() {
+            // Die Vorschau nimmt den Platz des Textfelds ein und ist mindestens so hoch.
+            flaeche.style.minHeight = feld.offsetHeight + 'px';
+            feld.hidden = true;
+            flaeche.hidden = false;
+            knopf.textContent = 'Weiter schreiben';
+
+            if (feld.value.trim() === '') {
+                hinweis('Noch kein Text.');
+                return;
+            }
+
+            const text = feld.value;
+            const daten = new URLSearchParams();
+            daten.set('text', text);
+            const schutz = feld.form.querySelector('input[name="__RequestVerificationToken"]');
+            if (schutz) daten.set('__RequestVerificationToken', schutz.value);
+            hinweis('Die Vorschau wird geladen …');
+            fetch(vorschauadresse, { method: 'POST', body: daten, credentials: 'same-origin' })
+                .then(antwort => {
+                    // Eine Umleitung führt zur Anmeldung: Deren Seite gehört nicht in die Vorschau.
+                    if (!antwort.ok || antwort.redirected) throw new Error('Status ' + antwort.status);
+                    return antwort.text();
+                })
+                .then(html => {
+                    // Inzwischen zurückgeschaltet oder weitergeschrieben: Diese Antwort ist überholt.
+                    if (flaeche.hidden || feld.value !== text) return;
+                    flaeche.replaceChildren(...new DOMParser().parseFromString(html, 'text/html').body.childNodes);
+                    // Ein Link öffnet sich in einem neuen Fenster: Sonst wäre mit dem Formular der Text weg.
+                    flaeche.querySelectorAll('a').forEach(verweis => { verweis.target = '_blank'; });
+                })
+                .catch(() => {
+                    if (!flaeche.hidden) hinweis('Die Vorschau lässt sich gerade nicht laden. Der Text ist unverändert.');
+                });
+        }
+
+        knopf.addEventListener('click', () => {
+            if (feld.hidden) {
+                schreiben();
+                feld.focus();
+            } else {
+                zeigen();
+            }
+        });
+
+        // Fehlt beim Absenden ein Pflichttext, muss der Browser das Feld zeigen können.
+        feld.addEventListener('invalid', schreiben);
+    }
 
     function bilder(feld, dateifeld) {
         const hinweis = document.createElement('p');
