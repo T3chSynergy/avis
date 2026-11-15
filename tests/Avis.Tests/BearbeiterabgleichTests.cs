@@ -120,6 +120,41 @@ public class BearbeiterabgleichTests
     }
 
     [Fact]
+    public async Task Wer_zugleich_Kunde_ist_hat_ein_Konto_und_einen_Kundeneintrag_die_zusammengehoeren()
+    {
+        using var app = new AvisAnwendung();
+        // Dieselbe Person steht in beiden Quellen, mit demselben Anmeldenamen in anderer Schreibweise.
+        app.Bearbeiterquelle.Bearbeiter.Add(Nora);
+        app.Kundenquelle.Kunden.Add(new("guid-nora", @"AVIS\Nora", "Neu, Nora", "Nora.Neu@example.org", "4711", "IT", "A 301"));
+        await AbgleichenAsync(app);
+        using (var scope = app.Services.CreateScope())
+            await scope.ServiceProvider.GetRequiredService<Kundenabgleich>().AusfuehrenAsync();
+        var konto = await KontoAsync(app, @"avis\nora");
+
+        // Als Kundin stellt sie einen eigenen Auftrag. Er hängt am Eintrag aus dem Kundenabgleich; ein zweiter entsteht nicht.
+        var nora = await app.AnmeldenAlsAsync(@"avis\nora");
+        var gestellt = await nora.PostFormularAsync("/Meine/Neu", "/Meine/Neu", new() { ["Eingabe.Betreff"] = "Mein Headset knackt", ["Eingabe.Beschreibung"] = "Für einen Test." });
+        var id = int.Parse(gestellt.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);
+        var kunde = await app.DatenbankAsync(db => db.Auftraege.Where(a => a.Id == id).Select(a => a.Kunde).SingleAsync());
+        Assert.Equal(("ActiveDirectory", @"avis\nora", "A 301"), (kunde.Quelle, kunde.Anmeldename, kunde.Standort));
+        Assert.Equal(1, await app.DatenbankAsync(db => db.Kunden.CountAsync(k => k.Name == "Neu, Nora")));
+
+        // Als Bearbeiterin sieht sie ihn unter allen Aufträgen und kann ihn wie jeden anderen übernehmen.
+        Assert.Contains("Mein Headset knackt", await nora.GetStringAsync("/Auftraege"));
+        await nora.UebernehmenAsync(app, id);
+        Assert.Equal(konto.Id, await app.DatenbankAsync(db => db.Auftraege.Where(a => a.Id == id).Select(a => a.BearbeiterId).SingleAsync()));
+
+        // Verliert sie die Rolle, bleibt sie Kundin: Der Auftrag geht zurück an die Gruppe und bleibt ihr eigener.
+        app.Bearbeiterquelle.Bearbeiter.Clear();
+        app.Bearbeiterquelle.Bearbeiter.Add(Finn);
+        Assert.Equal(1, (await AbgleichenAsync(app)).Inaktiv);
+        nora = await app.AnmeldenAlsAsync(@"avis\nora");
+        Assert.Contains("Mein Headset knackt", await nora.GetStringAsync("/Meine"));
+        Assert.Contains("Kein Zugriff", await nora.GetStringAsync("/Auftraege"));
+        Assert.True(await app.DatenbankAsync(db => db.Kunden.Where(k => k.Id == kunde.Id).Select(k => k.Aktiv).SingleAsync()));
+    }
+
+    [Fact]
     public async Task Administratoren_bleiben_Bearbeiter_auch_wenn_die_Quelle_sie_nicht_nennt()
     {
         using var app = new AvisAnwendung();
