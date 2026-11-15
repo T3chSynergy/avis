@@ -112,7 +112,7 @@ In der Entwicklungsumgebung nicht prüfbar; nur der Nutzer kann es in der Zielum
 ## Offene Schritte
 
 1. Probelauf in der Zielumgebung (siehe „Nicht geprüft“): Der Nutzer testet mit dem Paket aus dem Workflow
-   „Paket“ nach `docs/betrieb-iis.md`. Was er meldet, beheben und die Anleitung berichtigen. Noch kein Release.
+   „Paket“ nach `docs/betrieb-iis.md`. Was er meldet, beheben und die Anleitung berichtigen. Erstes Release: v0.1.0.
 2. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
 3. Anmeldung der Kunden an den Kundenabgleich binden: vom Nutzer angedacht, nicht gebaut.
