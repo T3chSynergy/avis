@@ -256,6 +256,8 @@ passenden Geräteeintrag erfassen. Das Gerät steht dann nur im Text.
 - Neuer Auftrag
 - Meine Aufträge (Stand, Nachrichten, Abschluss)
 - Hilfe für Kunden
+- Einstellungen: persönlich, am Konto gespeichert; bisher die Darstellung
+  (hell, dunkel oder wie das Gerät). Für Bearbeiter dieselbe Seite
 
 **Bearbeiter**
 

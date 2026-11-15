@@ -103,11 +103,27 @@ public static class AnmeldungExtensions
 
     public static bool IstAdministrator(this ClaimsPrincipal user) => user.IsInRole(Rollen.Administrator);
 
+    /// <summary>
+    /// Die Darstellung, wie sie am Element html steht und wie das Stylesheet
+    /// sie liest: "geraet", "hell" oder "dunkel". Ohne Anmeldung gilt das Gerät.
+    /// </summary>
+    public static string Darstellung(this ClaimsPrincipal user) => user.FindFirstValue(DarstellungClaim) ?? Merkmal(Domain.Darstellung.WieGeraet);
+
+    private const string DarstellungClaim = "avis:darstellung";
+
+    private static string Merkmal(Darstellung darstellung) => darstellung switch
+    {
+        Domain.Darstellung.Hell => "hell",
+        Domain.Darstellung.Dunkel => "dunkel",
+        _ => "geraet",
+    };
+
     internal static ClaimsIdentity AlsIdentity(Benutzer benutzer)
     {
         var identity = new ClaimsIdentity("Avis");
         identity.AddClaim(new Claim(BenutzerIdClaim, benutzer.Id.ToString(CultureInfo.InvariantCulture)));
         identity.AddClaim(new Claim("avis:name", benutzer.Name));
+        identity.AddClaim(new Claim(DarstellungClaim, Merkmal(benutzer.Darstellung)));
         if (benutzer.IstBearbeiter)
             identity.AddClaim(new Claim(ClaimTypes.Role, Rollen.Bearbeiter));
         if (benutzer.IstAdministrator)

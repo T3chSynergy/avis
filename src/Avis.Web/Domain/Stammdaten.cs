@@ -1,6 +1,17 @@
 namespace Avis.Web.Domain;
 
 /// <summary>Anmeldekonto. Jeder, der sich anmeldet, bekommt eines.</summary>
+/// <summary>
+/// Wie die Oberfläche für einen Benutzer aussieht. "Wie das Gerät" folgt der
+/// Einstellung des Betriebssystems oder Browsers und ist die Voreinstellung.
+/// </summary>
+public enum Darstellung
+{
+    WieGeraet = 0,
+    Hell = 1,
+    Dunkel = 2,
+}
+
 public class Benutzer
 {
     public int Id { get; set; }
@@ -13,6 +24,9 @@ public class Benutzer
     public bool IstBearbeiter { get; set; }
     public bool IstAdministrator { get; set; }
     public bool Aktiv { get; set; } = true;
+
+    /// <summary>Persönliche Einstellung: helle oder dunkle Oberfläche. Jeder Benutzer wählt sie selbst.</summary>
+    public Darstellung Darstellung { get; set; }
 
     /// <summary>Kennung in einem externen System, bei Konten aus dem Bearbeiterabgleich.</summary>
     public string? ExterneKennung { get; set; }

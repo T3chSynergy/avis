@@ -259,6 +259,15 @@ an einem internen Kommentar hängt, sieht der Kunde nicht.
 | Alt+S | in das Suchfeld im Kopf springen |
 | Eingabetaste im Feld „Kunde suchen“ | sofort suchen |
 
+## Einstellungen
+
+Im Menü unter deinem Namen steht **Einstellungen**. Was du dort wählst, gilt
+für dein Konto, auf jedem Gerät.
+
+- **Darstellung:** hell, dunkel oder „wie das Gerät“. Die letzte Wahl ist
+  voreingestellt und folgt dem, was im Betriebssystem oder Browser für helle
+  oder dunkle Oberflächen eingestellt ist.
+
 ## Eigene Aufträge als Kunde
 
 Auch du kannst Aufträge für dich selbst stellen. Im Menü unter deinem Namen

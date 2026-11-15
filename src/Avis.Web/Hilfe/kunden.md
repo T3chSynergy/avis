@@ -87,3 +87,13 @@ nicht.
 
 Die Schaltfläche „Vorschau“ unter dem Textfeld zeigt den Text so, wie die IT
 ihn sehen wird. „Weiter schreiben“ führt zurück zum Textfeld.
+
+## Einstellungen
+
+Oben rechts steht der eigene Name. Ein Klick darauf öffnet ein Menü mit dem
+Eintrag **Einstellungen**. Was dort gewählt wird, gilt für das eigene Konto,
+auf jedem Gerät.
+
+- **Darstellung:** hell, dunkel oder „wie das Gerät“. Die letzte Wahl ist
+  voreingestellt und folgt dem, was im Betriebssystem oder Browser für helle
+  oder dunkle Oberflächen eingestellt ist.

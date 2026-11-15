@@ -89,6 +89,7 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     [InlineData("/Kunden", "href=\"/Hilfe#kunden\"")]
     [InlineData("/Gruppen/Meine", "href=\"/Hilfe#meine-gruppen\"")]
     [InlineData("/Meine", "href=\"/Hilfe/kunden#stand-eines-auftrags\"")]
+    [InlineData("/Einstellungen", "href=\"/Hilfe#einstellungen\"")]
     [InlineData("/Verwaltung/Gruppen", "href=\"/Hilfe/administratoren#gruppen\"")]
     [InlineData("/Verwaltung/Benutzer/1", "href=\"/Hilfe/administratoren#benutzer-und-rollen\"")]
     [InlineData("/Verwaltung/Kundenabgleich", "href=\"/Hilfe/administratoren#kundenabgleich\"")]
@@ -109,6 +110,8 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
         Assert.Matches("<a class=\"hilfe\"[^>]*href=\"/Hilfe#einen-auftrag-stellen\"", await dieter.GetStringAsync("/Meine/Neu"));
         Assert.Matches("<a class=\"hilfe\"[^>]*href=\"/Hilfe#stand-eines-auftrags\"", await dieter.GetStringAsync("/Meine"));
+        // Die Einstellungen benutzen alle; jeder landet im Abschnitt seiner eigenen Hilfe.
+        Assert.Matches("<a class=\"hilfe\"[^>]*href=\"/Hilfe#einstellungen\"", await dieter.GetStringAsync("/Einstellungen"));
     }
 
     [Fact]
@@ -130,11 +133,19 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             .Distinct()
             .ToList();
         Assert.NotEmpty(seiten);
-        Assert.All(seiten, s => Assert.True(Hilfeverweise.Seiten.ContainsKey(s), $"Die Seite {s} hat keinen Abschnitt in der Hilfe."));
+        Assert.All(seiten, s => Assert.True(Hilfeverweise.Seiten.ContainsKey(s) || Hilfeverweise.FuerAlle.ContainsKey(s), $"Die Seite {s} hat keinen Abschnitt in der Hilfe."));
+
+        // Seiten für alle haben ihren Abschnitt in beiden Hilfen, unter derselben Sprungmarke.
+        Assert.All(Hilfeverweise.FuerAlle, v =>
+        {
+            Assert.False(Hilfeverweise.Seiten.ContainsKey(v.Key), $"{v.Key} steht doppelt.");
+            Assert.Contains(v.Value, abschnitte[Hilfetexte.Bearbeiter]);
+            Assert.Contains(v.Value, abschnitte[Hilfetexte.Kunden]);
+        });
 
         // Was nur Administratoren öffnen können, führt in ihre Hilfe, und nichts anderes: Sonst landete ein
         // Bearbeiter von seiner Seite am Anfang der Hilfe statt beim Abschnitt.
-        Assert.All(seiten, s => Assert.Equal(
+        Assert.All(seiten.Where(Hilfeverweise.Seiten.ContainsKey), s => Assert.Equal(
             s.StartsWith("/Verwaltung/", StringComparison.Ordinal) || s == "/Geraete/Bearbeiten",
             Hilfeverweise.Seiten[s].Thema == Hilfetexte.Administratoren));
     }
