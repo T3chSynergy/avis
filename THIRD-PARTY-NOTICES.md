@@ -1,9 +1,13 @@
 # Hinweise zu Komponenten Dritter
 
-AVIS verwendet die folgenden Komponenten anderer Urheber. Sie werden mit der
-gebauten Anwendung ausgeliefert; ihre Lizenzen verlangen, dass die
-Urheber- und Lizenzvermerke beiliegen. Diese Datei wird deshalb beim
-Veröffentlichen (`dotnet publish`) in den Ausgabeordner kopiert.
+AVIS selbst steht unter der GNU Affero General Public License, Version 3 oder
+später (`AGPL-3.0-or-later`, siehe `LICENSE`).
+
+AVIS verwendet die folgenden Komponenten anderer Urheber. Sie behalten ihre
+eigenen Lizenzen. Sie werden mit der gebauten Anwendung ausgeliefert; ihre
+Lizenzen verlangen, dass die Urheber- und Lizenzvermerke beiliegen. Diese
+Datei wird deshalb beim Veröffentlichen (`dotnet publish`) zusammen mit
+`LICENSE` in den Ausgabeordner kopiert.
 
 Kommt ein Paket hinzu oder fällt eines weg, ist diese Datei anzupassen. Was
 ausgeliefert wird, zeigt der Ausgabeordner von `dotnet publish`.

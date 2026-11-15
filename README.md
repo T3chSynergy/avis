@@ -166,6 +166,7 @@ abgeschaltet sind, und dem Grund dafür.
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
 | `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen (Suche beim Tippen, Bilder einfügen, Tastenkürzel); ohne sie funktioniert alles |
 | `tests/Avis.Tests` | Tests |
+| `LICENSE` | Lizenz von AVIS (GNU AGPL, Version 3); wird beim Veröffentlichen in den Ausgabeordner kopiert |
 | `THIRD-PARTY-NOTICES.md` | Lizenzvermerke der mitgelieferten Komponenten; wird beim Veröffentlichen in den Ausgabeordner kopiert und ist anzupassen, wenn ein Paket hinzukommt oder wegfällt |
 
 Bezeichner im Code sind deutsch und folgen den Begriffen des Konzepts, Umlaute
@@ -538,3 +539,23 @@ Dieser Teil ist noch nicht auf einem echten Server erprobt.
 - Die Abfrage des Active Directory nutzt die Domäne, in der der Server Mitglied
   ist. Schlägt sie fehl, arbeitet AVIS mit dem Anmeldenamen weiter und schreibt
   eine Warnung ins Protokoll.
+
+## Lizenz
+
+AVIS ist freie Software: Sie können es unter den Bedingungen der **GNU Affero
+General Public License**, Version 3 oder (nach Ihrer Wahl) jeder späteren
+Version, weitergeben und/oder verändern (`AGPL-3.0-or-later`, siehe
+[`LICENSE`](LICENSE)). Das Programm wird ohne jede Gewährleistung
+bereitgestellt.
+
+- Wer AVIS weitergibt, auch als gebaute Anwendung, muss den Quelltext unter
+  derselben Lizenz zugänglich machen.
+- Wer eine veränderte Fassung betreibt, muss deren Benutzern den Quelltext
+  dieser Fassung anbieten. Dafür steht im Fuß jeder Seite der Verweis
+  „Quelltext und Lizenz“. Seine Adresse steht in `src/Avis.Web/Lizenz.cs` und
+  ist bei einer veränderten Fassung auf deren Quelltext zu ändern.
+- Die mitgelieferten Komponenten behalten ihre eigenen Lizenzen (MIT,
+  BSD-2-Clause, Apache-2.0), siehe
+  [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
+- Wer einen Pull Request stellt, erklärt sich einverstanden, dass sein Beitrag
+  unter derselben Lizenz veröffentlicht wird.

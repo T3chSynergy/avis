@@ -94,6 +94,7 @@ details.konto .menue a:hover, details.konto .menue a[aria-current="page"] { back
 .bereiche .zahl.voll { background: var(--kopf); color: #fff; }
 
 main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
+.fuss { max-width: 1280px; margin: 0 auto; padding: 0 24px 20px; color: var(--gedaempft); font-size: 0.88em; }
 
 h1 { font-size: 24px; margin: 0 0 16px; }
 h2 { font-size: 18px; margin: 28px 0 10px; }

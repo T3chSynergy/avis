@@ -71,6 +71,7 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   weil dort nur ganze Zahlen als Formularwerte geschrieben werden.
 - **Fremde Komponenten:** Bei jedem neuen oder entfernten Paket `THIRD-PARTY-NOTICES.md` anpassen. Das
   Favicon ist selbst gezeichnet (Flächen, keine Schrift); fremde Grafiken nicht übernehmen.
+- **Lizenz:** AGPL-3.0-or-later, ohne Inhabernamen. Verweis im Seitenfuß (`Lizenz.cs`) bleibt; Pakete müssen passen.
 - **`SECURITY.md`** sagt bewusst keine Antwortfrist zu.
 
 ## Erkenntnisse
@@ -114,7 +115,6 @@ In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert
    zeigen oder Zielumgebung testen). Erster Schritt: ein Paket aus `dotnet publish` als Artefakt des Workflows.
 3. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
-4. Lizenz wählen: noch nicht entschieden, es gibt keine `LICENSE`.
-5. Anmeldung der Kunden an den Kundenabgleich binden: vom Nutzer angedacht, nicht gebaut.
-6. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen; Anhänge lassen sich nicht löschen;
+4. Anmeldung der Kunden an den Kundenabgleich binden: vom Nutzer angedacht, nicht gebaut.
+5. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen; Anhänge lassen sich nicht löschen;
    im Browser eingefügte Bilder stehen unter dem Text, nicht mittendrin.
