@@ -37,8 +37,8 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 - E-Mail-Eingang über IMAP: Mails an die Hotline werden Aufträge, Antworten
   mit Auftragsnummer im Betreff landen im Auftrag
 - Kunden öffnen abgeschlossene Aufträge wieder, im Browser oder per Mail
-- Hilfe in der Anwendung für Bearbeiter und Kunden; „Hilfe“ im Kopf führt von
-  jeder Seite zum passenden Abschnitt
+- Hilfe in der Anwendung für Bearbeiter, Kunden und Administratoren; „Hilfe“
+  im Kopf führt von jeder Seite zum passenden Abschnitt
 - Testanmeldung für die Entwicklung, Windows-Anmeldung für den Betrieb
 
 ## Voraussetzungen
@@ -464,20 +464,20 @@ bei jedem Speichern in `AvisDb`.
 Die Hilfe steht in der Anwendung unter „Hilfe“ im Kopf jeder Seite. Der
 Eintrag führt zu dem Abschnitt, der zur gerade geöffneten Seite gehört.
 Bearbeiter sehen die Hilfe für Bearbeiter und können zu der für Kunden
-wechseln; wer keine Rolle hat, sieht nur die für Kunden. Für die Verwaltung
-gibt es noch keine Hilfe; was Administratoren wissen müssen, steht in dieser
-Datei.
+wechseln; wer keine Rolle hat, sieht nur die für Kunden. Administratoren
+haben dazu eine dritte: Sie erklärt die Verwaltung, und von deren Seiten
+führt „Hilfe“ dorthin. Wie AVIS auf dem Server eingerichtet wird, steht
+weiter in dieser Datei.
 
-- Die Texte sind Markdown-Dateien: `src/Avis.Web/Hilfe/bearbeiter.md` und
-  `kunden.md`. Wer sie ändert, braucht dafür nicht zu programmieren. Sie
-  werden mit der Anwendung ausgeliefert.
+- Die Texte sind Markdown-Dateien: `src/Avis.Web/Hilfe/bearbeiter.md`,
+  `kunden.md` und `administratoren.md`. Wer sie ändert, braucht dafür nicht zu
+  programmieren. Sie werden mit der Anwendung ausgeliefert.
 - Jede Überschrift der zweiten Ebene (`## …`) ist ein Abschnitt mit einer
   Sprungmarke, die sich aus ihrem Text ergibt: aus „Geräte nennen“ wird
   `#geraete-nennen`. Welche Seite zu welchem Abschnitt führt, steht in
   `Hilfeverweise` (`src/Avis.Web/Hilfe/Hilfetexte.cs`). Ein Test prüft, dass
-  es jeden dort genannten Abschnitt gibt und dass jede Seite für Bearbeiter
-  und Kunden einen hat. Wer eine Überschrift umbenennt, sieht das also am
-  Test.
+  es jeden dort genannten Abschnitt gibt und dass jede Seite einen hat. Wer
+  eine Überschrift umbenennt, sieht das also am Test.
 - **Eigener Text des Hauses**, etwa Telefonnummer und Zeiten der Hotline,
   gehört nicht in diese Dateien: Sie sind für jede Installation gleich. Dafür
   gibt es die Datei aus `Hilfe:EigenerText`, in der Voreinstellung

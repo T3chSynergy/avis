@@ -8,7 +8,8 @@ namespace Avis.Web.Pages.Hilfe;
 
 /// <summary>
 /// Die Hilfe. Bearbeiter sehen die Hilfe für Bearbeiter und können zu der
-/// für Kunden wechseln; wer kein Bearbeiter ist, sieht nur die für Kunden.
+/// für Kunden wechseln, Administratoren außerdem zu ihrer eigenen. Wer kein
+/// Bearbeiter ist, sieht nur die für Kunden.
 /// </summary>
 public class IndexModel(Hilfetexte texte) : PageModel
 {
@@ -19,14 +20,15 @@ public class IndexModel(Hilfetexte texte) : PageModel
     public IActionResult OnGet(string? thema)
     {
         var gewuenscht = thema?.ToLowerInvariant();
-        if (gewuenscht is not (null or Hilfetexte.Bearbeiter or Hilfetexte.Kunden))
+        if (gewuenscht is not null && !Hilfetexte.Themen.Contains(gewuenscht))
             return NotFound();
 
-        // Die Hilfe für Bearbeiter beschreibt, was Kunden nicht sehen. Sie bekommen stattdessen ihre eigene.
-        if (gewuenscht == Hilfetexte.Bearbeiter && !User.IstBearbeiter())
+        // Die Hilfe für Bearbeiter und die für Administratoren beschreiben, was andere nicht sehen.
+        // Wer sie nicht lesen darf, bekommt stattdessen seine eigene.
+        if (gewuenscht is not null && !Hilfeverweise.Erlaubt(gewuenscht, User.IstBearbeiter(), User.IstAdministrator()))
             return RedirectToPage(new { thema = (string?)null });
 
-        Thema = gewuenscht ?? (User.IstBearbeiter() ? Hilfetexte.Bearbeiter : Hilfetexte.Kunden);
+        Thema = gewuenscht ?? Hilfeverweise.Standardthema(User.IstBearbeiter());
         Seite = texte.Lesen(Thema);
         EigenerText = texte.EigenerText();
         return Page();
