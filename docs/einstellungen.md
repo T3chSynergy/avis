@@ -21,7 +21,7 @@ Unterstrichen statt des Doppelpunkts (`Mail__Server`).
 | `Anmeldung:Administratoren` | Anmeldenamen (`domäne\\name`), die bei der Anmeldung Administrator werden |
 | `Zeitzone` | Zeitzone für die Anzeige, Zeitpunkte werden in UTC gespeichert |
 | `Auftraege:ErsteNummer` | Nummer, die der nächste Auftrag mindestens bekommt, zum Beispiel `200000`, um an eine vorhandene Zählung anzuschließen. Wird beim Start angewendet und wirkt nur nach oben. Standard 0: Die Zählung beginnt bei 1 |
-| `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon und Abteilung neuer Konten aus dem Active Directory, `Keines` lässt das aus |
+| `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon, Abteilung und Standort (Feld „Büro“) neuer Konten aus dem Active Directory, `Keines` lässt das aus |
 | `Bearbeiterabgleich:Art` | `ActiveDirectory` gleicht ab, wer Bearbeiter ist, `Aus` lässt das aus |
 | `Bearbeiterabgleich:Filter` | LDAP-Filter, der bestimmt, wer Bearbeiter ist, zum Beispiel `(memberOf=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` |
 | `Bearbeiterabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird. Leer: in der ganzen Domäne |

@@ -29,19 +29,21 @@ Betrieb unter Windows Server.
 
 ## Noch nicht erprobt
 
-AVIS ist bisher nur in der Entwicklungsumgebung gelaufen. Gegen die echten
-Systeme noch nie gelaufen sind:
+Ein Probelauf unter Windows Server mit IIS hat begonnen. Dort laufen bisher,
+mit abgeschalteten Anbindungen: der Start unter IIS, die Windows-Anmeldung
+und das Nachschlagen neuer Konten im Active Directory.
 
-- die Windows-Anmeldung unter IIS
-- die Abgleiche mit dem Active Directory und das Nachschlagen neuer Konten
-  dort
+Gegen die echten Systeme noch nie gelaufen sind:
+
+- die Abgleiche der Bearbeiter und Kunden mit dem Active Directory
 - der Abgleich mit Snipe-IT; er ist nach dessen Quelltext geschrieben und mit
   nachgestellten Antworten geprüft
 - der Mailversand über SMTP und der Abruf über IMAP gegen Exchange; der Abruf
   lief bisher nur gegen einen anderen IMAP-Server
 - die Umwandlung echter HTML-Mails aus Outlook; geprüft ist sie mit
   nachgebauten Mails
-- die Anleitung für den [Betrieb unter IIS](betrieb-iis.md)
+- die Anleitung für den [Betrieb unter IIS](betrieb-iis.md) über die
+  Einrichtung hinaus, vor allem das Update
 
 ## Bekannte Lücken
 

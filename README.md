@@ -61,10 +61,10 @@ stehen im [Konzept](docs/konzept.md).
 ## Stand
 
 Alles oben Genannte ist gebaut und wird automatisch getestet, unter Windows
-und Linux. **Im echten Betrieb ist AVIS noch nicht erprobt**: Die
-Windows-Anmeldung unter IIS und die Anbindungen an Active Directory, Snipe-IT
-und Exchange sind noch nie gegen die echten Systeme gelaufen. Ein Release
-gibt es noch nicht.
+und Linux. **Im echten Betrieb ist AVIS noch nicht erprobt**: Ein Probelauf
+unter Windows Server mit IIS hat begonnen, aber die Abgleiche mit Active
+Directory und Snipe-IT und der Mailverkehr mit Exchange sind noch nie gegen
+die echten Systeme gelaufen. Ein Release gibt es noch nicht.
 
 Was genau ungeprüft ist, welche Lücken bekannt sind und was als Nächstes
 ansteht, steht in [Stand und Ausblick](docs/stand.md).

@@ -46,6 +46,7 @@ public class Kundenzuordnung(AvisDb db, IVerzeichnis verzeichnis)
             Anmeldename = benutzer.Anmeldename,
             Telefon = Kuerzen(eintrag?.Telefon, 50),
             Organisationseinheit = Kuerzen(eintrag?.Organisationseinheit, 200),
+            Standort = Kuerzen(eintrag?.Standort, 100),
         };
         db.Kunden.Add(kunde);
         await db.SaveChangesAsync();

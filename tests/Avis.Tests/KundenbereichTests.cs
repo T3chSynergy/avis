@@ -176,7 +176,7 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
     [Fact]
     public async Task Ein_neues_Konto_bekommt_Name_und_Kontaktdaten_aus_dem_Verzeichnis()
     {
-        app.Verzeichnis.Eintraege[@"amt\nneu"] = new("Nina Neu", "Nina.Neu@Example.org", "0221 9-87", "Bauamt");
+        app.Verzeichnis.Eintraege[@"amt\nneu"] = new("Nina Neu", "Nina.Neu@Example.org", "0221 9-87", "Bauamt", " B 017 ");
 
         var nina = await app.AnmeldenAlsNeuAsync(@"AMT\nneu");
         Assert.Contains("Nina Neu", await nina.GetStringAsync("/Meine"));
@@ -185,10 +185,13 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
         Assert.Equal(("Nina Neu", "nina.neu@example.org", false), (benutzer.Name, benutzer.Email, benutzer.IstBearbeiter));
         var kunde = await app.DatenbankAsync(db => db.Kunden.SingleAsync(k => k.Anmeldename == @"amt\nneu"));
         Assert.Equal(("Nina Neu", "nina.neu@example.org", "0221 9-87", "Bauamt"), (kunde.Name, kunde.Email, kunde.Telefon, kunde.Organisationseinheit));
+        // Auch der Standort kommt mit, ohne Leerzeichen am Rand: im Active Directory das Feld "Büro".
+        Assert.Equal("B 017", kunde.Standort);
 
-        // Die Hotline findet sie danach über die Kundensuche.
+        // Die Hotline findet sie danach über die Kundensuche, auch über den Standort.
         var anna = await app.AnmeldenAlsAsync("anna");
         Assert.Contains("Nina Neu", await anna.GetStringAsync("/Kunden?q=bauamt"));
+        Assert.Contains("Nina Neu", await anna.GetStringAsync("/Kunden?q=b+017"));
     }
 
     [Fact]
@@ -204,7 +207,7 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
     [Fact]
     public async Task Ein_von_der_Hotline_angelegter_Kunde_wird_ueber_die_Adresse_aus_dem_Verzeichnis_wiedererkannt()
     {
-        app.Verzeichnis.Eintraege["eva"] = new("Eva Test", "eva.test@example.org", null, null);
+        app.Verzeichnis.Eintraege["eva"] = new("Eva Test", "eva.test@example.org", null, null, null);
         var kunden = await app.DatenbankAsync(db => db.Kunden.CountAsync());
 
         var eva = await app.AnmeldenAlsNeuAsync("eva");
@@ -218,7 +221,7 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
     public async Task Die_Adresse_eines_Kunden_mit_anderem_Konto_verschafft_keinen_Zugang_zu_dessen_Auftraegen()
     {
         // Dieter Kunde hat bereits das Konto "dieter".
-        app.Verzeichnis.Eintraege["doppelgaenger"] = new("Dieter Doppelt", "dieter.kunde@example.org", null, null);
+        app.Verzeichnis.Eintraege["doppelgaenger"] = new("Dieter Doppelt", "dieter.kunde@example.org", null, null, null);
 
         var anderer = await app.AnmeldenAlsNeuAsync("doppelgaenger");
 

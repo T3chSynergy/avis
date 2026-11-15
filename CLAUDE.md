@@ -103,8 +103,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 
 In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert werden:
 
-- Windows-Anmeldung (`Anmeldung:Art = Windows`) unter IIS
-- Abgleich mit Active Directory (`ActiveDirectoryVerzeichnis`, `ActiveDirectoryKonten`)
+- Abgleich mit Active Directory (`ActiveDirectoryKonten`). Im Probelauf des Nutzers laufen schon: Start unter IIS,
+  Windows-Anmeldung, Nachschlagen neuer Konten (`ActiveDirectoryVerzeichnis`)
 - Abgleich mit Snipe-IT (`SnipeItGeraetequelle`): nach dessen Quelltext geschrieben, nie dagegen gelaufen
 - SMTP und IMAP gegen Exchange – IMAP lief nur gegen einen lokalen Dovecot (Test mit `AVIS_TEST_IMAP`)
 - HTML-Mails aus dem echten Outlook

@@ -5,7 +5,8 @@ using System.Runtime.Versioning;
 namespace Avis.Web.Anmeldung;
 
 /// <summary>Was ein Verzeichnis über ein Anmeldekonto weiß.</summary>
-public record Verzeichniseintrag(string? Name, string? Email, string? Telefon, string? Organisationseinheit);
+/// <param name="Standort">Im Active Directory das Feld "Büro" (physicalDeliveryOfficeName), zum Beispiel der Raum.</param>
+public record Verzeichniseintrag(string? Name, string? Email, string? Telefon, string? Organisationseinheit, string? Standort);
 
 /// <summary>
 /// Liefert zu einem Anmeldenamen Name und Kontaktdaten. Die Anmeldung selbst
@@ -24,8 +25,8 @@ public class KeinVerzeichnis : IVerzeichnis
 
 /// <summary>
 /// Liest aus dem Active Directory der Domäne, in der der Server Mitglied ist.
-/// Läuft nur unter Windows und ist noch nicht an einem echten Verzeichnis
-/// erprobt. Schlägt die Abfrage fehl, arbeitet AVIS mit dem Anmeldenamen weiter.
+/// Läuft nur unter Windows. Schlägt die Abfrage fehl, arbeitet AVIS mit dem
+/// Anmeldenamen weiter.
 /// </summary>
 [SupportedOSPlatform("windows")]
 public class ActiveDirectoryVerzeichnis(ILogger<ActiveDirectoryVerzeichnis> log) : IVerzeichnis
@@ -42,8 +43,12 @@ public class ActiveDirectoryVerzeichnis(ILogger<ActiveDirectoryVerzeichnis> log)
             if (benutzer is null)
                 return null;
 
-            var abteilung = (benutzer.GetUnderlyingObject() as DirectoryEntry)?.Properties["department"].Value as string;
-            return new Verzeichniseintrag(benutzer.DisplayName, benutzer.EmailAddress, benutzer.VoiceTelephoneNumber, abteilung);
+            // Abteilung und Büro kennt UserPrincipal nicht; sie stehen am Eintrag darunter.
+            // Dieselben Merkmale liest der Kundenabgleich (ActiveDirectoryKonten).
+            var eintrag = benutzer.GetUnderlyingObject() as DirectoryEntry;
+            var abteilung = eintrag?.Properties["department"].Value as string;
+            var buero = eintrag?.Properties["physicalDeliveryOfficeName"].Value as string;
+            return new Verzeichniseintrag(benutzer.DisplayName, benutzer.EmailAddress, benutzer.VoiceTelephoneNumber, abteilung, buero);
         }
         catch (Exception ex)
         {
