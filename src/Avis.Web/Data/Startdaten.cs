@@ -85,6 +85,15 @@ public static class Startdaten
             await db.SaveChangesAsync();
         }
 
+        // Benutzer aus der Zeit vor der Suche in der Verwaltung bekommen ihren Suchtext.
+        var benutzerOhneSuchtext = await db.Benutzer.Where(b => b.Suchtext == "").ToListAsync();
+        if (benutzerOhneSuchtext.Count > 0)
+        {
+            foreach (var benutzer in benutzerOhneSuchtext)
+                benutzer.SuchtextAktualisieren();
+            await db.SaveChangesAsync();
+        }
+
         // Aufträge aus der Zeit vor der Suche bekommen ihren Suchtext.
         var auftraegeOhneSuchtext = await db.Auftraege.Where(a => a.Suchtext == "").Include(a => a.Verlauf).ToListAsync();
         if (auftraegeOhneSuchtext.Count > 0)

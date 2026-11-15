@@ -39,6 +39,14 @@ public static class Abfragen
             .ThenBy(a => a.Termin)
             .ThenBy(a => a.Id);
 
+    /// <summary>Benutzer, bei denen jedes Wort der Suche in Name, Anmeldename oder E-Mail vorkommt.</summary>
+    public static IQueryable<Benutzer> Suchen(this IQueryable<Benutzer> benutzer, string? suche)
+    {
+        foreach (var wort in Suchworte(suche))
+            benutzer = benutzer.Where(b => b.Suchtext.Contains(wort));
+        return benutzer;
+    }
+
     /// <summary>
     /// Kunden, bei denen jedes Wort der Suche in Name, E-Mail, Telefon,
     /// Organisationseinheit oder Anmeldename vorkommt.
