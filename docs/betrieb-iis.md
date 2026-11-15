@@ -24,8 +24,9 @@ deshalb in Dateien, die das Paket nicht enthält.
 ## Voraussetzungen
 
 - Windows Server mit IIS. Dazu der Rollendienst **Windows-Authentifizierung**
-  und, damit die Hintergrunddienste ohne Aufruf starten, die
-  **Anwendungsinitialisierung**.
+  (Windows Authentication) und, damit die Hintergrunddienste ohne Aufruf
+  starten, die **Anwendungsinitialisierung** (Application Initialization).
+  Wie man beide nachinstalliert, steht im nächsten Abschnitt.
 - Das **ASP.NET Core Hosting Bundle für .NET 10**. Nach der Installation IIS
   neu starten (`iisreset`).
 - Der Server ist Mitglied der Domäne. Die Windows-Anmeldung und die Abgleiche
@@ -34,6 +35,29 @@ deshalb in Dateien, die das Paket nicht enthält.
 - Ein **Domänenkonto für den Anwendungspool**. Es muss im Verzeichnis lesen
   dürfen und, je nach Anbindung, den Mailserver, das Postfach und Snipe-IT
   erreichen.
+
+Die Bezeichnungen der englischen Oberfläche von Windows Server und IIS stehen
+in dieser Anleitung in Klammern.
+
+## Rollendienste von IIS nachinstallieren
+
+Beide Rollendienste gehören nicht zur Grundinstallation von IIS. In einer
+PowerShell als Administrator:
+
+```powershell
+Install-WindowsFeature Web-Windows-Auth, Web-AppInit
+```
+
+Oder im Server-Manager über „Rollen und Features hinzufügen“ (Manage → Add
+Roles and Features), unter Webserver (IIS) → Webserver:
+
+| Rollendienst | Wo |
+|---|---|
+| Windows-Authentifizierung (Windows Authentication) | Sicherheit (Security) |
+| Anwendungsinitialisierung (Application Initialization) | Anwendungsentwicklung (Application Development) |
+
+Die Installation allein schaltet noch nichts ein. Das geschieht in den
+Schritten 3 bis 5 unter „Einrichten“.
 
 ## Paket holen
 
@@ -56,16 +80,21 @@ Lauf und trägt die Version 0.0.0 mit dem Stand des Commits.
    Darin den Ordner `App_Data` anlegen.
 2. **Rechte vergeben:** Das Konto des Anwendungspools braucht Lesen auf dem
    Ordner und Ändern auf `App_Data`.
-3. **Anwendungspool anlegen:**
-   - .NET CLR-Version: „Kein verwalteter Code“
-   - Identität: das Domänenkonto
-   - Startmodus: „AlwaysRunning“
-   - Leerlauftimeout: 0
-4. **Website oder Anwendung anlegen**, die auf den Ordner zeigt und diesen
-   Anwendungspool nutzt. Eine Bindung mit HTTPS und Zertifikat einrichten und
-   „Vorabladen aktiviert“ einschalten.
-5. **Authentifizierung:** Windows-Authentifizierung ein, anonyme
-   Authentifizierung aus.
+3. **Anwendungspool anlegen** (Application Pools → Add Application Pool) und
+   in seinen erweiterten Einstellungen (Advanced Settings) setzen:
+   - .NET CLR-Version (.NET CLR version): „Kein verwalteter Code“ (No Managed
+     Code)
+   - Identität (Identity): das Domänenkonto
+   - Startmodus (Start Mode): `AlwaysRunning`
+   - Leerlauftimeout in Minuten (Idle Time-out (minutes)): `0`
+4. **Website oder Anwendung anlegen** (Sites → Add Website), die auf den
+   Ordner zeigt und diesen Anwendungspool nutzt. Eine Bindung mit HTTPS und
+   Zertifikat einrichten. In den erweiterten Einstellungen der Website
+   „Vorabladen aktiviert“ (Preload Enabled) auf `True` setzen; das wirkt nur,
+   wenn die Anwendungsinitialisierung installiert ist.
+5. **Authentifizierung** (Authentication) der Website: Windows-Authentifizierung
+   (Windows Authentication) aktivieren, anonyme Authentifizierung (Anonymous
+   Authentication) deaktivieren.
 6. **Einstellungen anlegen**, siehe den nächsten Abschnitt.
 7. **Aufrufen.** Beim ersten Start legt AVIS die Datenbank in `App_Data` an.
    Die Seite öffnet sich ohne Anmeldedialog, oben rechts steht der eigene
@@ -120,9 +149,9 @@ Snipe-IT stehen nicht im Paket. Es gibt zwei Wege:
   Anwendungspools sie lesen.
 - **Als Umgebungsvariablen des Anwendungspools:** `Mail__Kennwort`,
   `Posteingang__Kennwort`, `Geraeteabgleich__Schluessel`, mit zwei
-  Unterstrichen. Sie lassen sich im Konfigurations-Editor von IIS am
-  Anwendungspool eintragen und stehen dann in der Konfiguration von IIS,
-  nicht im Ordner der Anwendung.
+  Unterstrichen. Sie lassen sich im Konfigurations-Editor (Configuration
+  Editor) von IIS am Anwendungspool eintragen und stehen dann in der
+  Konfiguration von IIS, nicht im Ordner der Anwendung.
 
 Umgebungsvariablen in der `web.config` überleben kein Update.
 
@@ -150,9 +179,10 @@ verloren.
 - **Die Seite zeigt einen Fehler 500.19 oder 500.31.** Meist fehlt das
   Hosting Bundle, oder IIS wurde danach nicht neu gestartet.
 - **Die Seite zeigt einen Fehler 500.30: AVIS startet nicht.** Der Grund
-  steht in der Ereignisanzeige von Windows unter „Anwendung“. AVIS bricht den
-  Start mit einer Meldung ab, wenn eine Einstellung nicht stimmt, zum Beispiel
-  ein Abgleich ohne Filter, oder wenn es in `App_Data` nicht schreiben darf.
+  steht in der Ereignisanzeige (Event Viewer) von Windows unter „Anwendung“
+  (Windows Logs → Application). AVIS bricht den Start mit einer Meldung ab,
+  wenn eine Einstellung nicht stimmt, zum Beispiel ein Abgleich ohne Filter,
+  oder wenn es in `App_Data` nicht schreiben darf.
 - **Warnungen zu Migrationen beim ersten Start.** Beim Anlegen der Datenbank
   meldet das Protokoll mehrmals, ein Schritt laufe nicht in einer Transaktion.
   Das ist bekannt und bei einer neuen Datenbank ohne Folgen.
