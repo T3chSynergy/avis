@@ -24,7 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Die Lizenzvermerke der mitgelieferten Komponenten gehören zum Build. -->
+    <!-- Die Lizenz von AVIS und die Lizenzvermerke der mitgelieferten Komponenten gehören zum Build. -->
+    <None Include="..\..\LICENSE" Link="LICENSE" CopyToPublishDirectory="PreserveNewest" />
     <None Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 

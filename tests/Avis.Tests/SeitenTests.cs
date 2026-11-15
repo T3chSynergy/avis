@@ -240,6 +240,21 @@ public static partial class ClientExtensions
 
 public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 {
+    [Theory]
+    [InlineData(null, "/Anmeldung")]
+    [InlineData("dieter", "/Meine")]
+    [InlineData("anna", "/Verwaltung/Gruppen")]
+    public async Task Jede_Seite_nennt_im_Fuss_die_Lizenz_und_fuehrt_zum_Quelltext(string? anmeldename, string seite)
+    {
+        var client = anmeldename is null ? app.CreateClient() : await app.AnmeldenAlsAsync(anmeldename);
+
+        var html = await client.GetStringAsync(seite);
+
+        // Die AGPL gibt jedem Benutzer das Recht auf den Quelltext, auch dem, der nur die Anmeldeseite sieht.
+        Assert.Contains("freie Software unter der GNU AGPL, Version 3 oder später", html);
+        Assert.Matches($"<footer class=\"fuss\">[^<]*<a href=\"{System.Text.RegularExpressions.Regex.Escape(Avis.Web.Lizenz.Quelltext)}\"[^>]*>Quelltext und Lizenz</a>", html);
+    }
+
     [Fact]
     public async Task Ohne_Anmeldung_geht_es_zur_Anmeldeseite()
     {
