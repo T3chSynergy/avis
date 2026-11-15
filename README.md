@@ -9,6 +9,10 @@ Es ist für eine IT-Abteilung mit einigen Dutzend Bearbeitern gedacht und
 bleibt mit Absicht klein: eine Webanwendung mit einer Datenbankdatei, ohne
 einstellbare Abläufe und ohne Dienste daneben.
 
+![Ein Auftrag in AVIS: oben Priorität, Stand und Gruppe, darunter Beschreibung, Aktionen und Verlauf mit einer Nachricht an den Kunden und einem gelb abgesetzten internen Kommentar, rechts die Angaben zu Kunde und Gerät](docs/bilder/auftrag.png)
+
+*Ein Auftrag aus Sicht eines Bearbeiters, mit den erfundenen Testdaten.*
+
 ## Was AVIS kann
 
 **Für Bearbeiter**

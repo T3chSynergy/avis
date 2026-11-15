@@ -182,6 +182,14 @@ Eintrag führt zu dem Abschnitt, der zur gerade geöffneten Seite gehört.
 - Eigener Text eines Hauses gehört nicht in diese Dateien, siehe
   [Einstellungen](einstellungen.md#eigener-text-in-der-hilfe).
 
+## Bild im README
+
+`docs/bilder/auftrag.png` zeigt Auftrag 1 der Testdaten, übernommen und um
+einen internen Kommentar und eine Nachricht an den Kunden ergänzt: helle
+Darstellung, Fenster 1280 Punkte breit, doppelte Auflösung. Ändert sich die
+Seite des Auftrags sichtbar, wird es neu aufgenommen. Es zeigt nur erfundene
+Daten.
+
 ## Paket und Versionen
 
 Der Workflow `.github/workflows/paket.yml` baut bei jedem Release die
