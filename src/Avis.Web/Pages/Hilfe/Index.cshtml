@@ -12,6 +12,10 @@
     <nav class="filter" aria-label="Hilfe für">
         <a asp-page="Index" asp-route-thema="" aria-current="@Aktuell(Hilfetexte.Bearbeiter)">Für Bearbeiter</a>
         <a asp-page="Index" asp-route-thema="@Hilfetexte.Kunden" aria-current="@Aktuell(Hilfetexte.Kunden)">Für Kunden</a>
+        @if (User.IstAdministrator())
+        {
+            <a asp-page="Index" asp-route-thema="@Hilfetexte.Administratoren" aria-current="@Aktuell(Hilfetexte.Administratoren)">Für Administratoren</a>
+        }
     </nav>
 }
 

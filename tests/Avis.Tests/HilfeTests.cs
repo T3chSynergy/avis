@@ -14,9 +14,9 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     [Fact]
     public async Task Bearbeiter_sehen_ihre_Hilfe_und_koennen_zu_der_fuer_Kunden_wechseln()
     {
-        var anna = await app.AnmeldenAlsAsync("anna");
+        var bernd = await app.AnmeldenAlsAsync("bernd");
 
-        var hilfe = await anna.GetStringAsync("/Hilfe");
+        var hilfe = await bernd.GetStringAsync("/Hilfe");
 
         Assert.Contains("<h1>Hilfe für Bearbeiter</h1>", hilfe);
         Assert.Contains("<h2 id=\"uebernehmen\">Übernehmen</h2>", hilfe);
@@ -24,11 +24,44 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains("<a href=\"#geraete-nennen\">Geräte nennen</a>", hilfe);
         Assert.Contains("<th>Aktion</th>", hilfe);
         Assert.Contains("Für Kunden</a>", hilfe);
+        Assert.DoesNotContain("Für Administratoren", hilfe);
 
-        var fuerKunden = await anna.GetStringAsync("/Hilfe/kunden");
+        var fuerKunden = await bernd.GetStringAsync("/Hilfe/kunden");
         Assert.Contains("<h2 id=\"einen-auftrag-stellen\">Einen Auftrag stellen</h2>", fuerKunden);
         Assert.DoesNotContain("id=\"uebernehmen\"", fuerKunden);
-        Assert.Equal(HttpStatusCode.NotFound, (await anna.GetAsync("/Hilfe/verwaltung")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await bernd.GetAsync("/Hilfe/verwaltung")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Administratoren_sehen_ausserdem_die_Hilfe_zur_Verwaltung()
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+
+        // Ohne Angabe sehen auch sie die Hilfe für Bearbeiter: Damit arbeiten sie die meiste Zeit.
+        var hilfe = await anna.GetStringAsync("/Hilfe");
+        Assert.Contains("<h1>Hilfe für Bearbeiter</h1>", hilfe);
+        Assert.Contains("href=\"/Hilfe/administratoren\">Für Administratoren</a>", hilfe);
+
+        var verwaltung = await anna.GetStringAsync("/Hilfe/administratoren");
+        Assert.Contains("<h1>Hilfe für Administratoren</h1>", verwaltung);
+        Assert.Contains("<h2 id=\"benutzer-und-rollen\">Benutzer und Rollen</h2>", verwaltung);
+        Assert.Contains("<a href=\"#geraeteabgleich\">Geräteabgleich</a>", verwaltung);
+        Assert.Matches("<a aria-current=\"page\"[^>]*>Für Administratoren</a>", verwaltung);
+    }
+
+    [Theory]
+    [InlineData("bernd")]
+    [InlineData("dieter")]
+    public async Task Wer_kein_Administrator_ist_bekommt_statt_der_Hilfe_zur_Verwaltung_seine_eigene(string anmeldename)
+    {
+        var client = await app.AnmeldenAlsAsync(anmeldename);
+
+        var umgeleitet = await client.GetAsync("/Hilfe/administratoren");
+
+        Assert.Equal("/Hilfe", umgeleitet.RequestMessage!.RequestUri!.AbsolutePath);
+        var html = await umgeleitet.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("Benutzer und Rollen", html);
+        Assert.DoesNotContain("Für Administratoren", html);
     }
 
     [Fact]
@@ -56,7 +89,10 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     [InlineData("/Kunden", "href=\"/Hilfe#kunden\"")]
     [InlineData("/Gruppen/Meine", "href=\"/Hilfe#meine-gruppen\"")]
     [InlineData("/Meine", "href=\"/Hilfe/kunden#stand-eines-auftrags\"")]
-    [InlineData("/Verwaltung/Gruppen", "href=\"/Hilfe\"")]
+    [InlineData("/Verwaltung/Gruppen", "href=\"/Hilfe/administratoren#gruppen\"")]
+    [InlineData("/Verwaltung/Benutzer/1", "href=\"/Hilfe/administratoren#benutzer-und-rollen\"")]
+    [InlineData("/Verwaltung/Kundenabgleich", "href=\"/Hilfe/administratoren#kundenabgleich\"")]
+    [InlineData("/Geraete/Bearbeiten", "href=\"/Hilfe/administratoren#geraete-anlegen-und-aendern\"")]
     public async Task Hilfe_im_Kopf_fuehrt_zum_Abschnitt_der_zur_Seite_gehoert(string seite, string verweis)
     {
         var anna = await app.AnmeldenAlsAsync("anna");
@@ -79,15 +115,14 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     public void Jeder_Verweis_einer_Seite_trifft_einen_Abschnitt_und_jede_Seite_ist_bedacht()
     {
         var texte = app.Services.GetRequiredService<Hilfetexte>();
-        var abschnitte = new[] { Hilfetexte.Bearbeiter, Hilfetexte.Kunden }
+        var abschnitte = Hilfetexte.Themen
             .ToDictionary(t => t, t => texte.Lesen(t).Abschnitte.Select(a => a.Anker).ToHashSet());
 
         // Ändert jemand eine Überschrift, ändert sich ihre Sprungmarke. Dann fällt es hier auf und nicht erst beim Anwender.
         Assert.All(Hilfeverweise.Seiten, v => Assert.True(abschnitte[v.Value.Thema].Contains(v.Value.Anker), $"{v.Key} verweist auf #{v.Value.Anker}, den es in der Hilfe für {v.Value.Thema} nicht gibt."));
 
-        // Jede Seite für Bearbeiter und Kunden hat einen Abschnitt. Ausgenommen sind die Verwaltung (für sie gibt es
-        // noch keine Hilfe), die Hilfe selbst und Seiten ohne eigene Ansicht.
-        var ohne = new[] { "/Verwaltung/", "/Hilfe/", "/Anhaenge/", "/Anmeldung", "/Fehler", "/Status", "/Kunden/Treffer" };
+        // Jede Seite hat einen Abschnitt. Ausgenommen sind die Hilfe selbst und Seiten ohne eigene Ansicht.
+        var ohne = new[] { "/Hilfe/", "/Anhaenge/", "/Anmeldung", "/Fehler", "/Status", "/Kunden/Treffer" };
         var seiten = app.Services.GetRequiredService<IActionDescriptorCollectionProvider>().ActionDescriptors.Items
             .OfType<PageActionDescriptor>()
             .Select(p => p.ViewEnginePath)
@@ -96,13 +131,19 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
             .ToList();
         Assert.NotEmpty(seiten);
         Assert.All(seiten, s => Assert.True(Hilfeverweise.Seiten.ContainsKey(s), $"Die Seite {s} hat keinen Abschnitt in der Hilfe."));
+
+        // Was nur Administratoren öffnen können, führt in ihre Hilfe, und nichts anderes: Sonst landete ein
+        // Bearbeiter von seiner Seite am Anfang der Hilfe statt beim Abschnitt.
+        Assert.All(seiten, s => Assert.Equal(
+            s.StartsWith("/Verwaltung/", StringComparison.Ordinal) || s == "/Geraete/Bearbeiten",
+            Hilfeverweise.Seiten[s].Thema == Hilfetexte.Administratoren));
     }
 
     [Fact]
     public void Verweise_innerhalb_der_Hilfe_treffen_einen_Abschnitt()
     {
         var texte = app.Services.GetRequiredService<Hilfetexte>();
-        foreach (var thema in new[] { Hilfetexte.Bearbeiter, Hilfetexte.Kunden })
+        foreach (var thema in Hilfetexte.Themen)
         {
             var html = Html(texte.Lesen(thema).Inhalt);
             var marken = System.Text.RegularExpressions.Regex.Matches(html, " id=\"([^\"]+)\"").Select(m => m.Groups[1].Value).ToHashSet();

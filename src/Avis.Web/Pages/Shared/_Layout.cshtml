@@ -14,8 +14,9 @@
         var testanmeldung = ViewData["Testanmeldung"] as bool? == true;
         var zahlen = User.IstBearbeiter() ? await Zahlen.LadenAsync(User.BenutzerId()) : null;
         // "Hilfe" im Kopf führt von jeder Seite zum Abschnitt, der zu ihr gehört.
-        var hilfe = Avis.Web.Hilfe.Hilfeverweise.Fuer(seite, User.IstBearbeiter());
-        var hilfethema = hilfe.Thema == Avis.Web.Hilfe.Hilfetexte.Kunden && User.IstBearbeiter() ? hilfe.Thema : null;
+        // Das Thema steht nur in der Adresse, wenn es nicht das ist, das der Benutzer ohnehin unter "/Hilfe" sieht.
+        var hilfe = Avis.Web.Hilfe.Hilfeverweise.Fuer(seite, User.IstBearbeiter(), User.IstAdministrator());
+        var hilfethema = hilfe.Thema == Avis.Web.Hilfe.Hilfeverweise.Standardthema(User.IstBearbeiter()) ? null : hilfe.Thema;
     }
     <header class="kopf">
         <div class="kopf-oben">

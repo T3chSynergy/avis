@@ -55,7 +55,7 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   nur das Geänderte zu holen (Sortierung nach `updated_at`) ist möglich, aber zurückgestellt.
 - **Standort** (etwa der Raum „A 105“) ist freier Text an Kunde und Gerät. Der Auftrag hat keinen eigenen.
 - **Geräte am Auftrag** nur über „INV <Nummer>“ in seinen Texten (`Geraetebezug`), kein Feld dafür.
-- **Hilfe:** Markdown unter `src/Avis.Web/Hilfe` für Bearbeiter und Kunden, noch nicht für Administratoren.
+- **Hilfe:** Markdown unter `src/Avis.Web/Hilfe`, je eine Datei für Bearbeiter, Kunden und Administratoren.
   **Bei jeder Änderung an der Oberfläche die Hilfe mitpflegen.** Hauseigenes steht nie darin (lokale Datei).
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.

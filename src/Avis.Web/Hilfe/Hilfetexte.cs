@@ -30,6 +30,10 @@ public class Hilfetexte(IWebHostEnvironment umgebung, IConfiguration konfigurati
 {
     public const string Bearbeiter = "bearbeiter";
     public const string Kunden = "kunden";
+    public const string Administratoren = "administratoren";
+
+    /// <summary>Alle Themen. Zu jedem gibt es eine Datei gleichen Namens.</summary>
+    public static readonly IReadOnlyList<string> Themen = [Bearbeiter, Kunden, Administratoren];
 
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
         .DisableHtml()
@@ -41,10 +45,10 @@ public class Hilfetexte(IWebHostEnvironment umgebung, IConfiguration konfigurati
     // dagegen bei jedem Aufruf gelesen, damit eine Änderung ohne Neustart zu sehen ist.
     private readonly ConcurrentDictionary<string, Hilfeseite> _gelesen = new();
 
-    /// <summary>Die Hilfe zu einem Thema: <see cref="Bearbeiter"/> oder <see cref="Kunden"/>.</summary>
+    /// <summary>Die Hilfe zu einem der <see cref="Themen"/>.</summary>
     public Hilfeseite Lesen(string thema)
     {
-        if (thema is not (Bearbeiter or Kunden))
+        if (!Themen.Contains(thema))
             throw new ArgumentException($"Zu \"{thema}\" gibt es keine Hilfe.", nameof(thema));
 
         return _gelesen.GetOrAdd(thema, t => Aufbereiten(File.ReadAllText(Path.Combine(umgebung.ContentRootPath, "Hilfe", t + ".md"))));
@@ -155,21 +159,50 @@ public static class Hilfeverweise
         ["/Kunden/Details"] = (Hilfetexte.Bearbeiter, "kunden"),
         ["/Geraete/Index"] = (Hilfetexte.Bearbeiter, "geraete"),
         ["/Geraete/Details"] = (Hilfetexte.Bearbeiter, "geraete"),
-        ["/Geraete/Bearbeiten"] = (Hilfetexte.Bearbeiter, "geraete"),
+        // Geräte legt nur ein Administrator an.
+        ["/Geraete/Bearbeiten"] = (Hilfetexte.Administratoren, "geraete-anlegen-und-aendern"),
         ["/Meine/Index"] = (Hilfetexte.Kunden, "stand-eines-auftrags"),
         ["/Meine/Neu"] = (Hilfetexte.Kunden, "einen-auftrag-stellen"),
         ["/Meine/Details"] = (Hilfetexte.Kunden, "antworten-und-nachreichen"),
+        ["/Verwaltung/Gruppen"] = (Hilfetexte.Administratoren, "gruppen"),
+        ["/Verwaltung/GruppeBearbeiten"] = (Hilfetexte.Administratoren, "gruppen"),
+        ["/Verwaltung/Benutzer"] = (Hilfetexte.Administratoren, "benutzer-und-rollen"),
+        ["/Verwaltung/BenutzerBearbeiten"] = (Hilfetexte.Administratoren, "benutzer-und-rollen"),
+        ["/Verwaltung/Kategorien"] = (Hilfetexte.Administratoren, "kategorien"),
+        ["/Verwaltung/Mails"] = (Hilfetexte.Administratoren, "mails"),
+        ["/Verwaltung/Posteingang"] = (Hilfetexte.Administratoren, "posteingang"),
+        ["/Verwaltung/Bearbeiterabgleich"] = (Hilfetexte.Administratoren, "bearbeiterabgleich"),
+        ["/Verwaltung/Kundenabgleich"] = (Hilfetexte.Administratoren, "kundenabgleich"),
+        ["/Verwaltung/Geraeteabgleich"] = (Hilfetexte.Administratoren, "geraeteabgleich"),
     };
 
     /// <summary>
-    /// Das Thema und die Sprungmarke für eine Seite. Wer kein Bearbeiter ist,
-    /// bekommt immer die Hilfe für Kunden. Zu einer Seite ohne eigenen
-    /// Abschnitt führt der Verweis an den Anfang der Hilfe.
+    /// Die Hilfe, die jemand ohne weitere Angabe unter "/Hilfe" sieht: die
+    /// für Bearbeiter, wenn er einer ist, sonst die für Kunden.
     /// </summary>
-    public static (string Thema, string? Anker) Fuer(string seite, bool istBearbeiter)
+    public static string Standardthema(bool istBearbeiter) => istBearbeiter ? Hilfetexte.Bearbeiter : Hilfetexte.Kunden;
+
+    /// <summary>
+    /// Ob jemand ein Thema lesen darf. Die Hilfe für Bearbeiter und die für
+    /// Administratoren beschreiben, was andere nicht sehen.
+    /// </summary>
+    public static bool Erlaubt(string thema, bool istBearbeiter, bool istAdministrator) => thema switch
     {
-        if (Seiten.TryGetValue(seite, out var ziel) && (istBearbeiter || ziel.Thema == Hilfetexte.Kunden))
+        Hilfetexte.Kunden => true,
+        Hilfetexte.Bearbeiter => istBearbeiter,
+        Hilfetexte.Administratoren => istAdministrator,
+        _ => false,
+    };
+
+    /// <summary>
+    /// Das Thema und die Sprungmarke für eine Seite. Wer das Thema der Seite
+    /// nicht lesen darf, bekommt seine eigene Hilfe. Zu einer Seite ohne
+    /// eigenen Abschnitt führt der Verweis an den Anfang der Hilfe.
+    /// </summary>
+    public static (string Thema, string? Anker) Fuer(string seite, bool istBearbeiter, bool istAdministrator)
+    {
+        if (Seiten.TryGetValue(seite, out var ziel) && Erlaubt(ziel.Thema, istBearbeiter, istAdministrator))
             return ziel;
-        return (istBearbeiter ? Hilfetexte.Bearbeiter : Hilfetexte.Kunden, null);
+        return (Standardthema(istBearbeiter), null);
     }
 }

@@ -280,6 +280,7 @@ passenden Geräteeintrag erfassen. Das Gerät steht dann nur im Text.
 **Administrator**
 
 - Gruppen, Kategorien, Geräte, Rollen
+- Hilfe für Administratoren: eine Anleitung zur Verwaltung
 
 ## 7. E-Mail
 
