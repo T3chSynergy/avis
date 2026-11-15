@@ -118,8 +118,9 @@ wenige: MailKit für Mail, Markdig für Markdown, siehe
 ## Mitmachen
 
 Fehlerberichte, Wünsche und Pull Requests sind willkommen, siehe
-[CONTRIBUTING.md](CONTRIBUTING.md). Sicherheitslücken bitte nicht öffentlich
-melden, sondern vertraulich: siehe [SECURITY.md](SECURITY.md).
+[CONTRIBUTING.md](CONTRIBUTING.md). Für den Umgang miteinander gilt der
+[Verhaltenskodex](CODE_OF_CONDUCT.md). Sicherheitslücken bitte nicht
+öffentlich melden, sondern vertraulich: siehe [SECURITY.md](SECURITY.md).
 
 ## Lizenz
 

@@ -64,6 +64,12 @@ Nicht hierher gehören:
 - Fehler ohne Bezug zur Sicherheit; dafür gibt es das Formular für Meldungen
   unter **Issues**
 
+## Verstöße gegen den Verhaltenskodex
+
+Dasselbe Formular dient auch als vertraulicher Weg, um einen Verstoß gegen
+den [Verhaltenskodex](CODE_OF_CONDUCT.md) zu melden. Bitte dann im Titel
+„Verhaltenskodex“ angeben.
+
 ## Gewährleistung
 
 AVIS ist freie Software und wird ohne jede Gewährleistung bereitgestellt

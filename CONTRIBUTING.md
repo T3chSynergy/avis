@@ -6,6 +6,8 @@ worauf es im Projekt ankommt und wie eine Änderung hineinkommt.
 **Sicherheitslücken** bitte nicht als Issue oder Pull Request melden, sondern
 vertraulich: siehe [SECURITY.md](SECURITY.md).
 
+Für den Umgang miteinander gilt der [Verhaltenskodex](CODE_OF_CONDUCT.md).
+
 ## Grundregeln
 
 - **Keine echten Daten.** Das Repository ist öffentlich. Namen, Mailadressen,
@@ -66,9 +68,9 @@ dotnet test
      bleibt die kurze Übersicht.
    - **Pakete:** Kommt eines hinzu oder fällt eines weg,
      `THIRD-PARTY-NOTICES.md` anpassen. Seine Lizenz muss zur AGPL passen.
-5. Einen **Pull Request gegen `main`** stellen, gegliedert in: Worum es geht,
-   Änderungen, Geprüft, Noch nicht geprüft. Was sich nicht prüfen ließ, steht
-   ausdrücklich drin.
+5. Einen **Pull Request gegen `main`** stellen. Die Vorlage gibt die
+   Gliederung vor: Worum es geht, Änderungen, Geprüft, Noch nicht geprüft.
+   Was sich nicht prüfen ließ, steht ausdrücklich drin.
 6. Gemergt wird nur mit grünen Prüfungen.
 
 Ein Release bekommt einen Namen der Form `v1.2.3`. Der Workflow „Paket“ baut
