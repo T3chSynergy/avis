@@ -258,6 +258,7 @@ an einem internen Kommentar hängt, sieht der Kunde nicht.
 | Alt+N | Auftrag erfassen |
 | Alt+S | in das Suchfeld im Kopf springen |
 | Eingabetaste im Feld „Kunde suchen“ | sofort suchen |
+| Strg+Eingabe am Auftrag | das Formular absenden, in dem du gerade schreibst |
 
 ## Einstellungen
 

@@ -282,8 +282,8 @@ Anwendung auf dem Server und nicht in der Verwaltung:
 
 Die Verwaltung zeigt an, was davon gilt, ändert es aber nicht. Alle
 Einstellungen sind in der Dokumentation des Projekts beschrieben: die
-einzelnen Werte in `README.md`, Abschnitt „Einstellungen“, Einrichtung und
-Update unter Windows Server in `docs/betrieb-iis.md`. Nach einer Änderung an
+einzelnen Werte in `docs/einstellungen.md`, Einrichtung und Update unter
+Windows Server in `docs/betrieb-iis.md`. Nach einer Änderung an
 den Einstellungen ist die Anwendung neu zu starten.
 
 Welche Version installiert ist, steht am Ende jeder Hilfeseite.

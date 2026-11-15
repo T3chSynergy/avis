@@ -208,7 +208,14 @@ können, ohne dass sich am Auftrag etwas ändert.
   und die Inventarnummer, etwa „INV 4532436“, im Betreff, in der Beschreibung
   oder in einem späteren Text. Es gibt dafür kein Feld, und es können
   mehrere Geräte sein. Eine unbekannte Nummer bleibt Text.
-- Wird eine Nennung gestrichen, ist die Verknüpfung gelöst.
+- Es zählt jeder Text am Auftrag: interne Kommentare, Hinweise beim
+  Weiterleiten, Nachrichten, Antworten des Kunden und eingehende Mails. Groß-
+  und Kleinschreibung spielen keine Rolle, ebenso wenig, ob zwischen „INV“
+  und der Nummer ein Leerzeichen, ein Doppelpunkt, ein Bindestrich oder nichts
+  steht.
+- Wird eine Nennung gestrichen, ist die Verknüpfung gelöst. Was in einer
+  Nachricht an den Kunden steht, bleibt.
+- Kunden sehen die Liste der Geräte am Auftrag nicht.
 - Ausgemusterte Geräte bleiben an ihren Aufträgen, werden aber nicht mehr
   neu verknüpft.
 - Am Gerät sind seine bisherigen Aufträge sichtbar.
@@ -361,12 +368,11 @@ Ein Wechsel ist möglich und vorbereitet:
 4. E-Mail-Eingang über Exchange
 5. Anbindung externer Quellen für Kunden und Geräte
 
+Alle fünf Stufen sind umgesetzt.
+
 ## 10. Offene Punkte
 
-- Der Abruf über IMAP ist gegen einen IMAP-Server erprobt, aber noch nicht
-  gegen Exchange.
-- Die Abfrage des Active Directory für Name, E-Mail, Telefon und Abteilung
-  neuer Konten ist eingebaut, aber noch nicht an einem echten Verzeichnis
-  erprobt.
+Was noch nicht erprobt ist, welche Lücken bekannt sind und was als Nächstes
+ansteht, steht in [Stand und Ausblick](stand.md).
 - Der Abgleich der Kunden mit dem Active Directory und der Geräte mit
   Snipe-IT ist noch nicht an den echten Systemen erprobt.

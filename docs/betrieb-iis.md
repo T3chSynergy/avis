@@ -1,8 +1,8 @@
 # AVIS unter Windows Server mit IIS
 
 Wie AVIS auf einem Windows Server eingerichtet und später aktualisiert wird.
-Was die einzelnen Einstellungen bedeuten, steht im
-[README](../README.md#einstellungen).
+Was die einzelnen Einstellungen bedeuten und wie sich die Anbindungen
+verhalten, steht in [Einstellungen und Anbindungen](einstellungen.md).
 
 **Diese Anleitung ist noch nicht auf einem echten Server erprobt.** Sie
 beschreibt den üblichen Weg für eine Anwendung mit ASP.NET Core unter IIS.
