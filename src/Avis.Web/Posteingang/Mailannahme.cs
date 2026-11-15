@@ -40,6 +40,11 @@ public partial class Mailannahme(
 
     private const int HoechstzahlAnhaenge = 20;
 
+    // Ein Bild im Text gilt als Logo, wenn es als Datei klein ist (Posteingang:BilderImTextAbKb) und
+    // höchstens so groß dargestellt wird. Ein eingefügtes Bildschirmfoto ist fast immer breiter oder höher.
+    private const int LogoBreite = 300;
+    private const int LogoHoehe = 120;
+
     public async Task<Maileingang> AnnehmenAsync(MimeMessage mail, CancellationToken abbruch = default)
     {
         var kennung = Kennung(mail);
@@ -67,7 +72,14 @@ public partial class Mailannahme(
             return eingang;
         }
 
-        var (anhaenge, ausgelassen, bilderImText) = await AnhaengeAsync(mail, abbruch);
+        var (anhaenge, ausgelassen, bilderImText, logos) = await AnhaengeAsync(mail, abbruch);
+        if (logos > 0)
+        {
+            // Sucht jemand ein Bild, das fehlt, steht hier, dass und warum eines ausgelassen wurde.
+            eingang.Hinweis = logos == 1
+                ? "1 kleines Bild im Text nicht übernommen (gilt als Logo)."
+                : $"{logos} kleine Bilder im Text nicht übernommen (gelten als Logo).";
+        }
         try
         {
             // Ein Bild im Text der Mail steht auch im Auftrag an seiner Stelle.
@@ -107,7 +119,7 @@ public partial class Mailannahme(
                 if (bezug is not null)
                 {
                     beschreibung = $"[Diese Mail nennt den Auftrag {bezug.Id}, kommt aber nicht von dessen Kunden. Sie wurde deshalb als neuer Auftrag erfasst.]\n\n{beschreibung}";
-                    eingang.Hinweis = $"Nennt Auftrag {bezug.Id}, Absender ist nicht dessen Kunde.";
+                    eingang.Hinweis = string.Join(' ', new[] { $"Nennt Auftrag {bezug.Id}, Absender ist nicht dessen Kunde.", eingang.Hinweis }.Where(h => h is not null));
                 }
 
                 var betreff = string.IsNullOrWhiteSpace(mail.Subject) ? "(ohne Betreff)" : mail.Subject.Trim();
@@ -225,11 +237,13 @@ public partial class Mailannahme(
 
     /// <summary>
     /// Speichert die Anhänge der Mail. Zu große werden ausgelassen und im
-    /// Text genannt. Kleine Bilder im Text gelten als Logo und entfallen.
+    /// Text genannt. Kleine Bilder im Text gelten als Logo und entfallen;
+    /// wie viele das waren, kommt mit zurück.
     /// </summary>
-    private async Task<(List<Anhang> Anhaenge, List<string> Ausgelassen, Dictionary<string, Anhang> BilderImText)> AnhaengeAsync(
+    private async Task<(List<Anhang> Anhaenge, List<string> Ausgelassen, Dictionary<string, Anhang> BilderImText, int Logos)> AnhaengeAsync(
         MimeMessage mail, CancellationToken abbruch)
     {
+        var logos = 0;
         var anhaenge = new List<Anhang>();
         var ausgelassen = new List<string>();
         // Bilder, auf die der HTML-Teil mit cid: verweist, nach ihrer Kennung.
@@ -264,8 +278,11 @@ public partial class Mailannahme(
                         continue; // der Text der Mail selbst
 
                     await datei.Content.DecodeToAsync(inhalt, abbruch);
-                    if (bildImText && inhalt.Length < mindestgroesseBild)
+                    if (bildImText && inhalt.Length < mindestgroesseBild && IstKlein(inhalt))
+                    {
+                        logos++;
                         continue;
+                    }
 
                     name = string.IsNullOrWhiteSpace(datei.FileName) ? $"Anhang.{datei.ContentType.MediaSubtype}" : datei.FileName;
                     typ = datei.ContentType.MimeType;
@@ -302,8 +319,16 @@ public partial class Mailannahme(
             ablage.Verwerfen(anhaenge);
             throw;
         }
-        return (anhaenge, ausgelassen, bilderImText);
+        return (anhaenge, ausgelassen, bilderImText, logos);
     }
+
+    /// <summary>
+    /// Ob das Bild höchstens so groß ist wie ein Logo in einer Signatur.
+    /// Lassen sich die Abmessungen nicht lesen, gilt es nicht als klein: Im
+    /// Zweifel bleibt ein Bild erhalten.
+    /// </summary>
+    private static bool IstKlein(MemoryStream bild) =>
+        Bildmasse.Lesen(bild.GetBuffer().AsSpan(0, (int)bild.Length)) is var (breite, hoehe) && breite <= LogoBreite && hoehe <= LogoHoehe;
 
     private static string? MitHinweis(string text, List<string> ausgelassen)
     {

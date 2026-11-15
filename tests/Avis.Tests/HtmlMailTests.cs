@@ -259,8 +259,8 @@ public class HtmlMailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains("<td>2.14</td>", html);
     }
 
-    private static readonly byte[] Bildschirmfoto = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, .. new byte[30_000]];
-    private static readonly byte[] Logo = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, .. new byte[2_000]];
+    private static readonly byte[] Bildschirmfoto = Testbild.Png(1200, 600, 30_000);
+    private static readonly byte[] Logo = Testbild.Png(180, 60, 2_000);
 
     [Fact]
     public async Task Ein_Bildschirmfoto_im_Text_der_Mail_steht_im_Auftrag_an_seiner_Stelle()
@@ -339,6 +339,114 @@ public class HtmlMailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         // Die Mail-Bibliothek gibt den Text mit den Zeilenenden des Rechners zurück.
         Assert.Contains("So sieht es *jetzt* aus:\n[Bild: Aktuell]", hinweis.TextBody?.ReplaceLineEndings("\n"));
         Assert.DoesNotContain("anhang:", hinweis.TextBody);
+    }
+
+    // So schreibt Outlook ein Bild, das mit Strg+V in den Text eingefügt wurde: einmal als VML für Word,
+    // einmal als gewöhnliches img für alle anderen, beides in bedingten Kommentaren.
+    private const string EingefuegtInOutlook = """
+        <p class=MsoNormal><span style='mso-fareast-language:EN-US'><!--[if gte vml 1]><v:shapetype id="_x0000_t75" coordsize="21600,21600" o:spt="75" o:preferrelative="t" path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f">
+        <v:stroke joinstyle="miter"/><v:formulas><v:f eqn="if lineDrawn pixelLineWidth 0"/></v:formulas>
+        <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/><o:lock v:ext="edit" aspectratio="t"/>
+        </v:shapetype><v:shape id="Grafik_x0020_1" o:spid="_x0000_i1025" type="#_x0000_t75" style='width:453pt;height:170.25pt;visibility:visible;mso-wrap-style:square'>
+        <v:imagedata src="cid:image001.png@01DC5678.9ABCDEF0" o:title=""/></v:shape><![endif]--><![if !vml]><img width=604 height=227 src="cid:image001.png@01DC5678.9ABCDEF0" v:shapes="Grafik_x0020_1"><![endif]></span><o:p></o:p></p>
+        """;
+
+    [Theory]
+    [InlineData(30_000)]
+    [InlineData(6_000)]
+    public async Task Ein_in_Outlook_eingefuegtes_Bildschirmfoto_in_einer_Antwort_kommt_im_Auftrag_an(int groesse)
+    {
+        var anna = await app.AnmeldenAlsAsync("anna");
+        var id = (await AnnehmenAsync(Mail("dieter.kunde@example.org", "Programm meldet Fehler", html: "<p>Das Programm meldet einen Fehler.</p>", text: "Das Programm meldet einen Fehler."))).AuftragId!.Value;
+        await anna.PostFormularAsync($"/Auftraege/{id}", $"/Auftraege/{id}?handler=Uebernehmen", new() { ["version"] = "1" });
+
+        // Ein Ausschnitt mit einer Fehlermeldung ist als Datei oft kleiner als ein Logo. Er darf deshalb nicht
+        // allein an der Dateigröße scheitern: Maßgeblich ist, dass er größer dargestellt wird als ein Logo.
+        var bildschirmfoto = Testbild.Png(604, 227, groesse);
+        var antwort = Mail("dieter.kunde@example.org", $"AW: [AVIS-{id}] Nachricht: Programm meldet Fehler",
+            html: $$"""
+                <html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><meta name=Generator content="Microsoft Word 15 (filtered medium)"><!--[if !mso]><style>v\:* {behavior:url(#default#VML);}</style><![endif]--><style><!-- p.MsoNormal {margin:0cm;} --></style></head>
+                <body lang=DE link="#0563C1" vlink="#954F72"><div class=WordSection1>
+                <p class=MsoNormal>Hallo,<o:p></o:p></p>
+                <p class=MsoNormal>so sieht die Meldung aus:<o:p></o:p></p>
+                {{EingefuegtInOutlook}}
+                <p class=MsoNormal>Viele Grüße<o:p></o:p></p>
+                <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+                <div><div style='border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0cm 0cm 0cm'>
+                <p class=MsoNormal><b>Von:</b> IT-Hotline &lt;it-hotline@avis.test&gt; <br><b>Gesendet:</b> Sonntag, 15. November 2026 10:00<br><b>An:</b> Dieter Kunde &lt;dieter.kunde@example.org&gt;<br><b>Betreff:</b> [AVIS-{{id}}] Nachricht: Programm meldet Fehler<o:p></o:p></p>
+                </div></div>
+                <p class=MsoNormal>Bitte schicken Sie ein Bildschirmfoto der Meldung.<o:p></o:p></p>
+                </div></body></html>
+                """,
+            text: "Hallo,\nso sieht die Meldung aus:\n[cid:image001.png@01DC5678.9ABCDEF0]\nViele Grüße\n\nVon: IT-Hotline <it-hotline@avis.test>\nGesendet: Sonntag, 15. November 2026 10:00\nAn: Dieter Kunde\nBetreff: Nachricht\n\nBitte schicken Sie ein Bildschirmfoto der Meldung.",
+            ("image001.png", "image001.png@01DC5678.9ABCDEF0", bildschirmfoto));
+
+        var eingang = await AnnehmenAsync(antwort);
+
+        Assert.Equal(MaileingangErgebnis.Antwort, eingang.Ergebnis);
+        var eintrag = (await LadenAsync(id)).Verlauf.OrderBy(v => v.Id).Last();
+        var bild = Assert.Single(await AnhaengeAsync(id), a => a.VerlaufseintragId == eintrag.Id);
+        Assert.Equal("image001.png", bild.Dateiname);
+        Assert.Equal($"Hallo,\nso sieht die Meldung aus:\n![image001.png](anhang:{bild.Ablagename.Split('/')[^1]})\nViele Grüße", eintrag.Text);
+        Assert.Null(eingang.Hinweis);
+    }
+
+    [Theory]
+    [InlineData(180, 60, 0, "ausgelassen")]      // klein als Datei und in den Abmessungen: ein Logo
+    [InlineData(300, 120, 0, "ausgelassen")]     // gerade noch
+    [InlineData(301, 120, 0, "uebernommen")]     // breiter als ein Logo
+    [InlineData(180, 121, 0, "uebernommen")]     // höher als ein Logo
+    [InlineData(180, 60, 25_000, "uebernommen")] // als Datei nicht klein
+    public async Task Ein_Bild_im_Text_gilt_nur_als_Logo_wenn_es_als_Datei_und_in_den_Abmessungen_klein_ist(int breite, int hoehe, int groesse, string erwartet)
+    {
+        var mail = Mail("gabi.mueller@example.org", $"Bild {breite} mal {hoehe}",
+            html: "<p>Siehe hier:</p><p><img src=\"cid:b@1\" alt=\"Bild\"></p>", text: "Siehe hier:",
+            ("b.png", "b@1", Testbild.Png(breite, hoehe, groesse == 0 ? 4_000 : groesse)));
+
+        var eingang = await AnnehmenAsync(mail);
+
+        var anhaenge = await AnhaengeAsync(eingang.AuftragId!.Value);
+        if (erwartet == "uebernommen")
+        {
+            Assert.Single(anhaenge);
+            Assert.Null(eingang.Hinweis);
+        }
+        else
+        {
+            Assert.Empty(anhaenge);
+            // Wer das Bild vermisst, findet im Posteingang der Verwaltung, dass und warum es fehlt.
+            Assert.Equal("1 kleines Bild im Text nicht übernommen (gilt als Logo).", eingang.Hinweis);
+        }
+    }
+
+    [Fact]
+    public async Task Ein_kleines_Bild_dessen_Abmessungen_sich_nicht_lesen_lassen_bleibt_erhalten()
+    {
+        // Im Zweifel für das Bild: lieber ein Logo zu viel im Auftrag als ein Bildschirmfoto zu wenig.
+        byte[] unlesbar = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, .. new byte[3_000]];
+        var mail = Mail("gabi.mueller@example.org", "Bild ohne lesbare Abmessungen",
+            html: "<p>Siehe hier:</p><p><img src=\"cid:u@1\"></p>", text: "Siehe hier:", ("u.png", "u@1", unlesbar));
+
+        var eingang = await AnnehmenAsync(mail);
+
+        Assert.Single(await AnhaengeAsync(eingang.AuftragId!.Value));
+        Assert.Null(eingang.Hinweis);
+    }
+
+    [Fact]
+    public void Die_Abmessungen_eines_Bildes_stehen_am_Anfang_der_Datei()
+    {
+        Assert.Equal((604, 227), Avis.Web.Anhaenge.Bildmasse.Lesen(Testbild.Png(604, 227, 100)));
+        Assert.Equal((180, 60), Avis.Web.Anhaenge.Bildmasse.Lesen(Testbild.Gif(180, 60, 100)));
+        Assert.Equal((1920, 1080), Avis.Web.Anhaenge.Bildmasse.Lesen(Testbild.Jpeg(1920, 1080, 100)));
+
+        // Anderes Format, abgeschnittene oder beschädigte Datei: keine Angabe, kein Absturz.
+        Assert.Null(Avis.Web.Anhaenge.Bildmasse.Lesen("RIFF\0\0\0\0WEBPVP8 "u8));
+        Assert.Null(Avis.Web.Anhaenge.Bildmasse.Lesen([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0]));
+        Assert.Null(Avis.Web.Anhaenge.Bildmasse.Lesen(Testbild.Png(0, 0, 100)));
+        Assert.Null(Avis.Web.Anhaenge.Bildmasse.Lesen([0xFF, 0xD8, 0xFF, 0xE0, 0xFF, 0xFF]));
+        Assert.Null(Avis.Web.Anhaenge.Bildmasse.Lesen([0xFF, 0xD8, 0xFF, 0xE0, 0x7F, 0xFF, 1, 2, 3, 4, 5, 6]));
+        Assert.Null(Avis.Web.Anhaenge.Bildmasse.Lesen([]));
     }
 
     [Fact]

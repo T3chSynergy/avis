@@ -47,7 +47,7 @@ Unterstrichen statt des Doppelpunkts (`Mail__Server`).
 | `Posteingang:Ordner` | Ordner, aus dem ungelesene Mails geholt werden, Standard `INBOX` |
 | `Posteingang:Erledigtordner` | Ordner, in den verarbeitete Mails verschoben werden. Leer: Sie bleiben als gelesen im Eingang |
 | `Posteingang:AbstandSekunden` | Abstand zwischen zwei Abrufen, Standard 60 |
-| `Posteingang:BilderImTextAbKb` | Kleinere Bilder im Text einer Mail gelten als Logo und werden nicht übernommen, Standard 20 |
+| `Posteingang:BilderImTextAbKb` | Ein Bild im Text einer Mail, das als Datei kleiner ist und höchstens 300 × 120 Bildpunkte misst, gilt als Logo und wird nicht übernommen. Standard 20; mit 0 wird jedes Bild übernommen |
 | `Hilfe:EigenerText` | Markdown-Datei mit eigenem Text des Hauses, der über der Hilfe steht, relativ zum Ordner der Anwendung. Standard `App_Data/Hilfe.md`. Fehlt die Datei, steht dort nichts |
 | `Anhaenge:Ordner` | Ordner für Anhänge, relativ zum Ordner der Anwendung, Standard `App_Data/Anhaenge` |
 | `Anhaenge:HoechstgroesseMb` | Höchstgröße einer Datei, Standard 10 |
@@ -95,8 +95,14 @@ geschah, steht unter Verwaltung → Posteingang.
   Schriftarten, Farben, Layout-Tabellen wie in Signaturen.
 - Ein Bild im Text der Mail, etwa ein eingefügtes Bildschirmfoto, steht im
   Auftrag an derselben Stelle im Text.
-- Anhänge werden übernommen. Zu große Dateien und kleine Bilder im Text (Logos
-  in Signaturen) bleiben weg, zu große werden im Auftrag genannt.
+- Anhänge werden übernommen. Zu große Dateien bleiben weg und werden im
+  Auftrag genannt.
+- Logos in Signaturen bleiben weg. Als Logo gilt ein Bild im Text, das als
+  Datei klein ist (`Posteingang:BilderImTextAbKb`) und höchstens 300 × 120
+  Bildpunkte misst. Ein eingefügtes Bildschirmfoto ist fast immer breiter
+  oder höher und bleibt deshalb erhalten, auch wenn die Datei klein ist. Wurde
+  ein Bild ausgelassen, steht das unter Verwaltung → Posteingang in der Spalte
+  „Hinweis“.
 - Bei einer Antwort werden Bilder aus dem zitierten Schriftwechsel nicht noch
   einmal angehängt.
 - Jede Mail wird über ihre Message-ID nur einmal verarbeitet.
