@@ -4,6 +4,13 @@ Wie weit AVIS ist, was erprobt ist und was nicht, und was als Nächstes ansteht.
 Diese Datei wird mit dem Projekt fortgeschrieben. Was AVIS kann, steht im
 [README](../README.md), warum es so gebaut ist, im [Konzept](konzept.md).
 
+## Versionen
+
+Die erste Version ist 0.1.0. Alle Versionen mit ihren Paketen stehen unter
+[Releases](https://github.com/T3chSynergy/avis/releases). Solange die
+Versionsnummer mit 0 beginnt, kann sich von einer Version zur nächsten noch
+Grundlegendes ändern.
+
 ## Umgesetzt
 
 Alle fünf Ausbaustufen des [Konzepts](konzept.md#9-ausbaustufen) sind gebaut:
@@ -63,8 +70,8 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
 
 1. **Probelauf abschließen.** Was dabei auffällt, wird behoben, und die
    Anleitung wird berichtigt.
-2. **Erstes Release** mit Versionsnummer und fertigem Paket, sobald der
-   Probelauf trägt.
+2. **Das erste Update erproben:** von 0.1.0 auf die nächste Version, nach der
+   Anleitung für den Betrieb unter IIS.
 
 ## Angedacht, nicht zugesagt
 
