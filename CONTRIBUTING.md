@@ -69,6 +69,9 @@ dotnet test
    ausdrücklich drin.
 6. Gemergt wird nur mit grünen Prüfungen.
 
+Ein Release bekommt einen Namen der Form `v1.2.3`. Der Workflow „Paket“ baut
+daraus das Paket für Windows Server und hängt es an das Release.
+
 ## Worauf zu achten ist
 
 - **Windows und Linux.** Die Tests laufen unter beiden. Zahlen und

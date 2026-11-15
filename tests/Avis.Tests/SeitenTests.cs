@@ -255,6 +255,25 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains("freie Software unter der GNU AGPL, Version 3 oder später", html);
         Assert.Matches($"<p class=\"lizenzhinweis\">[^<]*<a href=\"{System.Text.RegularExpressions.Regex.Escape(Avis.Web.Lizenz.Quelltext)}\"[^>]*>Quelltext und Lizenz</a>", html);
         Assert.Matches("<a class=\"hilfe\"", html);
+        // Wer einen Fehler meldet oder ein Update einspielt, findet dort auch, was installiert ist.
+        Assert.Contains($"Installiert ist Version {Avis.Web.Programmversion.Text}.", html);
+    }
+
+    [Theory]
+    [InlineData("1.2.3+9214917f437802b529e0b3b9efe837f07d925039", "1.2.3 (Stand 9214917)")]
+    [InlineData("0.0.0+abc", "0.0.0 (Stand abc)")]
+    [InlineData("1.2.3-beta.1+9214917f43", "1.2.3-beta.1 (Stand 9214917)")]
+    [InlineData("1.2.3", "1.2.3")]
+    [InlineData("", "unbekannt")]
+    [InlineData(null, "unbekannt")]
+    public void Die_Version_wird_mit_dem_gekuerzten_Stand_des_Commits_angezeigt(string? angabe, string erwartet) =>
+        Assert.Equal(erwartet, Avis.Web.Programmversion.Anzeige(angabe));
+
+    [Fact]
+    public void Die_Anwendung_kennt_ihre_Version()
+    {
+        // Ohne Release steht dort 0.0.0; die Nummer eines Release setzt der Workflow "Paket" beim Bauen.
+        Assert.Matches(@"^\d+\.\d+\.\d+", Avis.Web.Programmversion.Text);
     }
 
     [Fact]

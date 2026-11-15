@@ -1,0 +1,142 @@
+# Baut das Paket für den Betrieb unter Windows Server mit IIS: die
+# veröffentlichte Anwendung als ZIP mit Prüfsumme. Wie man es einrichtet und
+# ein Update einspielt, steht in docs/betrieb-iis.md.
+#
+# - Bei einem veröffentlichten Release: Das ZIP hängt danach am Release, mit
+#   einem Herkunftsnachweis. Die Version kommt aus dem Namen des Release
+#   (v1.2.3 wird 1.2.3).
+# - Auf Knopfdruck (Actions → Paket → Run workflow): dasselbe Paket als
+#   Download am Lauf, ohne Release. Die Version ist dann 0.0.0, der Stand des
+#   Commits steht dabei.
+# - Bei Pull Requests, die das Paket betreffen: nur bauen, damit ein Fehler
+#   hier nicht erst beim Release auffällt.
+name: Paket
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/paket.yml
+      - src/Avis.Web/Avis.Web.csproj
+      - Directory.Build.props
+      - global.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: paket-${{ github.ref }}
+  # Ein laufendes Release wird nicht abgebrochen, ein überholter Stand eines Pull Requests schon.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  paket:
+    name: Paket für Windows Server
+    runs-on: windows-latest
+    timeout-minutes: 20
+    outputs:
+      name: ${{ steps.version.outputs.name }}
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      STAND: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+
+      # Der Name des Release kommt von außen und wird deshalb nur als Umgebungsvariable gelesen und geprüft.
+      - name: Version bestimmen
+        id: version
+        shell: pwsh
+        run: |
+          if ($env:RELEASE_TAG) {
+            if ($env:RELEASE_TAG -notmatch '^v(\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?)$') {
+              throw "Der Name des Release muss die Form v1.2.3 haben, nicht '$env:RELEASE_TAG'."
+            }
+            $version = $Matches[1]
+            $name = "avis-$version-win-x64"
+          } else {
+            $version = "0.0.0"
+            $name = "avis-$($env:STAND.Substring(0, 7))-win-x64"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "name=$name" >> $env:GITHUB_OUTPUT
+          Write-Host "AVIS $version, Paket $name"
+
+      - name: Pakete laden
+        run: dotnet restore
+
+      # Dieselben Prüfungen wie im Workflow "Prüfung": Ein Paket gibt es nur von einem Stand, der sie besteht.
+      - name: Bauen
+        run: dotnet build --no-restore --configuration Release -warnaserror
+
+      - name: Testen
+        run: dotnet test --no-build --configuration Release
+
+      # Ohne eigenes .NET: Das Hosting Bundle braucht der Server für IIS ohnehin.
+      - name: Veröffentlichen
+        run: dotnet publish src/Avis.Web --configuration Release --runtime win-x64 --self-contained false -p:Version=${{ steps.version.outputs.version }} --output paket/avis
+
+      - name: ZIP und Prüfsumme
+        shell: pwsh
+        run: |
+          $name = "${{ steps.version.outputs.name }}"
+          foreach ($datei in "Avis.Web.dll", "web.config", "appsettings.json", "LICENSE", "THIRD-PARTY-NOTICES.md", "Hilfe\bearbeiter.md") {
+            if (-not (Test-Path "paket\avis\$datei")) { throw "$datei fehlt im Paket." }
+          }
+          foreach ($datei in "appsettings.Development.json", "appsettings.Production.json", "App_Data") {
+            if (Test-Path "paket\avis\$datei") { throw "$datei gehört nicht in das Paket." }
+          }
+          Compress-Archive -Path paket\avis\* -DestinationPath "$name.zip"
+          $hash = (Get-FileHash "$name.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name.zip" | Out-File -Encoding ascii "$name.zip.sha256"
+          Write-Host "SHA-256: $hash"
+
+      - name: ZIP als Download (Artefakt)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.version.outputs.name }}
+          path: |
+            ${{ steps.version.outputs.name }}.zip
+            ${{ steps.version.outputs.name }}.zip.sha256
+          retention-days: 14
+          compression-level: 0
+
+  # Nur bei einem Release, und nur dieser Teil darf schreiben: Er baut nichts mehr, er hängt das fertige ZIP an.
+  release:
+    name: An das Release hängen
+    if: github.event_name == 'release'
+    needs: paket
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write        # das ZIP an das Release hängen
+      id-token: write        # Herkunftsnachweis
+      attestations: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      NAME: ${{ needs.paket.outputs.name }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.paket.outputs.name }}
+
+      # Belegt, dass das ZIP aus genau diesem Commit von GitHub gebaut wurde.
+      - name: Herkunftsnachweis
+        if: ${{ !github.event.repository.private }}
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ needs.paket.outputs.name }}.zip
+
+      - name: An das Release hängen
+        run: gh release upload "$RELEASE_TAG" "$NAME.zip" "$NAME.zip.sha256" --repo "$REPO" --clobber
