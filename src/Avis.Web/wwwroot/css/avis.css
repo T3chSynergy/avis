@@ -389,6 +389,13 @@ li.intern .md code, li.intern .md pre { background: #f3e6b8; }
 /* Eine Datei wird über das Textfeld gezogen. */
 textarea.ablegen { outline: 3px dashed var(--akzent); outline-offset: 2px; }
 
+/* Vorschau an den Textfeldern: steht an der Stelle des Felds, aber ohne dessen weißen Grund, damit sie nicht wie ein Eingabefeld aussieht. */
+textarea[hidden], .vorschau[hidden] { display: none; }
+.vorschau { padding: 6px 8px; border: 1px dashed #8793a1; border-radius: 4px; }
+.vorschau .md, .vorschau .erklaerung { margin: 0; }
+/* Eine eigene Zeile: Sonst stünde die Schaltfläche neben der zum Absenden. */
+button.vorschauknopf { display: block; margin-top: 6px; padding: 3px 10px; font-weight: 400; }
+
 /* Bilder im Verlauf und Vorschau vor dem Absenden. */
 ul.bilder { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 0; padding: 0; }
 ul.bilder li { display: flex; flex-direction: column; gap: 3px; max-width: 260px; }

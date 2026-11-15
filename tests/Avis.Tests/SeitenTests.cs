@@ -556,7 +556,11 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains($"href=\"{aendern}\">Ändern</a>", auftragsseite);
         Assert.DoesNotContain($"{seite}/Eintrag/{nachricht}", auftragsseite);
         Assert.DoesNotContain("/Eintrag/", await bernd.GetStringAsync(seite));
-        Assert.Contains("Altfassung mit Tippfehler.</textarea>", await anna.GetStringAsync(aendern));
+        var formular = await anna.GetStringAsync(aendern);
+        Assert.Contains("Altfassung mit Tippfehler.</textarea>", formular);
+        // Auch hier gibt es die Vorschau: Das Feld ist dafür gekennzeichnet, und das Skript ist geladen.
+        Assert.Matches("<textarea[^>]* data-markdown", formular);
+        Assert.Contains("/js/editor.js", formular);
 
         // Bernd hat den Kommentar nicht geschrieben und bearbeitet den Auftrag nicht.
         Assert.Contains("kann nur ändern, wer ihn geschrieben hat", await bernd.GetStringAsync(aendern));

@@ -44,6 +44,7 @@ builder.Services.AddRazorPages(o =>
     o.Conventions.AuthorizeFolder("/Meine", Richtlinien.Angemeldet);
     o.Conventions.AuthorizeFolder("/Anhaenge", Richtlinien.Angemeldet);
     o.Conventions.AuthorizeFolder("/Hilfe", Richtlinien.Angemeldet);
+    o.Conventions.AuthorizePage("/Vorschau", Richtlinien.Angemeldet);
     o.Conventions.AuthorizePage("/Index", Richtlinien.Angemeldet);
     o.Conventions.AllowAnonymousToPage("/Anmeldung");
     o.Conventions.AllowAnonymousToPage("/Fehler");

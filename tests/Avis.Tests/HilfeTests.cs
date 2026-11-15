@@ -122,7 +122,7 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.All(Hilfeverweise.Seiten, v => Assert.True(abschnitte[v.Value.Thema].Contains(v.Value.Anker), $"{v.Key} verweist auf #{v.Value.Anker}, den es in der Hilfe für {v.Value.Thema} nicht gibt."));
 
         // Jede Seite hat einen Abschnitt. Ausgenommen sind die Hilfe selbst und Seiten ohne eigene Ansicht.
-        var ohne = new[] { "/Hilfe/", "/Anhaenge/", "/Anmeldung", "/Fehler", "/Status", "/Kunden/Treffer" };
+        var ohne = new[] { "/Hilfe/", "/Anhaenge/", "/Anmeldung", "/Fehler", "/Status", "/Kunden/Treffer", "/Vorschau" };
         var seiten = app.Services.GetRequiredService<IActionDescriptorCollectionProvider>().ActionDescriptors.Items
             .OfType<PageActionDescriptor>()
             .Select(p => p.ViewEnginePath)

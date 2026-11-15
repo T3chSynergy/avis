@@ -13,7 +13,7 @@
         <legend>@(hinweis ? "Hinweis an die Gruppe (intern)" : "Interner Kommentar")</legend>
         <div class="feld">
             <label asp-for="Text" class="unsichtbar">Text</label>
-            <textarea asp-for="Text" rows="8" autofocus></textarea>
+            <textarea asp-for="Text" rows="8" data-markdown autofocus></textarea>
             <span asp-validation-for="Text" class="feldfehler"></span>
         </div>
         @if (Model.Eintrag.Anhaenge.Count > 0)
@@ -27,3 +27,7 @@
         <a asp-page="Details" asp-route-id="@Model.Id">Abbrechen</a>
     </div>
 </form>
+
+@section Scripts {
+    <script src="~/js/editor.js" asp-append-version="true"></script>
+}

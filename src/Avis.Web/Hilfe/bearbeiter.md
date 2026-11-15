@@ -241,6 +241,11 @@ Zeilenumbruch bleibt ein Zeilenumbruch.
 | `> Zitat` am Zeilenanfang | ein eingerücktes Zitat |
 | `https://example.org` | ein Link |
 
+**Vorschau:** Unter jedem Textfeld steht „Vorschau“. Die Schaltfläche zeigt
+den Text so, wie er später im Auftrag steht. „Weiter schreiben“ führt zurück
+zum Textfeld; der Text bleibt dabei erhalten. Eingefügte Bilder zeigt die
+Vorschau nicht, sie stehen weiter unter dem Dateifeld.
+
 **Bilder und Dateien:** Ein Bild aus der Zwischenablage fügst du mit
 **Strg+V** in das Textfeld ein, zum Beispiel ein Bildschirmfoto. Dateien
 lassen sich auch in das Textfeld ziehen oder über das Dateifeld wählen. Was
