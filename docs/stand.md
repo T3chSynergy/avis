@@ -81,6 +81,22 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   letzten Lauf geändert hat, statt einmal täglich alles.
 - Wechsel der Datenbank zu SQL Server. Er ist im Aufbau berücksichtigt, siehe
   [Konzept](konzept.md#späterer-wechsel-zu-sql-server).
+- Weitere Personen am Auftrag. Der Auftrag behält genau einen Kunden als
+  Auftraggeber; dazu ließen sich weitere Betroffene verknüpfen, über die
+  Kundensuche und nur intern, und Bearbeiter als beteiligt nennen. Offen ist
+  vor allem, ob ein beteiligter Bearbeiter intern kommentieren darf, ohne den
+  Auftrag zu übernehmen. Das sollen zuerst die künftigen Bearbeiter
+  besprechen.
+- Bezug zwischen Aufträgen. Jeder Auftrag steht für sich; Teilaufträge und
+  Abhängigkeiten zwischen Aufträgen soll es nicht geben. Wer einen anderen
+  Auftrag im Text nennt, zum Beispiel `AVIS 123`, stellt damit den Bezug her,
+  so wie `INV 4711` ein Gerät verknüpft: Die Nennung wird ein Verweis, und am
+  genannten Auftrag steht, wo er erwähnt ist. Für Arbeit, die sich auf mehrere
+  Gruppen verteilt, reicht dann ein zweiter Auftrag mit einem solchen Bezug.
+- Verweis in das Quellsystem. Ein Gerät aus Snipe-IT bekäme auf seiner Seite
+  einen Link zu seiner Detailseite dort. Dasselbe wäre bei Kunden möglich:
+  ein Link zum Eintrag der Person in einem Verzeichnis des Hauses, etwa einem
+  Telefonbuch, über eine einstellbare Adresse mit Platzhalter.
 
 ## Nicht vorgesehen
 
