@@ -122,6 +122,18 @@ public class GeraeteabgleichTests
         var gestoert = await AbgleichenAsync(app);
         Assert.Contains("konnte nicht gelesen werden: Snipe-IT hat den Zugangsschlüssel abgelehnt.", gestoert.Fehler);
 
+        // Antwortet die Quelle nicht rechtzeitig, ist auch das ein Fehler, der festgehalten wird. .NET meldet
+        // eine Zeitüberschreitung wie einen Abbruch; früher blieb der Lauf deshalb ohne jede Spur.
+        app.Geraetequelle.Gestoert = false;
+        app.Geraetequelle.ZuLangsam = true;
+        var zuLangsam = await AbgleichenAsync(app);
+        Assert.Contains("konnte nicht gelesen werden", zuLangsam.Fehler);
+        using (var scope = app.Services.CreateScope())
+        {
+            var festgehalten = await scope.ServiceProvider.GetRequiredService<Abgleichprotokoll>().LetztesAsync(Abgleichlauf.Geraete);
+            Assert.Equal(zuLangsam.Fehler, festgehalten?.Fehler);
+        }
+
         Assert.True((await GeraetAsync(app, "SC-7001")).Aktiv);
         Assert.True((await GeraetAsync(app, "PL-7002")).Aktiv);
     }
@@ -339,6 +351,33 @@ public class GeraeteabgleichTests
         var fehler = await Assert.ThrowsAsync<InvalidOperationException>(() => quelle.LesenAsync(CancellationToken.None));
 
         Assert.Equal(erwartet, fehler.Message);
+    }
+
+    [Fact]
+    public async Task Antwortet_Snipe_IT_nicht_rechtzeitig_sagt_die_Meldung_das_und_wo()
+    {
+        var anfragen = 0;
+        var quelle = Quelle(_ => ++anfragen == 1
+            ? Json("""{"total": 900, "rows": [{"id": 1, "asset_tag": "A-1"}, {"id": 2, "asset_tag": "A-2"}]}""")
+            : throw new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout of 60 seconds elapsing."));
+
+        var fehler = await Assert.ThrowsAsync<InvalidOperationException>(() => quelle.LesenAsync(CancellationToken.None));
+
+        Assert.Equal("Snipe-IT hat nicht innerhalb von 60 Sekunden geantwortet (ab Asset 3).", fehler.Message);
+    }
+
+    [Fact]
+    public async Task Ein_verlangter_Abbruch_bleibt_ein_Abbruch()
+    {
+        // Beendet jemand die Anwendung während des Abrufs, ist das kein Fehler der Quelle.
+        using var abbruch = new CancellationTokenSource();
+        var quelle = Quelle(_ =>
+        {
+            abbruch.Cancel();
+            throw new OperationCanceledException(abbruch.Token);
+        });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => quelle.LesenAsync(abbruch.Token));
     }
 
     private static SnipeItGeraetequelle Quelle(Func<HttpRequestMessage, HttpResponseMessage> antworten)

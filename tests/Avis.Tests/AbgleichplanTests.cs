@@ -85,6 +85,38 @@ public class AbgleichplanTests
     }
 
     [Fact]
+    public async Task Antwortet_eine_Quelle_nicht_rechtzeitig_laeuft_der_Hintergrund_weiter_und_versucht_es_spaeter_wieder()
+    {
+        var uhr = new Testuhr(Utc(11, 15, 9, 0));
+        using var basis = new AvisAnwendung();
+        using var app = basis.WithWebHostBuilder(b => b.ConfigureTestServices(s => s.AddSingleton<TimeProvider>(uhr)));
+        var hintergrund = ActivatorUtilities.CreateInstance<Abgleichhintergrund>(app.Services);
+        basis.Bearbeiterquelle.Bearbeiter.Add(new("guid-berta", @"avis\berta", "Bearbeiterin, Berta", null));
+        basis.Kundenquelle.Kunden.Add(new("guid-nora", @"avis\nora", "Neu, Nora", "nora.neu@example.org", null, null, "A 301"));
+        basis.Geraetequelle.Geraete.Add(new("501", "NB-5001", "Notebook", "Notebook", "A 301", null));
+
+        // .NET meldet eine Zeitüberschreitung wie einen Abbruch. Früher endete der Hintergrund daran, ohne Meldung,
+        // und bis zum nächsten Neustart lief kein Abgleich mehr.
+        basis.Geraetequelle.ZuLangsam = true;
+        await hintergrund.FaelligeAusfuehrenAsync();
+
+        Assert.Equal((1, 1, 1), (basis.Bearbeiterquelle.Abrufe, basis.Kundenquelle.Abrufe, basis.Geraetequelle.Abrufe));
+        var lauf = await DatenbankAsync(app, db => db.Abgleichlaeufe.AsNoTracking().SingleAsync(l => l.Art == Abgleichlauf.Geraete));
+        Assert.Contains("konnte nicht gelesen werden", lauf.Fehler);
+        Assert.Null(lauf.LetzterErfolg);
+
+        // Nicht gleich wieder, aber nach einer Stunde; dann gelingt es.
+        uhr.Jetzt = Utc(11, 15, 9, 30);
+        await hintergrund.FaelligeAusfuehrenAsync();
+        Assert.Equal(1, basis.Geraetequelle.Abrufe);
+        basis.Geraetequelle.ZuLangsam = false;
+        uhr.Jetzt = Utc(11, 15, 10, 1);
+        await hintergrund.FaelligeAusfuehrenAsync();
+        Assert.Equal((1, 1, 2), (basis.Bearbeiterquelle.Abrufe, basis.Kundenquelle.Abrufe, basis.Geraetequelle.Abrufe));
+        Assert.Equal(1, await DatenbankAsync(app, db => db.Geraete.CountAsync(g => g.Inventarnummer == "NB-5001")));
+    }
+
+    [Fact]
     public async Task Der_Hintergrund_gleicht_einmal_am_Tag_ab_erst_Bearbeiter_dann_Kunden_dann_Geraete()
     {
         var uhr = new Testuhr(Utc(11, 15, 9, 0));

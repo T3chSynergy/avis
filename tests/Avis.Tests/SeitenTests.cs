@@ -176,12 +176,17 @@ public class Testgeraetequelle : IGeraetequelle
     /// <summary>Solange gesetzt, lässt sich die Quelle nicht lesen.</summary>
     public bool Gestoert { get; set; }
 
+    /// <summary>Solange gesetzt, antwortet die Quelle nicht rechtzeitig. So meldet .NET eine Zeitüberschreitung.</summary>
+    public bool ZuLangsam { get; set; }
+
     /// <summary>Wie oft die Quelle gelesen wurde, auch vergeblich.</summary>
     public int Abrufe { get; private set; }
 
     public Task<IReadOnlyList<Quellgeraet>> LesenAsync(CancellationToken abbruch)
     {
         Abrufe++;
+        if (ZuLangsam)
+            throw new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout of 60 seconds elapsing.");
         return Gestoert
             ? throw new InvalidOperationException("Snipe-IT hat den Zugangsschlüssel abgelehnt.")
             : Task.FromResult<IReadOnlyList<Quellgeraet>>(Geraete.ToList());

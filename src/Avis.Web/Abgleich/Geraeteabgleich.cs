@@ -79,7 +79,7 @@ public class Geraeteabgleich(
         {
             ergebnis = await AbgleichenAsync(abbruch);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (!Abgleichplan.Abgebrochen(ex, abbruch))
         {
             // Etwa wenn sich das Ergebnis nicht speichern lässt. Was halb vorbereitet war, wird verworfen.
             log.LogError(ex, "Der Geräteabgleich ist auf einen Fehler gelaufen.");
@@ -108,7 +108,7 @@ public class Geraeteabgleich(
         {
             gelesen = await _quelle.LesenAsync(abbruch);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (!Abgleichplan.Abgebrochen(ex, abbruch))
         {
             log.LogWarning(ex, "Die Quelle {Quelle} konnte nicht gelesen werden.", _quelle.Name);
             return new(jetzt, Fehler: $"Die Quelle {_quelle.Name} konnte nicht gelesen werden: {ex.Message}");

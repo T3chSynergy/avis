@@ -112,9 +112,9 @@ geschah, steht unter Verwaltung → Posteingang.
 Damit Antworten ankommen, muss `Mail:Absender` die Adresse des Postfachs sein,
 das AVIS abruft.
 
-Der Abruf ist gegen einen IMAP-Server (Dovecot) erprobt, nicht gegen
-Exchange. Die Umwandlung von HTML ist mit nachgebauten Mails aus Outlook,
-Gmail und Thunderbird geprüft, nicht mit echten Mails.
+Abruf und Versand sind im Probelauf gegen einen echten Mailserver gelaufen.
+Die Umwandlung von HTML ist vor allem mit nachgebauten Mails aus Outlook,
+Gmail und Thunderbird geprüft.
 
 ## Bearbeiterabgleich
 
@@ -126,6 +126,26 @@ wer Bearbeiter ist: die Benutzerkonten, auf die der LDAP-Filter aus
 |---|---|
 | `(memberOf=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` | die Mitglieder dieser Gruppe |
 | `(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` | ihre Mitglieder samt verschachtelter Gruppen |
+
+Zum Herauskopieren in die `appsettings.Production.json`: alle Mitglieder
+einer Gruppe, auch die aus Gruppen, die ihrerseits Mitglied sind. Die lange
+Zahl ist fest und sorgt für die Verschachtelung; zu ersetzen ist nur der Name
+der Gruppe ab `CN=`.
+
+```json
+"Bearbeiterabgleich": {
+  "Art": "ActiveDirectory",
+  "Filter": "(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)"
+}
+```
+
+Der vollständige Name der Gruppe (Distinguished Name) muss genau stimmen.
+PowerShell nennt ihn auf einem Rechner mit den Verwaltungswerkzeugen für das
+Active Directory:
+
+```powershell
+(Get-ADGroup "AVIS-Bearbeiter").DistinguishedName
+```
 
 Dass nur Benutzerkonten von Personen zählen und deaktivierte nicht, ergänzt
 AVIS selbst. Unter Verwaltung → Bearbeiterabgleich steht, was der letzte Lauf
@@ -150,8 +170,6 @@ getan hat, und er lässt sich dort sofort anstoßen.
 - Liefert das Verzeichnis keinen einzigen Bearbeiter oder ist es nicht
   erreichbar, ändert sich nichts.
 
-Der Abgleich ist noch nicht an einem echten Verzeichnis erprobt.
-
 ## Kundenabgleich
 
 Mit `Kundenabgleich:Art = ActiveDirectory` sind die Benutzerkonten des Active
@@ -170,6 +188,20 @@ zählen und deaktivierte Konten nicht, ergänzt AVIS selbst. Beispiele:
 | `(mail=*@example.org)` | alle Konten mit einer Adresse dieser Domäne |
 | `(memberOf=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | die Mitglieder dieser Gruppe |
 | `(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | ihre Mitglieder samt verschachtelter Gruppen |
+| `(&(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))` | alle Konten, bei denen Telefon, Büro, E-Mail und Abteilung eingetragen sind |
+
+Zum Herauskopieren in die `appsettings.Production.json`: alle Konten, bei
+denen Telefonnummer, Büro, E-Mail-Adresse und Abteilung ausgefüllt sind.
+Funktionskonten und technische Konten fallen damit meist von selbst heraus.
+`(&` am Anfang verlangt, dass alle Bedingungen zugleich gelten; `=*` heißt
+„ist ausgefüllt“.
+
+```json
+"Kundenabgleich": {
+  "Art": "ActiveDirectory",
+  "Filter": "(&(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))"
+}
+```
 
 Mit `Kundenabgleich:Suchbasis` lässt sich die Suche auf einen Teil des
 Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
@@ -190,8 +222,7 @@ Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
 
 Gelesen wird mit dem Konto, unter dem AVIS läuft, aus der Domäne des Servers.
 Ein fehlerhafter Filter lässt den Abgleich scheitern, ohne dass sich etwas
-ändert; die Meldung steht in der Verwaltung. Der Abgleich ist noch nicht an
-einem echten Verzeichnis erprobt.
+ändert; die Meldung steht in der Verwaltung.
 
 ## Geräteabgleich
 
@@ -232,9 +263,9 @@ Darf er keine Benutzer ansehen, liefert Snipe-IT keine Mailadressen, und die
 Geräte bleiben ohne Nutzer. `Geraeteabgleich:Adresse` ist die Adresse, unter
 der Snipe-IT im Browser erreichbar ist, ohne `/api/v1`.
 
-Die Abfrage ist nach dem Quelltext von Snipe-IT geschrieben und mit
-nachgestellten Antworten geprüft, aber noch nicht an einer echten Installation
-erprobt.
+Antwortet Snipe-IT auf einen Abruf nicht innerhalb von 60 Sekunden, gilt der
+Lauf als gescheitert; die Meldung nennt die Stelle. Im Probelauf hat der
+Abgleich rund 30 000 Geräte in kurzer Zeit gelesen.
 
 ## Wann die Abgleiche laufen
 

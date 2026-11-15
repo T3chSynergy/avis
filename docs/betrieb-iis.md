@@ -4,9 +4,9 @@ Wie AVIS auf einem Windows Server eingerichtet und später aktualisiert wird.
 Was die einzelnen Einstellungen bedeuten und wie sich die Anbindungen
 verhalten, steht in [Einstellungen und Anbindungen](einstellungen.md).
 
-**Diese Anleitung ist noch nicht auf einem echten Server erprobt.** Sie
-beschreibt den üblichen Weg für eine Anwendung mit ASP.NET Core unter IIS.
-Wo sie nicht stimmt, bitte ein Issue stellen.
+**Diese Anleitung ist erst in Teilen erprobt.** Die Einrichtung ist im
+Probelauf unter Windows Server 2022 gelungen; das Update und die Testfassung
+sind noch nicht ausprobiert. Wo sie nicht stimmt, bitte ein Issue stellen.
 
 ## Was auf dem Server liegt
 

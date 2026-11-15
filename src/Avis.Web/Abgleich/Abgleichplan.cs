@@ -16,6 +16,15 @@ public static class Abgleichplan
     /// <summary>Nach einem gescheiterten Lauf wird frühestens nach dieser Zeit noch einmal versucht.</summary>
     public static readonly TimeSpan Wiederholung = TimeSpan.FromHours(1);
 
+    /// <summary>
+    /// Ob ein Lauf abgebrochen wurde, weil es jemand verlangt hat, etwa beim
+    /// Beenden der Anwendung. Eine Zeitüberschreitung der Quelle sieht für
+    /// .NET genauso aus, ist aber ein Fehler wie jeder andere: Sie wird
+    /// festgehalten, und der nächste Versuch folgt.
+    /// </summary>
+    public static bool Abgebrochen(Exception ausnahme, CancellationToken abbruch) =>
+        ausnahme is OperationCanceledException && abbruch.IsCancellationRequested;
+
     /// <summary>Liest eine Uhrzeit in der Form "02:30". Der Name der Einstellung steht in der Fehlermeldung.</summary>
     public static TimeOnly Uhrzeit(string? text, string einstellung) =>
         TimeOnly.TryParseExact(text?.Trim(), ["HH:mm", "H:mm"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var uhrzeit)
@@ -130,7 +139,7 @@ public class Abgleichhintergrund(
             }
             while (await takt.WaitForNextTickAsync(abbruch));
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (abbruch.IsCancellationRequested)
         {
             // Die Anwendung wird beendet.
         }
@@ -144,22 +153,22 @@ public class Abgleichhintergrund(
             var abgleich = dienste.GetRequiredService<Bearbeiterabgleich>();
             if (abgleich.Eingerichtet && await dienste.GetRequiredService<Abgleichprotokoll>().FaelligAsync(Abgleichlauf.Bearbeiter, bearbeiter.Value.Laufzeit, abbruch))
                 await abgleich.AusfuehrenAsync(abbruch);
-        });
+        }, abbruch);
         await VersuchenAsync("Kundenabgleich", async dienste =>
         {
             var abgleich = dienste.GetRequiredService<Kundenabgleich>();
             if (abgleich.Eingerichtet && await dienste.GetRequiredService<Abgleichprotokoll>().FaelligAsync(Abgleichlauf.Kunden, kunden.Value.Laufzeit, abbruch))
                 await abgleich.AusfuehrenAsync(abbruch);
-        });
+        }, abbruch);
         await VersuchenAsync("Geräteabgleich", async dienste =>
         {
             var abgleich = dienste.GetRequiredService<Geraeteabgleich>();
             if (abgleich.Eingerichtet && await dienste.GetRequiredService<Abgleichprotokoll>().FaelligAsync(Abgleichlauf.Geraete, geraete.Value.Laufzeit, abbruch))
                 await abgleich.AusfuehrenAsync(abbruch);
-        });
+        }, abbruch);
     }
 
-    private async Task VersuchenAsync(string name, Func<IServiceProvider, Task> ausfuehren)
+    private async Task VersuchenAsync(string name, Func<IServiceProvider, Task> ausfuehren, CancellationToken abbruch)
     {
         try
         {
@@ -167,7 +176,7 @@ public class Abgleichhintergrund(
             using var scope = scopes.CreateScope();
             await ausfuehren(scope.ServiceProvider);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (!Abgleichplan.Abgebrochen(ex, abbruch))
         {
             log.LogError(ex, "Der {Abgleich} im Hintergrund ist auf einen Fehler gelaufen.", name);
         }

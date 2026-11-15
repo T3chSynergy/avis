@@ -94,6 +94,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Dependabot-Pull-Requests:** Ihre Prüfungen liefen gegen den Stand von `main` beim Anlegen – vor dem
   Mergen auf dem aktuellen `main` nachprüfen. Bei neuen Hauptversionen der Testwerkzeuge im Log nachsehen,
   dass wirklich alle Tests liefen: Ein Testläufer, der keine Tests findet, meldet ebenfalls Erfolg.
+- **Analysemeldungen** zeigt `dotnet build -warnaserror` nur für Projekte, die es neu übersetzt. Nach einem
+  Fehlversuch vor dem Hochladen mit `--no-incremental` bauen, sonst fällt eine Meldung erst im Workflow auf.
 - **Migrationen:** Eine neue Spalte ist harmlos. Ein Fremdschlüssel oder eine geänderte Spalte an einer
   vorhandenen Tabelle baut in SQLite die ganze Tabelle um, und das läuft nicht in einer Transaktion (EF
   warnt beim Start). Deshalb ist `Benachrichtigung.EmpfaengerId` nur eine Nummer ohne Verknüpfung. Jede
@@ -101,13 +103,11 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 
 ## Nicht geprüft
 
-In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert werden:
+In der Entwicklungsumgebung nicht prüfbar; nur der Nutzer kann es in der Zielumgebung ausprobieren.
 
-- Abgleich mit Active Directory (`ActiveDirectoryKonten`). Im Probelauf des Nutzers laufen schon: Start unter IIS,
-  Windows-Anmeldung, Nachschlagen neuer Konten (`ActiveDirectoryVerzeichnis`)
-- Abgleich mit Snipe-IT (`SnipeItGeraetequelle`): nach dessen Quelltext geschrieben, nie dagegen gelaufen
-- SMTP und IMAP gegen Exchange – IMAP lief nur gegen einen lokalen Dovecot (Test mit `AVIS_TEST_IMAP`)
-- HTML-Mails aus dem echten Outlook
+- Im Probelauf des Nutzers haben funktioniert: Start unter IIS, Windows-Anmeldung, Nachschlagen neuer Konten,
+  Bearbeiter- und Kundenabgleich (AD), Geräteabgleich (Snipe-IT, rund 30 000 Geräte), Mailversand, E-Mail-Eingang
+- Noch offen: Dauerbetrieb mit nächtlichen Läufen, Update nach der Anleitung, HTML-Mails in ihrer Breite
 
 ## Offene Schritte
 
