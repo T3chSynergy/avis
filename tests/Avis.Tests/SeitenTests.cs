@@ -31,6 +31,9 @@ public class AvisAnwendung : WebApplicationFactory<Program>
     /// <summary>Steht für das Active Directory.</summary>
     public Testverzeichnis Verzeichnis { get; } = new();
 
+    /// <summary>Steht für das Active Directory als Quelle der Bearbeiter.</summary>
+    public Testbearbeiterquelle Bearbeiterquelle { get; } = new();
+
     /// <summary>Steht für das Active Directory als Quelle der Kunden.</summary>
     public Testkundenquelle Kundenquelle { get; } = new();
 
@@ -56,6 +59,7 @@ public class AvisAnwendung : WebApplicationFactory<Program>
         {
             services.AddSingleton<IMailversand>(Postfach);
             services.AddSingleton<IVerzeichnis>(Verzeichnis);
+            services.AddSingleton<IBearbeiterquelle>(Bearbeiterquelle);
             services.AddSingleton<IKundenquelle>(Kundenquelle);
             services.AddSingleton<IGeraetequelle>(Geraetequelle);
         });
@@ -122,6 +126,25 @@ public class Postfach : IMailversand
             throw new IOException("Der Mailserver ist nicht erreichbar.");
         Mails.Add(mail);
         return Task.CompletedTask;
+    }
+}
+
+public class Testbearbeiterquelle : IBearbeiterquelle
+{
+    public string Name => "ActiveDirectory";
+
+    public List<Quellbearbeiter> Bearbeiter { get; } = [];
+
+    /// <summary>Solange gesetzt, lässt sich die Quelle nicht lesen.</summary>
+    public bool Gestoert { get; set; }
+
+    /// <summary>Wie oft die Quelle gelesen wurde, auch vergeblich.</summary>
+    public int Abrufe { get; private set; }
+
+    public IReadOnlyList<Quellbearbeiter> Lesen()
+    {
+        Abrufe++;
+        return Gestoert ? throw new InvalidOperationException("Der Server ist nicht funktionstüchtig.") : Bearbeiter.ToList();
     }
 }
 

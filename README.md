@@ -30,7 +30,8 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 - Suche über alle Aufträge mit Filtern nach Status, Gruppe und Bearbeiter
 - Gerätetabelle; ein Auftrag ist mit den Geräten verknüpft, die in seinen
   Texten mit „INV“ und ihrer Inventarnummer genannt sind
-- Abgleich der Kunden mit dem Active Directory und der Geräte mit Snipe-IT
+- Abgleich der Bearbeiter und der Kunden mit dem Active Directory und der
+  Geräte mit Snipe-IT
 - Anhänge an Aufträgen, Kommentaren, Nachrichten und Antworten
 - E-Mail-Eingang über IMAP: Mails an die Hotline werden Aufträge, Antworten
   mit Auftragsnummer im Betreff landen im Auftrag
@@ -59,7 +60,8 @@ stehen (Hanna Verzeichnis, Igor Abgleich und die inaktive Jana Ehemals), und
 ein von Hand stillgelegter Kunde (Karl Ruhestand). An ihnen lässt sich ohne
 Verzeichnis ansehen, wie abgeglichene und inaktive Kunden aussehen. Ebenso
 stehen drei Geräte für Assets aus Snipe-IT (TB-3001, BE-3002 und das
-ausgemusterte TB-2990).
+ausgemusterte TB-2990) und ein Bearbeiter für ein Konto aus dem Verzeichnis
+(Finn Verzeichnis).
 
 Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
 `src/Avis.Web/App_Data/Mails` abgelegt. Ein Mailprogramm öffnet sie. Den
@@ -184,6 +186,10 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 | `Zeitzone` | Zeitzone für die Anzeige, Zeitpunkte werden in UTC gespeichert |
 | `Auftraege:ErsteNummer` | Nummer, die der nächste Auftrag mindestens bekommt, zum Beispiel `200000`, um an eine vorhandene Zählung anzuschließen. Wird beim Start angewendet und wirkt nur nach oben. Standard 0: Die Zählung beginnt bei 1 |
 | `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon und Abteilung neuer Konten aus dem Active Directory, `Keines` lässt das aus |
+| `Bearbeiterabgleich:Art` | `ActiveDirectory` gleicht ab, wer Bearbeiter ist, `Aus` lässt das aus |
+| `Bearbeiterabgleich:Filter` | LDAP-Filter, der bestimmt, wer Bearbeiter ist, zum Beispiel `(memberOf=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` |
+| `Bearbeiterabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird. Leer: in der ganzen Domäne |
+| `Bearbeiterabgleich:Uhrzeit` | Wann der Abgleich täglich läuft, in der eingestellten Zeitzone, Standard `01:30` |
 | `Kundenabgleich:Art` | `ActiveDirectory` gleicht die Kunden mit dem Active Directory ab, `Aus` lässt das aus |
 | `Kundenabgleich:Filter` | LDAP-Filter, der bestimmt, wer Kunde ist, zum Beispiel `(department=*)` |
 | `Kundenabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird, zum Beispiel `OU=Mitarbeiter,DC=example,DC=org`. Leer: in der ganzen Domäne |
@@ -273,6 +279,42 @@ Gmail und Thunderbird geprüft, nicht mit echten Mails aus dem Haus. Der dazugeh
 verarbeitet die ungelesenen Mails dieses Postfachs und markiert sie als
 gelesen, gehört also nur an ein Testpostfach.
 
+## Bearbeiterabgleich
+
+Mit `Bearbeiterabgleich:Art = ActiveDirectory` bestimmt das Active Directory,
+wer Bearbeiter ist: die Benutzerkonten, auf die der LDAP-Filter aus
+`Bearbeiterabgleich:Filter` passt. In der Regel nennt der Filter eine Gruppe:
+
+| Filter | Bearbeiter sind |
+|---|---|
+| `(memberOf=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` | die Mitglieder dieser Gruppe |
+| `(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` | ihre Mitglieder samt verschachtelter Gruppen |
+
+Dass nur Benutzerkonten von Personen zählen und deaktivierte nicht, ergänzt
+AVIS selbst. Unter Verwaltung → Bearbeiterabgleich steht, was der letzte Lauf
+getan hat, und er lässt sich dort sofort anstoßen.
+
+- Wen das Verzeichnis nennt, der ist Bearbeiter, mit Name und E-Mail von
+  dort. Gibt es sein Konto in AVIS noch nicht, wird es angelegt: Er steht
+  dann schon zur Wahl, bevor er sich das erste Mal anmeldet.
+- Wer schon in AVIS steht, wird über den Anmeldenamen wiedererkannt und
+  übernommen.
+- Wen das Verzeichnis nicht mehr nennt, der verliert die Rolle Bearbeiter.
+  Seine Aufträge in Bearbeitung gehen zurück in ihre Gruppen, und er wird aus
+  allen Gruppen ausgetragen. Das Konto bleibt; als Kunde kommt er weiter an
+  seine eigenen Aufträge.
+- Bearbeiter, die nur in AVIS dazu gemacht wurden, bleiben unberührt.
+  Administratoren bleiben immer Bearbeiter.
+- Bei einem Konto aus dem Verzeichnis lassen sich Name, E-Mail und die Rolle
+  Bearbeiter in AVIS nicht ändern. Zum Administrator macht man jemanden
+  weiter unter Verwaltung → Benutzer oder über `Anmeldung:Administratoren`.
+- In welchen Gruppen von AVIS jemand ist, regelt der Abgleich nicht: Das
+  trägt sich jeder selbst ein.
+- Liefert das Verzeichnis keinen einzigen Bearbeiter oder ist es nicht
+  erreichbar, ändert sich nichts.
+
+Der Abgleich ist noch nicht an einem echten Verzeichnis erprobt.
+
 ## Kundenabgleich
 
 Mit `Kundenabgleich:Art = ActiveDirectory` sind die Benutzerkonten des Active
@@ -357,8 +399,9 @@ erprobt.
 
 ## Wann die Abgleiche laufen
 
-Kunden- und Geräteabgleich lesen ihre Quelle jedes Mal ganz. Sie laufen
-deshalb nur einmal am Tag, zur Uhrzeit aus `Kundenabgleich:Uhrzeit` und
+Die Abgleiche der Bearbeiter, Kunden und Geräte lesen ihre Quelle jedes Mal
+ganz. Sie laufen deshalb nur einmal am Tag, zur Uhrzeit aus
+`Bearbeiterabgleich:Uhrzeit`, `Kundenabgleich:Uhrzeit` und
 `Geraeteabgleich:Uhrzeit`, und nicht bei jedem Start der Anwendung.
 
 - AVIS sieht alle fünf Minuten nach, ob ein Lauf ansteht. Der letzte Lauf

@@ -30,13 +30,8 @@ public class KundenabgleichOptionen
     /// </summary>
     public string? Suchbasis { get; set; }
 
-    /// <summary>
-    /// Der Filter, mit dem im Active Directory gesucht wird: der eingestellte,
-    /// eingeschränkt auf Benutzerkonten von Personen, die nicht deaktiviert
-    /// sind. Die lange Zahl steht für "Bit gesetzt", die 2 für "deaktiviert".
-    /// </summary>
-    public string Suchfilter =>
-        $"(&(objectCategory=person)(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2)){Filter?.Trim()})";
+    /// <summary>Der Filter, mit dem im Active Directory gesucht wird (siehe <see cref="ActiveDirectoryKonten.Suchfilter"/>).</summary>
+    public string Suchfilter => ActiveDirectoryKonten.Suchfilter(Filter);
 
     /// <summary>Wann der Abgleich täglich läuft, in der Zeitzone der Anwendung, in der Form "02:00".</summary>
     public string Uhrzeit { get; set; } = "02:00";
@@ -230,12 +225,7 @@ public static class KundenabgleichExtensions
             case KundenabgleichOptionen.Aus:
                 break;
             case KundenabgleichOptionen.ActiveDirectory:
-                // Ohne Filter wäre jedes Konto der Domäne ein Kunde. Das soll niemand versehentlich einstellen.
-                var filter = optionen.Filter?.Trim() ?? "";
-                if (filter.Length == 0)
-                    throw new InvalidOperationException("Für Kundenabgleich:Art = ActiveDirectory muss Kundenabgleich:Filter gesetzt sein.");
-                if (!filter.StartsWith('(') || !filter.EndsWith(')'))
-                    throw new InvalidOperationException("Kundenabgleich:Filter muss ein LDAP-Filter in Klammern sein, zum Beispiel (department=*).");
+                ActiveDirectoryKonten.FilterPruefen(optionen.Filter, "Kundenabgleich");
                 if (!OperatingSystem.IsWindows())
                     throw new InvalidOperationException("Kundenabgleich:Art = ActiveDirectory läuft nur unter Windows.");
                 _ = optionen.Laufzeit;

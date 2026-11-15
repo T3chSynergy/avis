@@ -145,7 +145,18 @@ public static class Startdaten
         var bernd = new Benutzer { Anmeldename = "bernd", Name = "Bernd Muster", Email = "bernd.muster@example.org", IstBearbeiter = true };
         var clara = new Benutzer { Anmeldename = "clara", Name = "Clara Probe", Email = "clara.probe@example.org", IstBearbeiter = true };
         var dieter = new Benutzer { Anmeldename = "dieter", Name = "Dieter Kunde", Email = "dieter.kunde@example.org" };
-        db.Benutzer.AddRange(anna, bernd, clara, dieter);
+        // Ein Bearbeiter, wie ihn der Abgleich mit dem Active Directory anlegt: mit der Kennung des Verzeichnisses
+        // und dem Anmeldenamen samt Domäne. Name, Adresse und die Rolle Bearbeiter pflegt das Verzeichnis.
+        var finn = new Benutzer
+        {
+            Anmeldename = @"avis\finn",
+            Name = "Finn Verzeichnis",
+            Email = "finn.verzeichnis@example.org",
+            IstBearbeiter = true,
+            Quelle = Avis.Web.Abgleich.BearbeiterabgleichOptionen.ActiveDirectory,
+            ExterneKennung = "7c1f0a52-3b7e-4d1a-9c55-0d2a6f1e4c01",
+        };
+        db.Benutzer.AddRange(anna, bernd, clara, dieter, finn);
 
         hotline.Mitglieder.Add(anna);
         betreuung.Mitglieder.Add(anna);

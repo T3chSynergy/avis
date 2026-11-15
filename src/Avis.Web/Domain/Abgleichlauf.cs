@@ -7,6 +7,7 @@ namespace Avis.Web.Domain;
 /// </summary>
 public class Abgleichlauf
 {
+    public const string Bearbeiter = "Bearbeiter";
     public const string Kunden = "Kunden";
     public const string Geraete = "Geraete";
 

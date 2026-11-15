@@ -105,12 +105,13 @@ public class Abgleichprotokoll(AvisDb db, TimeProvider uhr, Ortszeit ortszeit)
 
 /// <summary>
 /// Sieht alle paar Minuten nach, ob ein täglicher Abgleich ansteht, und führt
-/// ihn aus. Erst die Kunden, dann die Geräte: Der Nutzer eines Geräts wird
-/// über die Adresse eines Kunden gefunden. Lief AVIS zur eingestellten
+/// ihn aus. Erst die Bearbeiter, dann die Kunden, dann die Geräte: Der Nutzer
+/// eines Geräts wird über die Adresse eines Kunden gefunden. Lief AVIS zur eingestellten
 /// Uhrzeit nicht, wird der Lauf nachgeholt, sobald es wieder läuft.
 /// </summary>
 public class Abgleichhintergrund(
     IServiceScopeFactory scopes,
+    IOptions<BearbeiterabgleichOptionen> bearbeiter,
     IOptions<KundenabgleichOptionen> kunden,
     IOptions<GeraeteabgleichOptionen> geraete,
     ILogger<Abgleichhintergrund> log) : BackgroundService
@@ -138,6 +139,12 @@ public class Abgleichhintergrund(
     /// <summary>Führt die Abgleiche aus, die anstehen. Ein Fehler in einem hält den anderen nicht auf.</summary>
     public async Task FaelligeAusfuehrenAsync(CancellationToken abbruch = default)
     {
+        await VersuchenAsync("Bearbeiterabgleich", async dienste =>
+        {
+            var abgleich = dienste.GetRequiredService<Bearbeiterabgleich>();
+            if (abgleich.Eingerichtet && await dienste.GetRequiredService<Abgleichprotokoll>().FaelligAsync(Abgleichlauf.Bearbeiter, bearbeiter.Value.Laufzeit, abbruch))
+                await abgleich.AusfuehrenAsync(abbruch);
+        });
         await VersuchenAsync("Kundenabgleich", async dienste =>
         {
             var abgleich = dienste.GetRequiredService<Kundenabgleich>();
@@ -156,7 +163,7 @@ public class Abgleichhintergrund(
     {
         try
         {
-            // Je Abgleich eine eigene Verbindung zur Datenbank: Der eine lädt alle Kunden, der andere alle Geräte.
+            // Je Abgleich eine eigene Verbindung zur Datenbank: Jeder lädt seine ganze Tabelle.
             using var scope = scopes.CreateScope();
             await ausfuehren(scope.ServiceProvider);
         }

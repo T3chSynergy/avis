@@ -85,24 +85,27 @@ public class AbgleichplanTests
     }
 
     [Fact]
-    public async Task Der_Hintergrund_gleicht_einmal_am_Tag_ab_erst_die_Kunden_dann_die_Geraete()
+    public async Task Der_Hintergrund_gleicht_einmal_am_Tag_ab_erst_Bearbeiter_dann_Kunden_dann_Geraete()
     {
         var uhr = new Testuhr(Utc(11, 15, 9, 0));
         using var basis = new AvisAnwendung();
         using var app = basis.WithWebHostBuilder(b => b
+            .UseSetting("Bearbeiterabgleich:Uhrzeit", "01:30")
             .UseSetting("Kundenabgleich:Uhrzeit", "02:00")
             .UseSetting("Geraeteabgleich:Uhrzeit", "02:30")
             .ConfigureTestServices(s => s.AddSingleton<TimeProvider>(uhr)));
         var hintergrund = ActivatorUtilities.CreateInstance<Abgleichhintergrund>(app.Services);
         var kunden = basis.Kundenquelle;
         var geraete = basis.Geraetequelle;
+        var bearbeiter = basis.Bearbeiterquelle;
+        bearbeiter.Bearbeiter.Add(new("guid-berta", @"avis\berta", "Bearbeiterin, Berta", null));
         kunden.Kunden.Add(new("guid-nora", @"avis\nora", "Neu, Nora", "nora.neu@example.org", null, null, "A 301"));
         geraete.Geraete.Add(new("501", "NB-5001", "Notebook", "Notebook", "A 301", "nora.neu@example.org"));
 
         // Noch nie abgeglichen: Der erste Blick holt beides nach. Weil die Kunden zuerst kommen, findet das
         // Gerät seine Nutzerin, die es eben noch nicht gab.
         await hintergrund.FaelligeAusfuehrenAsync();
-        Assert.Equal((1, 1), (kunden.Abrufe, geraete.Abrufe));
+        Assert.Equal((1, 1, 1), (bearbeiter.Abrufe, kunden.Abrufe, geraete.Abrufe));
         var geraet = await DatenbankAsync(app, db => db.Geraete.AsNoTracking().Include(g => g.Kunde).SingleAsync(g => g.Inventarnummer == "NB-5001"));
         Assert.Equal("Neu, Nora", geraet.Kunde?.Name);
 
@@ -112,10 +115,13 @@ public class AbgleichplanTests
         await ActivatorUtilities.CreateInstance<Abgleichhintergrund>(app.Services).FaelligeAusfuehrenAsync();
         Assert.Equal((1, 1), (kunden.Abrufe, geraete.Abrufe));
 
-        // In der Nacht: um 02:00 Ortszeit die Kunden, um 02:30 die Geräte, je einmal.
+        // In der Nacht: um 01:30 Ortszeit die Bearbeiter, um 02:00 die Kunden, um 02:30 die Geräte, je einmal.
+        uhr.Jetzt = Utc(11, 16, 0, 29);
+        await hintergrund.FaelligeAusfuehrenAsync();
+        Assert.Equal((1, 1, 1), (bearbeiter.Abrufe, kunden.Abrufe, geraete.Abrufe));
         uhr.Jetzt = Utc(11, 16, 0, 59);
         await hintergrund.FaelligeAusfuehrenAsync();
-        Assert.Equal((1, 1), (kunden.Abrufe, geraete.Abrufe));
+        Assert.Equal((2, 1, 1), (bearbeiter.Abrufe, kunden.Abrufe, geraete.Abrufe));
         uhr.Jetzt = Utc(11, 16, 1, 4);
         await hintergrund.FaelligeAusfuehrenAsync();
         Assert.Equal((2, 1), (kunden.Abrufe, geraete.Abrufe));
