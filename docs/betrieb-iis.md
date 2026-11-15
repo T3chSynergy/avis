@@ -24,8 +24,9 @@ deshalb in Dateien, die das Paket nicht enthält.
 ## Voraussetzungen
 
 - Windows Server mit IIS. Dazu der Rollendienst **Windows-Authentifizierung**
-  und, damit die Hintergrunddienste ohne Aufruf starten, die
-  **Anwendungsinitialisierung**.
+  (Windows Authentication) und, damit die Hintergrunddienste ohne Aufruf
+  starten, die **Anwendungsinitialisierung** (Application Initialization).
+  Wie man beide nachinstalliert, steht im nächsten Abschnitt.
 - Das **ASP.NET Core Hosting Bundle für .NET 10**. Nach der Installation IIS
   neu starten (`iisreset`).
 - Der Server ist Mitglied der Domäne. Die Windows-Anmeldung und die Abgleiche
@@ -34,6 +35,29 @@ deshalb in Dateien, die das Paket nicht enthält.
 - Ein **Domänenkonto für den Anwendungspool**. Es muss im Verzeichnis lesen
   dürfen und, je nach Anbindung, den Mailserver, das Postfach und Snipe-IT
   erreichen.
+
+Die Bezeichnungen der englischen Oberfläche von Windows Server und IIS stehen
+in dieser Anleitung in Klammern.
+
+## Rollendienste von IIS nachinstallieren
+
+Beide Rollendienste gehören nicht zur Grundinstallation von IIS. In einer
+PowerShell als Administrator:
+
+```powershell
+Install-WindowsFeature Web-Windows-Auth, Web-AppInit
+```
+
+Oder im Server-Manager über „Rollen und Features hinzufügen“ (Manage → Add
+Roles and Features), unter Webserver (IIS) → Webserver:
+
+| Rollendienst | Wo |
+|---|---|
+| Windows-Authentifizierung (Windows Authentication) | Sicherheit (Security) |
+| Anwendungsinitialisierung (Application Initialization) | Anwendungsentwicklung (Application Development) |
+
+Die Installation allein schaltet noch nichts ein. Das geschieht in den
+Schritten 3 bis 5 unter „Einrichten“.
 
 ## Paket holen
 
@@ -56,17 +80,23 @@ Lauf und trägt die Version 0.0.0 mit dem Stand des Commits.
    Darin den Ordner `App_Data` anlegen.
 2. **Rechte vergeben:** Das Konto des Anwendungspools braucht Lesen auf dem
    Ordner und Ändern auf `App_Data`.
-3. **Anwendungspool anlegen:**
-   - .NET CLR-Version: „Kein verwalteter Code“
-   - Identität: das Domänenkonto
-   - Startmodus: „AlwaysRunning“
-   - Leerlauftimeout: 0
-4. **Website oder Anwendung anlegen**, die auf den Ordner zeigt und diesen
-   Anwendungspool nutzt. Eine Bindung mit HTTPS und Zertifikat einrichten und
-   „Vorabladen aktiviert“ einschalten.
-5. **Authentifizierung:** Windows-Authentifizierung ein, anonyme
-   Authentifizierung aus.
-6. **Einstellungen anlegen**, siehe den nächsten Abschnitt.
+3. **Anwendungspool anlegen** (Application Pools → Add Application Pool) und
+   in seinen erweiterten Einstellungen (Advanced Settings) setzen:
+   - .NET CLR-Version (.NET CLR version): „Kein verwalteter Code“ (No Managed
+     Code)
+   - Identität (Identity): das Domänenkonto
+   - Startmodus (Start Mode): `AlwaysRunning`
+   - Leerlauftimeout in Minuten (Idle Time-out (minutes)): `0`
+4. **Website oder Anwendung anlegen** (Sites → Add Website), die auf den
+   Ordner zeigt und diesen Anwendungspool nutzt. Eine Bindung mit HTTPS und
+   Zertifikat einrichten. In den erweiterten Einstellungen der Website
+   „Vorabladen aktiviert“ (Preload Enabled) auf `True` setzen; das wirkt nur,
+   wenn die Anwendungsinitialisierung installiert ist.
+5. **Authentifizierung** (Authentication) der Website: Windows-Authentifizierung
+   (Windows Authentication) aktivieren, anonyme Authentifizierung (Anonymous
+   Authentication) deaktivieren.
+6. **Einstellungen anlegen:** die Datei `appsettings.Production.json` selbst
+   erstellen, siehe den nächsten Abschnitt.
 7. **Aufrufen.** Beim ersten Start legt AVIS die Datenbank in `App_Data` an.
    Die Seite öffnet sich ohne Anmeldedialog, oben rechts steht der eigene
    Name.
@@ -79,8 +109,12 @@ Aufruf statt in der Nacht.
 
 ## Einstellungen dieser Installation
 
-Neben `appsettings.json` liegt die Datei `appsettings.Production.json`. Sie
-enthält nur, was von den Voreinstellungen abweicht. Ein Beispiel für den
+Die Datei `appsettings.Production.json` **legt man selbst an**, im Ordner der
+Anwendung neben `appsettings.json`. Sie ist nicht im Paket, und AVIS erzeugt
+sie auch nicht: Nur so überlebt sie ein Update. Fehlt sie, gelten die
+Voreinstellungen aus `appsettings.json`.
+
+Sie enthält nur, was von den Voreinstellungen abweicht. Ein Beispiel für den
 Anfang, mit erfundenen Namen:
 
 ```json
@@ -107,7 +141,12 @@ Anfang, mit erfundenen Namen:
 - **Den E-Mail-Eingang zuerst an einem Testpostfach prüfen.** AVIS markiert
   abgeholte Mails als gelesen oder verschiebt sie.
 
-Nach einer Änderung an der Datei den Anwendungspool neu starten.
+Nach einer Änderung an der Datei den Anwendungspool neu starten. Ob die Datei
+gültig ist, zeigt PowerShell; bei einem Tippfehler nennt es die Stelle:
+
+```powershell
+Get-Content .\appsettings.Production.json -Raw | ConvertFrom-Json
+```
 
 ### Kennwörter und Schlüssel
 
@@ -120,11 +159,94 @@ Snipe-IT stehen nicht im Paket. Es gibt zwei Wege:
   Anwendungspools sie lesen.
 - **Als Umgebungsvariablen des Anwendungspools:** `Mail__Kennwort`,
   `Posteingang__Kennwort`, `Geraeteabgleich__Schluessel`, mit zwei
-  Unterstrichen. Sie lassen sich im Konfigurations-Editor von IIS am
-  Anwendungspool eintragen und stehen dann in der Konfiguration von IIS,
-  nicht im Ordner der Anwendung.
+  Unterstrichen. Sie lassen sich im Konfigurations-Editor (Configuration
+  Editor) von IIS am Anwendungspool eintragen und stehen dann in der
+  Konfiguration von IIS, nicht im Ordner der Anwendung.
 
 Umgebungsvariablen in der `web.config` überleben kein Update.
+
+## Testfassung mit Testanmeldung und Testdaten
+
+Zum Ansehen und Ausprobieren lässt sich AVIS auch auf dem Server so starten
+wie in der Entwicklung: mit erfundenen Testdaten und einer Anmeldung, bei der
+man einen Testbenutzer auswählt. Mit Active Directory, Mailserver und
+Snipe-IT hat diese Fassung nichts zu tun.
+
+**Jeder, der die Seite erreicht, kann sich ohne Kennwort als Administrator
+anmelden.** Sie gehört deshalb nur dorthin, wo allein Befugte hinkommen, und
+nie in denselben Ordner wie eine echte Installation: „Datenbank neu anlegen“
+auf der Anmeldeseite leert die Datenbank vollständig.
+
+1. **Eigenen Ordner, eigenen Anwendungspool und eigene Website anlegen**, wie
+   unter „Einrichten“, Schritte 1 bis 4.
+2. **Authentifizierung** der Website: anonyme Authentifizierung (Anonymous
+   Authentication) aktivieren. Die Windows-Authentifizierung wird hier nicht
+   gebraucht.
+3. **Die Datei `appsettings.Development.json` anlegen**, im Ordner der
+   Anwendung neben `appsettings.json`, mit genau diesem Inhalt. Bei `BasisUrl`
+   steht die Adresse, unter der die Testseite erreichbar ist.
+
+   ```json
+   {
+     "Anmeldung": {
+       "Art": "Entwicklung"
+     },
+     "Testdaten": {
+       "Anlegen": true
+     },
+     "Verzeichnis": {
+       "Art": "Keines"
+     },
+     "Mail": {
+       "Art": "Ordner",
+       "Absender": "it-hotline@example.org",
+       "BasisUrl": "https://avis-test.example.org"
+     }
+   }
+   ```
+
+4. **Die Umgebung auf „Development“ stellen.** Dazu den Inhalt der Datei
+   `web.config` im Ordner der Anwendung durch diesen ersetzen. Er
+   unterscheidet sich von der ausgelieferten Datei nur durch den Block
+   `environmentVariables`.
+
+   ```xml
+   <?xml version="1.0" encoding="utf-8"?>
+   <configuration>
+     <location path="." inheritInChildApplications="false">
+       <system.webServer>
+         <handlers>
+           <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
+         </handlers>
+         <aspNetCore processPath=".\Avis.Web.exe" stdoutLogEnabled="false" stdoutLogFile=".\logs\stdout" hostingModel="inprocess">
+           <environmentVariables>
+             <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Development" />
+           </environmentVariables>
+         </aspNetCore>
+       </system.webServer>
+     </location>
+   </configuration>
+   ```
+
+5. **Anwendungspool neu starten und die Seite aufrufen.** Es erscheint die
+   Anmeldeseite mit den Testbenutzern.
+
+Zur Sicherheit vor Tippfehlern lässt sich die Datei mit den Einstellungen
+prüfen; bei einem Fehler nennt PowerShell die Stelle:
+
+```powershell
+Get-Content .\appsettings.Development.json -Raw | ConvertFrom-Json
+```
+
+- Ohne Schritt 4 bricht AVIS den Start ab: Die Testanmeldung und die
+  Testdaten sind nur in der Umgebung „Development“ erlaubt.
+- In dieser Umgebung liest AVIS `appsettings.Development.json` und nicht
+  `appsettings.Production.json`.
+- Mails gehen an niemanden; sie liegen als Dateien in `App_Data\Mails`.
+- Bei einem Fehler zeigt AVIS in dieser Umgebung die technischen Einzelheiten
+  im Browser.
+- Ein Update ersetzt die `web.config`. Schritt 4 ist danach zu wiederholen;
+  `appsettings.Development.json` und `App_Data` bleiben.
 
 ## Update
 
@@ -150,9 +272,10 @@ verloren.
 - **Die Seite zeigt einen Fehler 500.19 oder 500.31.** Meist fehlt das
   Hosting Bundle, oder IIS wurde danach nicht neu gestartet.
 - **Die Seite zeigt einen Fehler 500.30: AVIS startet nicht.** Der Grund
-  steht in der Ereignisanzeige von Windows unter „Anwendung“. AVIS bricht den
-  Start mit einer Meldung ab, wenn eine Einstellung nicht stimmt, zum Beispiel
-  ein Abgleich ohne Filter, oder wenn es in `App_Data` nicht schreiben darf.
+  steht in der Ereignisanzeige (Event Viewer) von Windows unter „Anwendung“
+  (Windows Logs → Application). AVIS bricht den Start mit einer Meldung ab,
+  wenn eine Einstellung nicht stimmt, zum Beispiel ein Abgleich ohne Filter,
+  oder wenn es in `App_Data` nicht schreiben darf.
 - **Warnungen zu Migrationen beim ersten Start.** Beim Anlegen der Datenbank
   meldet das Protokoll mehrmals, ein Schritt laufe nicht in einer Transaktion.
   Das ist bekannt und bei einer neuen Datenbank ohne Folgen.
