@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Die Nummer eines Release setzt der Workflow "Paket" beim Bauen. Alles andere ist 0.0.0 mit dem Stand des Commits. -->
+    <Version>0.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +18,11 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.*" />
     <PackageReference Include="System.DirectoryServices.AccountManagement" Version="10.0.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Die Einstellungen der Entwicklung (Testanmeldung, Testdaten) gehören nicht in das ausgelieferte Paket. -->
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
   <ItemGroup>

@@ -75,6 +75,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   aus den Repos der Hersteller, nicht aus dem Gedächtnis. Das Favicon ist selbst gezeichnet; fremde Grafiken nicht.
 - **Lizenz:** AGPL-3.0-or-later, ohne Inhabernamen. Verweis am Ende der Hilfe (`Lizenz.cs`) bleibt; Pakete müssen passen.
 - **`SECURITY.md`** sagt bewusst keine Antwortfrist zu.
+- **Releases** heißen `v1.2.3`; nur der Nutzer legt sie an. Der Workflow „Paket“ hängt das ZIP für IIS an.
+  Einstellungen einer Installation stehen in `appsettings.Production.json`, nie im Paket.
 
 ## Erkenntnisse
 
@@ -109,11 +111,10 @@ In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert
 
 ## Offene Schritte
 
-1. Probelauf in der Zielumgebung (siehe „Nicht geprüft“).
-2. Testumgebung: Der Nutzer überlegt, automatisch auszuliefern. Offen ist, wofür sie dienen soll (Oberfläche
-   zeigen oder Zielumgebung testen). Erster Schritt: ein Paket aus `dotnet publish` als Artefakt des Workflows.
-3. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
+1. Probelauf in der Zielumgebung (siehe „Nicht geprüft“): Der Nutzer testet mit dem Paket aus dem Workflow
+   „Paket“ nach `docs/betrieb-iis.md`. Was er meldet, beheben und die Anleitung berichtigen. Noch kein Release.
+2. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
-4. Anmeldung der Kunden an den Kundenabgleich binden: vom Nutzer angedacht, nicht gebaut.
-5. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen; Anhänge lassen sich nicht löschen;
+3. Anmeldung der Kunden an den Kundenabgleich binden: vom Nutzer angedacht, nicht gebaut.
+4. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen; Anhänge lassen sich nicht löschen;
    im Browser eingefügte Bilder stehen unter dem Text, nicht mittendrin.

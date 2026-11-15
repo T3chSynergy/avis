@@ -60,8 +60,8 @@ body:
     id: umgebung
     attributes:
       label: Umgebung
-      description: Nur bei Fehlern. Stand von AVIS (Datum oder Commit), Browser, Art der Anmeldung, Betriebssystem des Servers.
-      placeholder: "Stand vom 13.11.2026, Firefox 145, Windows-Anmeldung, Windows Server 2025"
+      description: Nur bei Fehlern. Version von AVIS (steht am Ende der Hilfe), Browser, Art der Anmeldung, Betriebssystem des Servers.
+      placeholder: "Version 0.1.0 (Stand 9214917), Firefox 145, Windows-Anmeldung, Windows Server 2025"
   - type: checkboxes
     id: daten
     attributes:

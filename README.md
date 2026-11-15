@@ -177,6 +177,8 @@ abgeschaltet sind, und dem Grund dafür.
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
 | `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen (Suche beim Tippen, Bilder einfügen, Tastenkürzel); ohne sie funktioniert alles |
 | `tests/Avis.Tests` | Tests |
+| `docs/betrieb-iis.md` | Einrichtung und Update unter Windows Server mit IIS |
+| `.github/workflows` | Prüfung bei jedem Pull Request (`pruefung.yml`), Paket für den Betrieb bei jedem Release (`paket.yml`) |
 | `LICENSE` | Lizenz von AVIS (GNU AGPL, Version 3); wird beim Veröffentlichen in den Ausgabeordner kopiert |
 | `THIRD-PARTY-NOTICES.md` | Lizenzvermerke der mitgelieferten Komponenten; wird beim Veröffentlichen in den Ausgabeordner kopiert und ist anzupassen, wenn ein Paket hinzukommt oder wegfällt |
 
@@ -246,6 +248,10 @@ Entwicklungsumgebung einschalten. Im Betrieb bricht der Start sonst ab.
 Kennwörter und Schlüssel gehören nicht in die Datei im Repository. Auf dem
 Server lassen sie sich als Umgebungsvariablen `Mail__Kennwort`,
 `Posteingang__Kennwort` und `Geraeteabgleich__Schluessel` setzen.
+
+Auf dem Server stehen die eigenen Werte nicht in `appsettings.json`, sondern
+in einer `appsettings.Production.json` daneben: Die überlebt ein Update.
+Näheres in [`docs/betrieb-iis.md`](docs/betrieb-iis.md).
 
 ## Mails
 
@@ -532,24 +538,13 @@ Bei IIS sind das in der Voreinstellung rund 30 MB je Anfrage.
 
 ## Betrieb unter IIS
 
-Dieser Teil ist noch nicht auf einem echten Server erprobt.
+Für den Betrieb gibt es ein fertiges Paket: Der Workflow
+`.github/workflows/paket.yml` baut bei jedem Release die veröffentlichte
+Anwendung für Windows Server und hängt sie als ZIP mit Prüfsumme an das
+Release. Auf Knopfdruck baut er dasselbe Paket von jedem Stand.
 
-- Auf dem Server wird das ASP.NET Core Hosting Bundle für .NET 10 benötigt.
-- In der IIS-Site ist die Windows-Authentifizierung einzuschalten und die
-  anonyme Authentifizierung auszuschalten.
-- Das Konto des Anwendungspools braucht Schreibrechte auf den Ordner
-  `App_Data`. Dort liegen die Datenbank und die Anhänge.
-- Der erste Administrator wird über `Anmeldung:Administratoren` festgelegt.
-- Der Hintergrundversand, der Abruf des Postfachs und die nächtlichen
-  Abgleiche laufen nur, solange die Anwendung läuft. Damit IIS sie
-  nicht nach Leerlauf beendet, den Anwendungspool auf „AlwaysRunning" stellen
-  und das Leerlauftimeout abschalten. Sonst gehen wartende Mails erst beim
-  nächsten Aufruf hinaus, neue Mails werden erst dann abgeholt, und die
-  Abgleiche laufen erst morgens beim ersten Aufruf statt in der Nacht.
-- Am Exchange-Server muss IMAP für das Hotline-Postfach eingeschaltet sein.
-- Die Abfrage des Active Directory nutzt die Domäne, in der der Server Mitglied
-  ist. Schlägt sie fehl, arbeitet AVIS mit dem Anmeldenamen weiter und schreibt
-  eine Warnung ins Protokoll.
+Wie AVIS damit unter IIS eingerichtet und später aktualisiert wird, steht in
+[`docs/betrieb-iis.md`](docs/betrieb-iis.md).
 
 ## Lizenz
 
@@ -563,8 +558,9 @@ bereitgestellt.
   derselben Lizenz zugänglich machen.
 - Wer eine veränderte Fassung betreibt, muss deren Benutzern den Quelltext
   dieser Fassung anbieten. Dafür steht am Ende der Hilfe, die von jeder Seite
-  aus erreichbar ist, der Verweis „Quelltext und Lizenz“. Seine Adresse steht in `src/Avis.Web/Lizenz.cs` und
-  ist bei einer veränderten Fassung auf deren Quelltext zu ändern.
+  aus erreichbar ist, der Verweis „Quelltext und Lizenz“. Seine Adresse steht
+  in `src/Avis.Web/Lizenz.cs` und ist bei einer veränderten Fassung auf deren
+  Quelltext zu ändern.
 - Die mitgelieferten Komponenten behalten ihre eigenen Lizenzen (MIT,
   BSD-2-Clause, Apache-2.0), siehe
   [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).

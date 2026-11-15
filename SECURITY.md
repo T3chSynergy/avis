@@ -2,9 +2,11 @@
 
 ## Unterstützte Versionen
 
-AVIS hat keine nummerierten Versionen. Sicherheitskorrekturen gibt es nur für
-den aktuellen Stand des Zweigs `main`. Wer AVIS betreibt, sollte deshalb
-regelmäßig auf den aktuellen Stand gehen.
+Sicherheitskorrekturen gibt es nur für die jeweils neueste Version (siehe
+[Releases](https://github.com/T3chSynergy/avis/releases)) und den aktuellen
+Stand des Zweigs `main`. Wer AVIS betreibt, sollte deshalb Updates
+einspielen; wie das geht, steht in
+[docs/betrieb-iis.md](docs/betrieb-iis.md).
 
 ## Eine Sicherheitslücke melden
 
@@ -22,7 +24,7 @@ Hilfreich sind diese Angaben:
 
 - was die Lücke ist und was ein Angreifer damit erreichen kann
 - die Schritte, mit denen sie sich nachstellen lässt
-- der Stand von AVIS (Datum oder Commit) und die Art der Anmeldung
+- die Version von AVIS (steht am Ende der Hilfe) und die Art der Anmeldung
   (`Anmeldung:Art`)
 - wenn vorhanden: ein Vorschlag für die Korrektur
 
