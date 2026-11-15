@@ -42,21 +42,21 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   (interner Kommentar, Hinweis beim Weiterleiten), und nur solange er den Auftrag bearbeitet. Der alte
   Text wird ersetzt, der Eintrag trägt „geändert“. Was ein Kunde gesehen oder per Mail bekommen hat,
   bleibt unveränderlich. So vom Nutzer entschieden.
-- **Texte:** Markdown ohne Formatierleiste (vom Nutzer verworfen: lenkt ab, wird kaum benutzt). Bilder
-  einfügen mit Strg+V bleibt.
+- **Texte:** Markdown ohne Formatierleiste (vom Nutzer verworfen). Bilder einfügen mit Strg+V bleibt.
 - **HTML-Mails:** Nur eindeutige Auszeichnungen (fett, kursiv, Überschrift, Link, Listen) und kleine,
   einfache Tabellen werden zu Markdown; alles andere wird schlichter Text.
 - **Oberfläche:** Blau nur für Anklickbares, damit Schaltflächen sich vom Schmuck unterscheiden.
 - **JavaScript** nur als Zugabe, ohne Framework und ohne Node-Werkzeuge; deshalb auch kein ESLint.
 - **E-Mail-Eingang** über IMAP (EWS wäre im Haus möglich, wurde nicht gewählt).
-- **Kunden aus dem AD:** AVIS zieht selbst, keine API. Ein LDAP-Filter bestimmt, wer Kunde ist (eine
-  dynamische Verteilergruppe führt keine Mitglieder). Das AD gewinnt; wer fehlt, wird inaktiv, nie gelöscht.
-- **Bearbeiter aus dem AD** ebenso über einen Filter. Wer fehlt, verliert nur die Rolle; Administratoren nie.
+- **Kunden und Bearbeiter aus dem AD:** AVIS zieht selbst, je ein LDAP-Filter (dynamische Verteilergruppen
+  führen keine Mitglieder). Das AD gewinnt; fehlende Kunden werden inaktiv, Bearbeiter verlieren die Rolle.
 - **Geräte aus Snipe-IT:** nur lesend, sonst wie die Kunden. Nutzer ist der Kunde mit derselben Mailadresse.
 - **Abgleiche laufen einmal täglich** zur festen Uhrzeit, nie beim Start: Snipe-IT ist langsam. Tagsüber
   nur das Geänderte zu holen (Sortierung nach `updated_at`) ist möglich, aber zurückgestellt.
 - **Standort** (etwa der Raum „A 105“) ist freier Text an Kunde und Gerät. Der Auftrag hat keinen eigenen.
 - **Geräte am Auftrag** nur über „INV <Nummer>“ in seinen Texten (`Geraetebezug`), kein Feld dafür.
+- **Hilfe:** Markdown unter `src/Avis.Web/Hilfe` für Bearbeiter und Kunden, noch nicht für Administratoren.
+  **Bei jeder Änderung an der Oberfläche die Hilfe mitpflegen.** Hauseigenes steht nie darin (lokale Datei).
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.
   Ausnahmen in `Startdaten`: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt

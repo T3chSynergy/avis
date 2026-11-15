@@ -1,0 +1,40 @@
+@page "/Hilfe/{thema?}"
+@using Avis.Web.Hilfe
+@model Avis.Web.Pages.Hilfe.IndexModel
+@{
+    ViewData["Title"] = Model.Seite.Titel;
+    string? Aktuell(string thema) => Model.Thema == thema ? "page" : null;
+}
+<h1>@Model.Seite.Titel</h1>
+
+@if (User.IstBearbeiter())
+{
+    <nav class="filter" aria-label="Hilfe für">
+        <a asp-page="Index" asp-route-thema="" aria-current="@Aktuell(Hilfetexte.Bearbeiter)">Für Bearbeiter</a>
+        <a asp-page="Index" asp-route-thema="@Hilfetexte.Kunden" aria-current="@Aktuell(Hilfetexte.Kunden)">Für Kunden</a>
+    </nav>
+}
+
+<div class="spalten hilfe">
+    <div>
+        @if (Model.EigenerText is not null)
+        {
+            @* Eigener Text des Hauses, aus einer Datei auf dem Server. *@
+            <section class="kasten md eigen" aria-label="Hinweise der IT">
+                @Model.EigenerText
+            </section>
+        }
+        <article class="md">
+            @Model.Seite.Inhalt
+        </article>
+    </div>
+    <nav class="kasten inhaltsverzeichnis" aria-labelledby="h-inhalt">
+        <h2 id="h-inhalt">Inhalt</h2>
+        <ul>
+            @foreach (var abschnitt in Model.Seite.Abschnitte)
+            {
+                <li><a href="#@abschnitt.Anker">@abschnitt.Titel</a></li>
+            }
+        </ul>
+    </nav>
+</div>

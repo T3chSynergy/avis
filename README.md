@@ -37,6 +37,8 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 - E-Mail-Eingang über IMAP: Mails an die Hotline werden Aufträge, Antworten
   mit Auftragsnummer im Betreff landen im Auftrag
 - Kunden öffnen abgeschlossene Aufträge wieder, im Browser oder per Mail
+- Hilfe in der Anwendung für Bearbeiter und Kunden; „Hilfe“ im Kopf führt von
+  jeder Seite zum passenden Abschnitt
 - Testanmeldung für die Entwicklung, Windows-Anmeldung für den Betrieb
 
 ## Voraussetzungen
@@ -213,6 +215,7 @@ Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
 | `Posteingang:Erledigtordner` | Ordner, in den verarbeitete Mails verschoben werden. Leer: Sie bleiben als gelesen im Eingang |
 | `Posteingang:AbstandSekunden` | Abstand zwischen zwei Abrufen, Standard 60 |
 | `Posteingang:BilderImTextAbKb` | Kleinere Bilder im Text einer Mail gelten als Logo und werden nicht übernommen, Standard 20 |
+| `Hilfe:EigenerText` | Markdown-Datei mit eigenem Text des Hauses, der über der Hilfe steht, relativ zum Ordner der Anwendung. Standard `App_Data/Hilfe.md`. Fehlt die Datei, steht dort nichts |
 | `Anhaenge:Ordner` | Ordner für Anhänge, relativ zum Ordner der Anwendung, Standard `App_Data/Anhaenge` |
 | `Anhaenge:HoechstgroesseMb` | Höchstgröße einer Datei, Standard 10 |
 | `Anhaenge:Hoechstzahl` | Höchstzahl der Dateien je Upload, Standard 10 |
@@ -455,6 +458,41 @@ nicht, und es dürfen beliebig viele Geräte sein.
 
 Die Regel steht in `src/Avis.Web/Domain/Geraetebezug.cs`; angewendet wird sie
 bei jedem Speichern in `AvisDb`.
+
+## Hilfe
+
+Die Hilfe steht in der Anwendung unter „Hilfe“ im Kopf jeder Seite. Der
+Eintrag führt zu dem Abschnitt, der zur gerade geöffneten Seite gehört.
+Bearbeiter sehen die Hilfe für Bearbeiter und können zu der für Kunden
+wechseln; wer keine Rolle hat, sieht nur die für Kunden. Für die Verwaltung
+gibt es noch keine Hilfe; was Administratoren wissen müssen, steht in dieser
+Datei.
+
+- Die Texte sind Markdown-Dateien: `src/Avis.Web/Hilfe/bearbeiter.md` und
+  `kunden.md`. Wer sie ändert, braucht dafür nicht zu programmieren. Sie
+  werden mit der Anwendung ausgeliefert.
+- Jede Überschrift der zweiten Ebene (`## …`) ist ein Abschnitt mit einer
+  Sprungmarke, die sich aus ihrem Text ergibt: aus „Geräte nennen“ wird
+  `#geraete-nennen`. Welche Seite zu welchem Abschnitt führt, steht in
+  `Hilfeverweise` (`src/Avis.Web/Hilfe/Hilfetexte.cs`). Ein Test prüft, dass
+  es jeden dort genannten Abschnitt gibt und dass jede Seite für Bearbeiter
+  und Kunden einen hat. Wer eine Überschrift umbenennt, sieht das also am
+  Test.
+- **Eigener Text des Hauses**, etwa Telefonnummer und Zeiten der Hotline,
+  gehört nicht in diese Dateien: Sie sind für jede Installation gleich. Dafür
+  gibt es die Datei aus `Hilfe:EigenerText`, in der Voreinstellung
+  `App_Data/Hilfe.md` auf dem Server. Ihr Inhalt steht in einem eigenen Kasten
+  über der Hilfe, bei Kunden wie bei Bearbeitern. Eine Änderung ist ohne
+  Neustart zu sehen. Ein Beispiel:
+
+  ```markdown
+  ## So erreichen Sie die IT-Hotline
+
+  Telefon **1234**, montags bis freitags von 8 bis 16 Uhr.
+  ```
+
+In den Hilfetexten und im eigenen Text gilt dasselbe Markdown wie in den
+Aufträgen; eingegebenes HTML wird als Text gezeigt.
 
 ## Anhänge
 

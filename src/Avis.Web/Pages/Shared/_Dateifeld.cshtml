@@ -1,6 +1,21 @@
 @model string
 @inject Microsoft.Extensions.Options.IOptions<Avis.Web.Anhaenge.AnhangOptionen> Anhaenge
+@{
+    // Auf den Seiten für Kunden führt der Verweis in deren Hilfe, auch wenn ein Bearbeiter sie gerade benutzt.
+    var fuerKunden = (ViewContext.RouteData.Values["page"] as string ?? "").StartsWith("/Meine/", StringComparison.Ordinal) || !User.IstBearbeiter();
+}
 <label for="@Model">Anhänge (optional, höchstens @Anhaenge.Value.HoechstgroesseMb MB je Datei)</label>
 @* Die Grenzen stehen am Feld, damit das Skript zu große und zu viele Dateien gleich ablehnen kann. *@
 <input id="@Model" name="dateien" type="file" multiple
        data-hoechstgroesse="@(Anhaenge.Value.HoechstgroesseMb * 1024L * 1024L)" data-hoechstzahl="@Anhaenge.Value.Hoechstzahl" />
+<p class="erklaerung">
+    Der Text lässt sich formatieren, zum Beispiel <code>**fett**</code> oder als Liste.
+    @if (fuerKunden)
+    {
+        <a asp-page="/Hilfe/Index" asp-route-thema="@(User.IstBearbeiter() ? Avis.Web.Hilfe.Hilfetexte.Kunden : null)" asp-fragment="text-formatieren">So geht es</a>
+    }
+    else
+    {
+        <a asp-page="/Hilfe/Index" asp-fragment="texte-formatieren">So geht es</a>
+    }
+</p>
