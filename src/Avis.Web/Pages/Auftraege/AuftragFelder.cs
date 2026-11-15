@@ -22,17 +22,6 @@ public class AuftragFelder
     public string? Beschreibung { get; set; }
 
     public int? KategorieId { get; set; }
-
-    [StringLength(100, ErrorMessage = "Der Standort darf höchstens 100 Zeichen lang sein.")]
-    public string? Standort { get; set; }
-
-    [StringLength(200, ErrorMessage = "Das Gerät darf höchstens 200 Zeichen lang sein.")]
-    public string? Geraet { get; set; }
-
-    /// <summary>Inventarnummer eines Geräts aus dem Inventar. Leer, wenn keines verknüpft ist.</summary>
-    [StringLength(50, ErrorMessage = "Die Inventarnummer darf höchstens 50 Zeichen lang sein.")]
-    public string? Inventarnummer { get; set; }
-
     public Stufe Dringlichkeit { get; set; } = Stufe.Mittel;
     public Stufe Wichtigkeit { get; set; } = Stufe.Mittel;
     public DateOnly? Termin { get; set; }
@@ -42,9 +31,6 @@ public class AuftragFelder
         Betreff = auftrag.Betreff,
         Beschreibung = auftrag.Beschreibung,
         KategorieId = auftrag.KategorieId,
-        Standort = auftrag.Standort,
-        Geraet = auftrag.Geraet,
-        Inventarnummer = auftrag.Inventargeraet?.Inventarnummer,
         Dringlichkeit = auftrag.Dringlichkeit,
         Wichtigkeit = auftrag.Wichtigkeit,
         Termin = auftrag.Termin,
@@ -68,26 +54,12 @@ public class AuftragFelder
                 modelState.AddModelError($"{praefix}.{nameof(KategorieId)}", "Diese Kategorie steht nicht zur Auswahl.");
         }
 
-        Inventargeraet? geraet = null;
-        if (!string.IsNullOrWhiteSpace(Inventarnummer))
-        {
-            var schluessel = Inventargeraet.Schluessel(Inventarnummer);
-            var bisherigesGeraet = bisher?.InventargeraetId;
-            geraet = await db.Geraete.FirstOrDefaultAsync(g => g.Nummernschluessel == schluessel && (g.Aktiv || g.Id == bisherigesGeraet));
-            if (geraet is null)
-                modelState.AddModelError($"{praefix}.{nameof(Inventarnummer)}",
-                    "Im Inventar gibt es kein Gerät mit dieser Nummer. Trag es als Freitext ein.");
-        }
-
         if (!modelState.IsValid)
             return null;
 
         return new AuftragAngaben(Betreff!, Beschreibung!)
         {
             Kategorie = kategorie,
-            Standort = Standort,
-            Geraet = Geraet,
-            Inventargeraet = geraet,
             Dringlichkeit = Dringlichkeit,
             Wichtigkeit = Wichtigkeit,
             Termin = Termin,

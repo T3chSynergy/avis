@@ -217,6 +217,7 @@
                 <a asp-page="/Kunden/Details" asp-route-id="@a.KundeId">@a.Kunde.Name</a>
                 @if (a.Kunde.Email is not null) {<br /><a href="mailto:@a.Kunde.Email">@a.Kunde.Email</a>}
                 @if (a.Kunde.Telefon is not null) {<br /><text>Tel. @a.Kunde.Telefon</text>}
+                @if (a.Kunde.Standort is not null) {<br /><text>Standort @a.Kunde.Standort</text>}
             </dd>
             <dt>Priorität</dt>
             <dd>P@(a.Prioritaet) · Dringlichkeit @a.Dringlichkeit.Text(), Wichtigkeit @a.Wichtigkeit.Text()</dd>
@@ -229,16 +230,18 @@
             </dd>
             <dt>Kategorie</dt>
             <dd>@(a.Kategorie?.Name ?? "–")</dd>
-            <dt>Standort</dt>
-            <dd>@(a.Standort ?? "–")</dd>
-            <dt>Gerät</dt>
+            <dt>Geräte</dt>
             <dd>
-                @if (a.Inventargeraet is not null)
+                @* Verknüpft ist, was im Auftrag mit "INV" und Inventarnummer genannt wird. *@
+                @if (a.Geraete.Count == 0) {<text>–</text>}
+                @foreach (var geraet in a.Geraete.OrderBy(g => g.Inventarnummer))
                 {
-                    <a asp-page="/Geraete/Details" asp-route-id="@a.InventargeraetId">@a.Inventargeraet.Inventarnummer</a><text> · @a.Inventargeraet.Bezeichnung</text>
-                    @if (a.Geraet is not null) {<br />}
+                    <div>
+                        <a asp-page="/Geraete/Details" asp-route-id="@geraet.Id">@geraet.Inventarnummer</a><text> · @geraet.Bezeichnung</text>
+                        @if (geraet.Standort is not null) {<text> · @geraet.Standort</text>}
+                        @if (!geraet.Aktiv) { <span class="hinweis">ausgemustert</span> }
+                    </div>
                 }
-                @(a.Geraet ?? (a.Inventargeraet is null ? "–" : ""))
             </dd>
             <dt>Eingang</dt>
             <dd>@a.Eingang.Text(), erfasst von @a.ErfasstVon.Name</dd>

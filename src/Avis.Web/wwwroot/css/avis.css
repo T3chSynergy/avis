@@ -351,10 +351,6 @@ h2 .nebenaktion { color: var(--gedaempft); }
 .termin.ueberfaellig { color: #a3261a; font-weight: 600; }
 .termin.heute { color: #8a5a00; font-weight: 600; }
 
-/* Selten gebrauchte Felder beim Erfassen. */
-details.weitere { margin-top: 10px; }
-details.weitere summary { cursor: pointer; font-weight: 600; color: var(--akzent); padding: 4px 0; }
-
 /* Mit Markdown formatierter Text. */
 .md { overflow-wrap: anywhere; margin: 0 0 12px; }
 ol.verlauf .md { margin: 4px 0 0; }

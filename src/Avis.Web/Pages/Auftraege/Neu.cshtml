@@ -42,7 +42,7 @@
 
     <fieldset>
         <legend>Auftrag</legend>
-        <partial name="_Auftragsfelder" for="Eingabe.Felder" view-data='new ViewDataDictionary(ViewData) { ["Auswahl"] = Model.Auswahl, ["StandortLeer"] = "leer: wie beim Kunden" }' />
+        <partial name="_Auftragsfelder" for="Eingabe.Felder" view-data='new ViewDataDictionary(ViewData) { ["Auswahl"] = Model.Auswahl }' />
         <div class="feld">
             <partial name="_Dateifeld" model='"dateien"' />
             <span asp-validation-for="Dateien" class="feldfehler"></span>
@@ -83,6 +83,5 @@
 
 @section Scripts {
     <script src="~/js/kundensuche.js" asp-append-version="true"></script>
-    <script src="~/js/geraetesuche.js" asp-append-version="true"></script>
     <script src="~/js/editor.js" asp-append-version="true"></script>
 }

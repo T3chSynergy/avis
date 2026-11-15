@@ -68,7 +68,6 @@ public class NeuModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr, An
 
         var ich = await db.Benutzer.FirstAsync(b => b.Id == User.BenutzerId());
         var auftrag = Auftrag.Erfassen(
-            // Standort und Gerät fragt das Formular nicht ab: Der Standort kommt vom Kunden, das Gerät trägt die Hotline ein.
             new AuftragAngaben(Eingabe.Betreff!, Eingabe.Beschreibung!),
             kunde,
             ich,

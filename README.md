@@ -28,7 +28,8 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
   es für eine Gruppe einschaltet, bei jedem neuen Auftrag in der Gruppe
 - Gesperrte Gruppen, deren Aufträge nur ihre Mitglieder sehen
 - Suche über alle Aufträge mit Filtern nach Status, Gruppe und Bearbeiter
-- Gerätetabelle, mit der Aufträge über die Inventarnummer verknüpft werden
+- Gerätetabelle; ein Auftrag ist mit den Geräten verknüpft, die in seinen
+  Texten mit „INV“ und ihrer Inventarnummer genannt sind
 - Abgleich der Kunden mit dem Active Directory und der Geräte mit Snipe-IT
 - Anhänge an Aufträgen, Kommentaren, Nachrichten und Antworten
 - E-Mail-Eingang über IMAP: Mails an die Hotline werden Aufträge, Antworten
@@ -371,20 +372,45 @@ deshalb nur einmal am Tag, zur Uhrzeit aus `Kundenabgleich:Uhrzeit` und
   Tages.
 
 Tagsüber ändert sich an Kunden und Geräten also nichts von selbst. Ein Gerät,
-das AVIS noch nicht kennt, lässt sich am Auftrag als Freitext eintragen.
+das AVIS noch nicht kennt, steht am Auftrag einfach im Text.
 
 ## Standort
 
-Kunden, Geräte und Aufträge tragen einen Standort als freien Text, zum
-Beispiel den Raum `A 105`. Eine Liste, aus der man wählt, gibt es nicht.
+Kunden und Geräte tragen einen Standort als freien Text, zum Beispiel den
+Raum `A 105`. Eine Liste, aus der man wählt, gibt es nicht.
 
 - Bei abgeglichenen Kunden und Geräten kommt der Standort aus der Quelle, bei
   den übrigen wird er von Hand eingetragen. Die Suche nach Kunden und Geräten
   findet ihn.
-- Ein Auftrag bekommt beim Erfassen den Standort des Kunden, wenn keiner
-  angegeben ist. Das gilt für alle Wege: am Telefon erfasst, vom Kunden
-  gestellt oder per Mail eingegangen. Am Auftrag lässt er sich ändern; zieht
-  der Kunde später um, bleibt der Auftrag, wie er ist.
+- Ein Auftrag hat keinen eigenen Standort. An ihm steht beim Kunden dessen
+  Standort, und zwar der jeweils aktuelle. Liegt das Problem woanders, steht
+  das in der Beschreibung.
+
+## Geräte am Auftrag
+
+Ein Gerät kommt an einen Auftrag, indem jemand es nennt: das Wort `INV` und
+die Inventarnummer, zum Beispiel `INV 4532436`. Ein eigenes Feld gibt es dafür
+nicht, und es dürfen beliebig viele Geräte sein.
+
+- Es zählen der Betreff, die Beschreibung und jeder spätere Text: interne
+  Kommentare, Hinweise beim Weiterleiten, Nachrichten, Antworten des Kunden
+  und eingehende Mails. Ein Bearbeiter kann also später „INV 4711 gegen
+  INV 4712 getauscht“ notieren, und beide Geräte hängen am Auftrag.
+- Groß- und Kleinschreibung spielen keine Rolle, ebenso wenig, ob zwischen
+  `INV` und der Nummer ein Leerzeichen, ein Doppelpunkt, ein Bindestrich oder
+  nichts steht. „Inventar“ oder „Inventarnummer 4711“ sind nicht gemeint.
+- Kennt AVIS die Nummer nicht, bleibt sie Text. Es gibt keine Fehlermeldung.
+- Verknüpft ist, was genannt wird. Wer eine Nennung aus der Beschreibung oder
+  aus seinem internen Kommentar streicht, löst die Verknüpfung. Was in einer
+  Nachricht an den Kunden steht, bleibt.
+- Ein ausgemustertes Gerät wird nicht neu verknüpft, bleibt aber an den
+  Aufträgen, an denen es schon hängt.
+- Die verknüpften Geräte stehen am Auftrag mit Bezeichnung und Standort, der
+  Auftrag steht am Gerät, und die Suche nach Aufträgen findet ihn auch über
+  die Bezeichnung des Geräts. Kunden sehen die Liste der Geräte nicht.
+
+Die Regel steht in `src/Avis.Web/Domain/Geraetebezug.cs`; angewendet wird sie
+bei jedem Speichern in `AvisDb`.
 
 ## Anhänge
 

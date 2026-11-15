@@ -8,10 +8,10 @@ public class SucheTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     [Theory]
     [InlineData("ÜBERHITZT", true)]            // Betreff, ohne Rücksicht auf Groß- und Kleinschreibung
     [InlineData("lüftergeräusch", true)]       // Beschreibung
-    [InlineData("srv-käfig-07", true)]         // Gerät
+    [InlineData("sitzungssaal", true)]         // Bezeichnung eines Geräts, das im Text nur mit INV und Nummer genannt ist
     [InlineData("özlem", true)]                // Kunde
     [InlineData("wärmeleitpaste", true)]       // interner Kommentar im Verlauf
-    [InlineData("überhitzt özlem srv-käfig", true)] // jedes Wort in einem anderen Feld
+    [InlineData("überhitzt özlem sitzungssaal", true)] // jedes Wort in einem anderen Feld
     [InlineData("überhitzt gibtesnicht", false)]
     public async Task Die_Suche_findet_Auftraege_ueber_alle_Texte(string suche, bool erwartet)
     {
@@ -119,8 +119,7 @@ public class SucheTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         {
             ["kundeId"] = (await app.DatenbankAsync(db => db.Kunden.Where(k => k.Name == "Özlem Übung").Select(k => k.Id).FirstAsync())).ToString(),
             ["Eingabe.Felder.Betreff"] = "Server im Keller überhitzt",
-            ["Eingabe.Felder.Beschreibung"] = "Auffälliges Lüftergeräusch seit dem Wochenende.",
-            ["Eingabe.Felder.Geraet"] = "SRV-Käfig-07",
+            ["Eingabe.Felder.Beschreibung"] = "Auffälliges Lüftergeräusch seit dem Wochenende, auch am INV BE-3002.",
             ["Eingabe.GruppeId"] = (await HotlineAsync()).ToString(),
         });
         var id = int.Parse(antwort.RequestMessage!.RequestUri!.AbsolutePath.Split('/')[^1]);

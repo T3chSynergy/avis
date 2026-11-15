@@ -33,7 +33,7 @@ public class IndexModel(AvisDb db) : PageModel
                 g.Standort,
                 g.Kunde!.Name,
                 g.Aktiv,
-                sichtbar.Count(a => a.InventargeraetId == g.Id && a.AbgeschlossenAm == null)))
+                sichtbar.Count(a => a.Geraete.Any(x => x.Id == g.Id) && a.AbgeschlossenAm == null)))
             .ToListAsync();
 
         Gekuerzt = geraete.Count > Hoechstzahl;

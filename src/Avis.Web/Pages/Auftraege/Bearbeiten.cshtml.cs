@@ -101,6 +101,5 @@ public class BearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
     private Task<Auftrag?> LadenAsync(int id) =>
         db.AuftraegeFuer(User.BenutzerId())
             .Include(a => a.Kategorie)
-            .Include(a => a.Inventargeraet)
             .FirstOrDefaultAsync(a => a.Id == id);
 }
