@@ -241,18 +241,29 @@ public static partial class ClientExtensions
 public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 {
     [Theory]
-    [InlineData(null, "/Anmeldung")]
-    [InlineData("dieter", "/Meine")]
-    [InlineData("anna", "/Verwaltung/Gruppen")]
-    public async Task Jede_Seite_nennt_im_Fuss_die_Lizenz_und_fuehrt_zum_Quelltext(string? anmeldename, string seite)
+    [InlineData("dieter", "/Hilfe")]
+    [InlineData("bernd", "/Hilfe")]
+    [InlineData("bernd", "/Hilfe/kunden")]
+    [InlineData("anna", "/Hilfe/administratoren")]
+    public async Task Jede_Hilfe_nennt_am_Ende_die_Lizenz_und_fuehrt_zum_Quelltext(string anmeldename, string seite)
     {
-        var client = anmeldename is null ? app.CreateClient() : await app.AnmeldenAlsAsync(anmeldename);
+        var client = await app.AnmeldenAlsAsync(anmeldename);
 
         var html = await client.GetStringAsync(seite);
 
-        // Die AGPL gibt jedem Benutzer das Recht auf den Quelltext, auch dem, der nur die Anmeldeseite sieht.
+        // Die AGPL gibt jedem Benutzer das Recht auf den Quelltext. Die Hilfe erreicht jeder von jeder Seite aus.
         Assert.Contains("freie Software unter der GNU AGPL, Version 3 oder später", html);
-        Assert.Matches($"<footer class=\"fuss\">[^<]*<a href=\"{System.Text.RegularExpressions.Regex.Escape(Avis.Web.Lizenz.Quelltext)}\"[^>]*>Quelltext und Lizenz</a>", html);
+        Assert.Matches($"<p class=\"lizenzhinweis\">[^<]*<a href=\"{System.Text.RegularExpressions.Regex.Escape(Avis.Web.Lizenz.Quelltext)}\"[^>]*>Quelltext und Lizenz</a>", html);
+        Assert.Matches("<a class=\"hilfe\"", html);
+    }
+
+    [Fact]
+    public async Task Auf_den_uebrigen_Seiten_steht_der_Lizenzhinweis_nicht()
+    {
+        var dieter = await app.AnmeldenAlsAsync("dieter");
+
+        Assert.DoesNotContain("GNU AGPL", await dieter.GetStringAsync("/Meine"));
+        Assert.DoesNotContain("GNU AGPL", await dieter.GetStringAsync("/Meine/Neu"));
     }
 
     [Fact]

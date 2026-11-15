@@ -262,8 +262,8 @@ Anwendung.
 ## Lizenz und Quelltext
 
 AVIS ist freie Software unter der GNU Affero General Public License, Version
-3 oder später. Im Fuß jeder Seite steht deshalb der Verweis „Quelltext und
-Lizenz“.
+3 oder später. Am Ende jeder Hilfeseite steht deshalb der Verweis „Quelltext
+und Lizenz“.
 
 Wird AVIS im Haus verändert, muss der Verweis zum Quelltext der veränderten
 Fassung führen: Die Lizenz gibt jedem Benutzer das Recht darauf. Die Adresse

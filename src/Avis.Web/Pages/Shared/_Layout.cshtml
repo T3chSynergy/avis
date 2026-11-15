@@ -110,11 +110,6 @@
         }
         @RenderBody()
     </main>
-    @* Die Lizenz verlangt, dass jeder Benutzer an den Quelltext kommt. Die Adresse steht in Lizenz.cs. *@
-    <footer class="fuss">
-        AVIS ist freie Software unter der GNU AGPL, Version 3 oder später.
-        <a href="@Avis.Web.Lizenz.Quelltext" rel="noopener noreferrer">Quelltext und Lizenz</a>
-    </footer>
     <script src="~/js/menue.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
