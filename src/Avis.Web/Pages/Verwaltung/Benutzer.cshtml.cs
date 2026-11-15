@@ -35,29 +35,81 @@ public static class RolleExtensions
     };
 }
 
+/// <summary>
+/// Die Liste der Benutzer. Jeder, der sich anmeldet, bekommt ein Konto, auch
+/// jeder Kunde, der das Webinterface benutzt. Die Liste zeigt deshalb in der
+/// Voreinstellung nur, wer eine Rolle hat, und lässt sich durchsuchen.
+/// </summary>
 public class BenutzerModel(AvisDb db) : PageModel
 {
-    public record Zeile(int Id, string Name, string Anmeldename, Rolle Rolle, bool Aktiv, string Gruppen);
+    public const int Hoechstzahl = 100;
 
+    public const string MitRolle = "rolle";
+    public const string NurAdministratoren = "administratoren";
+    public const string OhneRolle = "ohne";
+    public const string Alle = "alle";
+
+    public record Zeile(int Id, string Name, string Anmeldename, Rolle Rolle, bool Aktiv, string Gruppen, bool AusQuelle);
+
+    /// <summary>Wie viele Konten auf die Suche passen, je Auswahl.</summary>
+    public record Zahlen(int MitRolle, int Administratoren, int OhneRolle, int Alle);
+
+    [BindProperty(SupportsGet = true)]
+    public string? Q { get; set; }
+
+    /// <summary>Welche Konten gezeigt werden. Ohne Angabe die mit Rolle.</summary>
+    [BindProperty(SupportsGet = true)]
+    public string? Zeigen { get; set; }
+
+    public string Auswahl { get; private set; } = MitRolle;
     public IReadOnlyList<Zeile> Benutzer { get; private set; } = [];
+    public Zahlen Anzahl { get; private set; } = new(0, 0, 0, 0);
+    public bool Gekuerzt { get; private set; }
 
     public async Task OnGetAsync()
     {
-        // Das Konto des E-Mail-Eingangs gehört AVIS selbst und wird nicht gepflegt.
-        var benutzer = await db.Benutzer.AsNoTracking()
+        Auswahl = Zeigen is NurAdministratoren or OhneRolle or Alle ? Zeigen : MitRolle;
+
+        // Die Konten, die AVIS sich selbst anlegt, etwa für den E-Mail-Eingang, werden nicht gepflegt.
+        var gesucht = db.Benutzer.AsNoTracking()
             .Where(b => !b.Anmeldename.StartsWith("avis:"))
+            .Suchen(Q);
+
+        var rollen = await gesucht
+            .GroupBy(b => new { b.IstBearbeiter, b.IstAdministrator })
+            .Select(g => new { g.Key.IstBearbeiter, g.Key.IstAdministrator, Zahl = g.Count() })
+            .ToListAsync();
+        Anzahl = new(
+            rollen.Where(r => r.IstBearbeiter || r.IstAdministrator).Sum(r => r.Zahl),
+            rollen.Where(r => r.IstAdministrator).Sum(r => r.Zahl),
+            rollen.Where(r => !r.IstBearbeiter && !r.IstAdministrator).Sum(r => r.Zahl),
+            rollen.Sum(r => r.Zahl));
+
+        var gewaehlt = Auswahl switch
+        {
+            NurAdministratoren => gesucht.Where(b => b.IstAdministrator),
+            OhneRolle => gesucht.Where(b => !b.IstBearbeiter && !b.IstAdministrator),
+            Alle => gesucht,
+            _ => gesucht.Where(b => b.IstBearbeiter || b.IstAdministrator),
+        };
+
+        var benutzer = await gewaehlt
             .Include(b => b.Gruppen)
-            .OrderByDescending(b => b.Aktiv).ThenBy(b => b.Name)
+            .OrderByDescending(b => b.Aktiv).ThenBy(b => b.Name).ThenBy(b => b.Id)
+            .Take(Hoechstzahl + 1)
             .ToListAsync();
 
+        Gekuerzt = benutzer.Count > Hoechstzahl;
         Benutzer = benutzer
+            .Take(Hoechstzahl)
             .Select(b => new Zeile(
                 b.Id,
                 b.Name,
                 b.Anmeldename,
                 b.Rolle(),
                 b.Aktiv,
-                string.Join(", ", b.Gruppen.OrderBy(g => g.Name).Select(g => g.Name))))
+                string.Join(", ", b.Gruppen.OrderBy(g => g.Name).Select(g => g.Name)),
+                b.AusQuelle))
             .ToList();
     }
 

@@ -220,6 +220,12 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             if (eintrag.State is EntityState.Added or EntityState.Modified)
                 eintrag.Entity.SuchtextAktualisieren();
         }
+
+        foreach (var eintrag in ChangeTracker.Entries<Benutzer>())
+        {
+            if (eintrag.State is EntityState.Added or EntityState.Modified)
+                eintrag.Entity.SuchtextAktualisieren();
+        }
     }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)

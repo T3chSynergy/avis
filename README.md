@@ -20,7 +20,8 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 - Meine Gruppen: selbst beitreten und austreten, je Gruppe eine Mail bei
   neuen Aufträgen ein- und ausschalten
 - Verwaltung für Administratoren: Gruppen mit Mitgliedern, Benutzer und Rollen,
-  Kategorien
+  Kategorien. Die Liste der Benutzer zeigt zuerst nur, wer eine Rolle hat, und
+  lässt sich durchsuchen: Ein Konto bekommt jeder, der sich anmeldet
 - Seiten für Kunden: eigenen Auftrag stellen, eigene Aufträge mit Stand und
   Nachrichten sehen, der IT antworten
 - Mails über SMTP: an den Kunden bei Erfassung, Nachricht und Abschluss, an

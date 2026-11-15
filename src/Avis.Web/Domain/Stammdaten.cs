@@ -27,6 +27,12 @@ public class Benutzer
     /// </summary>
     public bool AusQuelle => Quelle is not null;
 
+    /// <summary>Name, Anmeldename und E-Mail in Kleinbuchstaben, für die Suche in der Verwaltung. Wird beim Speichern gesetzt.</summary>
+    public string Suchtext { get; private set; } = "";
+
+    public void SuchtextAktualisieren() =>
+        Suchtext = string.Join(' ', new[] { Name, Anmeldename, Email }.Where(t => !string.IsNullOrWhiteSpace(t))).ToLowerInvariant();
+
     public List<Gruppe> Gruppen { get; } = [];
 }
 
