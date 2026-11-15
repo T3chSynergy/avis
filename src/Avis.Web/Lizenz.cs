@@ -6,7 +6,7 @@ namespace Avis.Web;
 ///
 /// Die Lizenz verlangt von jedem, der eine veränderte Fassung über ein Netz
 /// anbietet, dass er deren Benutzern den Quelltext dieser Fassung zugänglich
-/// macht. Dafür steht im Fuß jeder Seite ein Verweis auf den Quelltext. Wer
+/// macht. Dafür steht am Ende der Hilfe ein Verweis auf den Quelltext. Wer
 /// AVIS verändert und betreibt, trägt hier die Adresse seines Quelltexts ein.
 /// </summary>
 public static class Lizenz

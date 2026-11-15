@@ -31,6 +31,12 @@
         <article class="md">
             @Model.Seite.Inhalt
         </article>
+        @* Die Lizenz verlangt, dass jeder Benutzer an den Quelltext kommt. Die Hilfe ist von jeder Seite aus
+           erreichbar; hier stört der Hinweis nicht bei der Arbeit. Die Adresse steht in Lizenz.cs. *@
+        <p class="lizenzhinweis">
+            AVIS ist freie Software unter der GNU AGPL, Version 3 oder später.
+            <a href="@Avis.Web.Lizenz.Quelltext" rel="noopener noreferrer">Quelltext und Lizenz</a>
+        </p>
     </div>
     <nav class="kasten inhaltsverzeichnis" aria-labelledby="h-inhalt">
         <h2 id="h-inhalt">Inhalt</h2>

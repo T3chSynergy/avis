@@ -562,8 +562,8 @@ bereitgestellt.
 - Wer AVIS weitergibt, auch als gebaute Anwendung, muss den Quelltext unter
   derselben Lizenz zugänglich machen.
 - Wer eine veränderte Fassung betreibt, muss deren Benutzern den Quelltext
-  dieser Fassung anbieten. Dafür steht im Fuß jeder Seite der Verweis
-  „Quelltext und Lizenz“. Seine Adresse steht in `src/Avis.Web/Lizenz.cs` und
+  dieser Fassung anbieten. Dafür steht am Ende der Hilfe, die von jeder Seite
+  aus erreichbar ist, der Verweis „Quelltext und Lizenz“. Seine Adresse steht in `src/Avis.Web/Lizenz.cs` und
   ist bei einer veränderten Fassung auf deren Quelltext zu ändern.
 - Die mitgelieferten Komponenten behalten ihre eigenen Lizenzen (MIT,
   BSD-2-Clause, Apache-2.0), siehe

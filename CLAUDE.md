@@ -73,7 +73,7 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   weil dort nur ganze Zahlen als Formularwerte geschrieben werden.
 - **Fremde Komponenten:** Bei jedem neuen oder entfernten Paket `THIRD-PARTY-NOTICES.md` anpassen, Lizenztexte
   aus den Repos der Hersteller, nicht aus dem Gedächtnis. Das Favicon ist selbst gezeichnet; fremde Grafiken nicht.
-- **Lizenz:** AGPL-3.0-or-later, ohne Inhabernamen. Verweis im Seitenfuß (`Lizenz.cs`) bleibt; Pakete müssen passen.
+- **Lizenz:** AGPL-3.0-or-later, ohne Inhabernamen. Verweis am Ende der Hilfe (`Lizenz.cs`) bleibt; Pakete müssen passen.
 - **`SECURITY.md`** sagt bewusst keine Antwortfrist zu.
 
 ## Erkenntnisse
