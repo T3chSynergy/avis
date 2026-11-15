@@ -93,6 +93,10 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   so wie `INV 4711` ein Gerät verknüpft: Die Nennung wird ein Verweis, und am
   genannten Auftrag steht, wo er erwähnt ist. Für Arbeit, die sich auf mehrere
   Gruppen verteilt, reicht dann ein zweiter Auftrag mit einem solchen Bezug.
+- Verweis in das Quellsystem. Ein Gerät aus Snipe-IT bekäme auf seiner Seite
+  einen Link zu seiner Detailseite dort. Dasselbe wäre bei Kunden möglich:
+  ein Link zum Eintrag der Person in einem Verzeichnis des Hauses, etwa einem
+  Telefonbuch, über eine einstellbare Adresse mit Platzhalter.
 
 ## Nicht vorgesehen
 

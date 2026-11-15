@@ -115,6 +115,6 @@ In der Entwicklungsumgebung nicht prüfbar; nur der Nutzer kann es in der Zielum
 2. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
 3. Angedacht, nicht gebaut (`docs/stand.md`): Kundenanmeldung an den Abgleich binden; Beteiligte am Auftrag;
-   Bezug zwischen Aufträgen über `AVIS 123` im Text wie bei `INV`, ohne Teilaufträge (so will es der Nutzer).
+   Bezug zwischen Aufträgen über `AVIS 123` im Text, ohne Teilaufträge; Link von Gerät und Kunde ins Quellsystem.
 4. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen; Anhänge lassen sich nicht löschen;
    im Browser eingefügte Bilder stehen unter dem Text, nicht mittendrin.
