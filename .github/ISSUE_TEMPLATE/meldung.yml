@@ -7,7 +7,7 @@ body:
         Danke für die Meldung. Bitte beachte zwei Dinge:
 
         - **Keine echten Daten.** Meldungen hier sind nicht vertraulich. Namen, Mailadressen, Auftragstexte, Servernamen und Bildschirmfotos mit solchen Angaben gehören nicht hierher – ersetze sie durch erfundene.
-        - **Sicherheitslücken nicht hier melden**, sondern vertraulich über den Reiter „Security“ → „Report a vulnerability“.
+        - **Sicherheitslücken nicht hier melden**, sondern [vertraulich](https://github.com/T3chSynergy/avis/security/advisories/new) über den Reiter „Security“ → „Report a vulnerability“.
   - type: dropdown
     id: art
     attributes:
@@ -33,6 +33,8 @@ body:
         - E-Mail-Eingang
         - Texte, Bilder und Anhänge
         - Verwaltung
+        - Abgleiche (Bearbeiter, Kunden, Geräte)
+        - Hilfe
         - Anmeldung und Rechte
         - Einrichtung und Betrieb
         - Sonstiges
@@ -58,5 +60,12 @@ body:
     id: umgebung
     attributes:
       label: Umgebung
-      description: Nur bei Fehlern. Stand von AVIS (Datum oder Commit), Browser, Datenbank.
-      placeholder: "Stand vom 13.11.2026, Firefox 145, SQLite"
+      description: Nur bei Fehlern. Stand von AVIS (Datum oder Commit), Browser, Art der Anmeldung, Betriebssystem des Servers.
+      placeholder: "Stand vom 13.11.2026, Firefox 145, Windows-Anmeldung, Windows Server 2025"
+  - type: checkboxes
+    id: daten
+    attributes:
+      label: Keine echten Daten
+      options:
+        - label: Die Meldung enthält keine echten Namen, Mailadressen, Auftragstexte, Servernamen oder Zugangsdaten, auch nicht in Bildschirmfotos.
+          required: true

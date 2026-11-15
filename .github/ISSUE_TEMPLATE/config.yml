@@ -1,0 +1,10 @@
+# Auswahlseite für neue Issues. Meldungen gehen über das Formular in diesem
+# Ordner; Sicherheitslücken haben ihren eigenen, vertraulichen Weg.
+blank_issues_enabled: false
+contact_links:
+  - name: Sicherheitslücke melden (vertraulich)
+    url: https://github.com/T3chSynergy/avis/security/advisories/new
+    about: Bitte nicht als öffentliches Issue. Näheres steht in SECURITY.md.
+  - name: Anleitung und Einrichtung
+    url: https://github.com/T3chSynergy/avis#readme
+    about: Starten, Einstellungen und Betrieb. In der Anwendung steht die Hilfe im Kopf jeder Seite.

@@ -9,8 +9,8 @@ regelmäßig auf den aktuellen Stand gehen.
 ## Eine Sicherheitslücke melden
 
 Sicherheitslücken bitte **nicht** als öffentliches Issue, in einem Pull
-Request oder in einer Diskussion melden. Der Weg ist die vertrauliche Meldung
-auf GitHub:
+Request oder in einer Diskussion melden. Der Weg ist die
+[vertrauliche Meldung auf GitHub](https://github.com/T3chSynergy/avis/security/advisories/new):
 
 1. Im Repository den Reiter **Security** öffnen.
 2. **Report a vulnerability** wählen.
@@ -45,9 +45,12 @@ Bitte die Lücke nicht öffentlich machen, bevor die Korrektur auf `main` ist.
 
 Hierher gehören Lücken im Code von AVIS, zum Beispiel:
 
-- Zugriff auf Aufträge, Anhänge oder Seiten ohne die nötige Berechtigung
+- Zugriff auf Aufträge, Anhänge oder Seiten ohne die nötige Berechtigung,
+  auch auf Aufträge gesperrter Gruppen oder auf interne Kommentare durch
+  Kunden
 - Einschleusen von Skripten oder Befehlen über Texte, Mails oder Anhänge
 - Umgehen der Anmeldung
+- Schreiben in fremde Aufträge über den E-Mail-Eingang
 
 Nicht hierher gehören:
 
@@ -58,3 +61,8 @@ Nicht hierher gehören:
   falsch eingestellter Server
 - Fehler ohne Bezug zur Sicherheit; dafür gibt es das Formular für Meldungen
   unter **Issues**
+
+## Gewährleistung
+
+AVIS ist freie Software und wird ohne jede Gewährleistung bereitgestellt
+(siehe [LICENSE](LICENSE)).

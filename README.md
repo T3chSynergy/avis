@@ -558,4 +558,5 @@ bereitgestellt.
   BSD-2-Clause, Apache-2.0), siehe
   [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
 - Wer einen Pull Request stellt, erklärt sich einverstanden, dass sein Beitrag
-  unter derselben Lizenz veröffentlicht wird.
+  unter derselben Lizenz veröffentlicht wird. Wie eine Änderung hineinkommt,
+  steht in [`CONTRIBUTING.md`](CONTRIBUTING.md).
