@@ -46,7 +46,9 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   EasyMDE. Dafür eine Schaltfläche „Vorschau“, die der Server rendert. Bilder einfügen mit Strg+V bleibt.
 - **HTML-Mails:** Nur eindeutige Auszeichnungen (fett, kursiv, Überschrift, Link, Listen) und kleine,
   einfache Tabellen werden zu Markdown; alles andere wird schlichter Text.
-- **Oberfläche:** Blau nur für Anklickbares, damit Schaltflächen sich vom Schmuck unterscheiden.
+- **Oberfläche:** Blau nur für Anklickbares, damit Schaltflächen sich vom Schmuck unterscheiden. Hell und
+  dunkel: Farben nur als Variablen am Anfang von `avis.css`, die dunkle Palette zweimal (ein Test wacht darüber).
+- **Persönliche Einstellungen:** Seite `/Einstellungen` für alle, am `Benutzer` gespeichert; weitere kommen dorthin.
 - **JavaScript** nur als Zugabe, ohne Framework und ohne Node-Werkzeuge; deshalb auch kein ESLint.
 - **E-Mail-Eingang** über IMAP (EWS wäre im Haus möglich, wurde nicht gewählt).
 - **Kunden und Bearbeiter aus dem AD:** AVIS zieht selbst, je ein LDAP-Filter (dynamische Verteilergruppen
@@ -69,8 +71,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   mit älterem SDK der Reihe 10.0 aus (auch die Cloud-Umgebung). Dependabot beobachtet sie deshalb nicht.
 - **Codeanalyse:** Abgeschaltete Regeln stehen mit Grund in `.editorconfig`. In den Tests ist CA1305 aus,
   weil dort nur ganze Zahlen als Formularwerte geschrieben werden.
-- **Fremde Komponenten:** Bei jedem neuen oder entfernten Paket `THIRD-PARTY-NOTICES.md` anpassen. Das
-  Favicon ist selbst gezeichnet (Flächen, keine Schrift); fremde Grafiken nicht übernehmen.
+- **Fremde Komponenten:** Bei jedem neuen oder entfernten Paket `THIRD-PARTY-NOTICES.md` anpassen, Lizenztexte
+  aus den Repos der Hersteller, nicht aus dem Gedächtnis. Das Favicon ist selbst gezeichnet; fremde Grafiken nicht.
 - **Lizenz:** AGPL-3.0-or-later, ohne Inhabernamen. Verweis im Seitenfuß (`Lizenz.cs`) bleibt; Pakete müssen passen.
 - **`SECURITY.md`** sagt bewusst keine Antwortfrist zu.
 
@@ -90,8 +92,6 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Dependabot-Pull-Requests:** Ihre Prüfungen liefen gegen den Stand von `main` beim Anlegen – vor dem
   Mergen auf dem aktuellen `main` nachprüfen. Bei neuen Hauptversionen der Testwerkzeuge im Log nachsehen,
   dass wirklich alle Tests liefen: Ein Testläufer, der keine Tests findet, meldet ebenfalls Erfolg.
-- **Lizenztexte** für `THIRD-PARTY-NOTICES.md` stammen aus den Repos der Hersteller, nicht aus dem
-  Gedächtnis.
 - **Migrationen:** Eine neue Spalte ist harmlos. Ein Fremdschlüssel oder eine geänderte Spalte an einer
   vorhandenen Tabelle baut in SQLite die ganze Tabelle um, und das läuft nicht in einer Transaktion (EF
   warnt beim Start). Deshalb ist `Benachrichtigung.EmpfaengerId` nur eine Nummer ohne Verknüpfung. Jede
@@ -104,8 +104,7 @@ In der Entwicklungsumgebung nicht prüfbar; muss in der Zielumgebung ausprobiert
 - Windows-Anmeldung (`Anmeldung:Art = Windows`) unter IIS
 - Abgleich mit Active Directory (`ActiveDirectoryVerzeichnis`, `ActiveDirectoryKonten`)
 - Abgleich mit Snipe-IT (`SnipeItGeraetequelle`): nach dessen Quelltext geschrieben, nie dagegen gelaufen
-- SMTP und IMAP gegen Exchange – IMAP lief bisher nur gegen einen lokalen Dovecot-Server
-  (Test mit der Umgebungsvariable `AVIS_TEST_IMAP`)
+- SMTP und IMAP gegen Exchange – IMAP lief nur gegen einen lokalen Dovecot (Test mit `AVIS_TEST_IMAP`)
 - HTML-Mails aus dem echten Outlook
 
 ## Offene Schritte

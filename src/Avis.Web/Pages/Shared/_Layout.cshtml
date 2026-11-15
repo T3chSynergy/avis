@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="de">
+@* Hell oder dunkel: Die Wahl des Benutzers steht am Element html, das Stylesheet liest sie dort. *@
+<html lang="de" data-darstellung="@User.Darstellung()">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -46,7 +47,8 @@
                 }
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    @if (User.IstBearbeiter() || testanmeldung)
+                    @* Ein deaktiviertes Konto ist angemeldet, hat aber keinen Zugriff und deshalb kein Menü. *@
+                    @if (User.IstAngemeldet() || testanmeldung)
                     {
                         <details class="konto">
                             <summary>@User.Anzeigename()</summary>
@@ -55,6 +57,10 @@
                                 {
                                     <a asp-page="/Gruppen/Meine" aria-current="@Aktuell("/Gruppen/Meine")">Meine Gruppen</a>
                                     <a asp-page="/Meine/Index" aria-current="@Aktuell("/Meine/")">Eigene Aufträge als Kunde</a>
+                                }
+                                @if (User.IstAngemeldet())
+                                {
+                                    <a asp-page="/Einstellungen" aria-current="@Aktuell("/Einstellungen")">Einstellungen</a>
                                 }
                                 @if (testanmeldung)
                                 {

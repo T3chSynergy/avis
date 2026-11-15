@@ -1,0 +1,23 @@
+@page
+@model Avis.Web.Pages.EinstellungenModel
+@{
+    ViewData["Title"] = "Einstellungen";
+}
+<h1>Einstellungen</h1>
+<p class="erklaerung">Diese Einstellungen gelten für das eigene Konto, auf jedem Gerät.</p>
+
+<form method="post" class="kasten schmal">
+    <h3 id="h-darstellung">Darstellung</h3>
+    @* Wie Dringlichkeit und Wichtigkeit: wenige Werte nebeneinander, dahinter stehen Optionsfelder. *@
+    <div class="stufen" role="radiogroup" aria-labelledby="h-darstellung">
+        @foreach (var wahl in Enum.GetValues<Darstellung>())
+        {
+            <label><input type="radio" name="darstellung" value="@wahl" id="darstellung-@wahl" class="unsichtbar" checked="@(Model.Darstellung == wahl)" /><span>@EinstellungenModel.Text(wahl)</span></label>
+        }
+    </div>
+    <p class="erklaerung">„Wie das Gerät“ folgt der Einstellung des Betriebssystems oder Browsers für helle oder dunkle Oberflächen.</p>
+
+    <div class="knoepfe">
+        <button type="submit" class="haupt">Speichern</button>
+    </div>
+</form>

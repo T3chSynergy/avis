@@ -254,6 +254,9 @@ namespace Avis.Web.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Darstellung")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Email")
                         .HasMaxLength(320)
                         .HasColumnType("TEXT");

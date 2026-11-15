@@ -1,21 +1,199 @@
+/* Farben. Jede Farbe der Oberfläche steht hier als Variable (nur Schatten nicht), einmal für die helle und einmal für die dunkle
+   Darstellung. Welche gilt, bestimmt das Gerät, außer der Benutzer hat in seinen Einstellungen hell oder dunkel
+   gewählt: Dann steht das am Element html (data-darstellung).
+
+   Blau (akzent, verweis) steht für alles, was man anklicken kann: Schaltflächen und Links. Reine Gestaltung wie
+   der Kopf oder Markierungen nutzt es nicht. */
 :root {
+    color-scheme: light;
     --grund: #f6f7f9;
     --flaeche: #ffffff;
     --text: #1b2430;
     --gedaempft: #5a6675;
     --linie: #d8dde4;
-    /* Blau steht für alles, was man anklicken kann: Schaltflächen und Links.
-       Reine Gestaltung wie der Kopf oder Markierungen nutzt es nicht. */
+    --linie-stark: #9aa7b6;
+    --abgesetzt: #eef1f5;
+    --zeile: #f3f6fa;
+    --gewaehlt: #e8f0fa;
+    --treffer: #fff6dc;
     --akzent: #1565c0;
     --akzent-dunkel: #0e4f9c;
     --akzent-text: #ffffff;
+    --akzent-rand: #6ea4ea;
+    --verweis: #1565c0;
+    --fokus: #f0a000;
     --kopf: #25303d;
+    --kopf-text: #ffffff;
+    --kopf-feld: #ffffff;
+    --betont: #25303d;
+    --betont-text: #ffffff;
+    --feld: #ffffff;
+    --feld-rand: #8793a1;
+    --knopf: #ffffff;
+    --knopf-rand: #7b8794;
+    --marke: #e3e8ee;
+    --marke-text: #2c3a4a;
     --intern: #fff6dc;
     --intern-linie: #d9b84a;
+    --intern-rand: #b3922e;
+    --intern-schwebe: #fbeab5;
+    --intern-gewaehlt: #f3dc94;
+    --intern-abgesetzt: #f3e6b8;
     --gut: #e6f3ea;
     --gut-linie: #4d9463;
+    --gut-text: #1f5732;
     --schlecht: #fbe9e7;
     --schlecht-linie: #c0483b;
+    --fehlertext: #a3261a;
+    --warntext: #8a5a00;
+    --laeuft: #d9e8fa;
+    --laeuft-text: #0f3d73;
+    --wartet: #fde4c8;
+    --wartet-text: #7a3b00;
+    --wartet-rand: #e59a4c;
+    --p1: #b3261e;
+    --p1-text: #ffffff;
+    --p2: #f6d5b0;
+    --p2-text: #5c2c00;
+    --p2-rand: #c9772b;
+    --p3: #fbf0b8;
+    --p3-text: #4d3f00;
+    --p3-rand: #c2a31c;
+    --p4: #e3e8ee;
+    --p4-text: #2c3a4a;
+    --p4-rand: #9aa7b6;
+    --p5: #f1f3f5;
+    --p5-text: #55606d;
+    --p5-rand: #c3cad3;
+}
+
+/* Die dunkle Darstellung steht zweimal da: für "wie das Gerät" und für die ausdrückliche Wahl. CSS kann das nicht
+   zusammenfassen. Ein Test prüft, dass beide Blöcke gleich sind. */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-darstellung="hell"]) {
+        color-scheme: dark;
+        --grund: #171c22;
+        --flaeche: #1f262e;
+        --text: #e6eaef;
+        --gedaempft: #a3aebb;
+        --linie: #38434f;
+        --linie-stark: #5d6b7a;
+        --abgesetzt: #2a333e;
+        --zeile: #252d37;
+        --gewaehlt: #1c3350;
+        --treffer: #4a3d12;
+        --akzent: #1f6fd0;
+        --akzent-dunkel: #1859a8;
+        --akzent-text: #ffffff;
+        --akzent-rand: #6ea4ea;
+        --verweis: #7db8ff;
+        --fokus: #ffb92e;
+        --kopf: #0f141a;
+        --kopf-text: #ffffff;
+        --kopf-feld: #2a333e;
+        --betont: #dfe5ec;
+        --betont-text: #141a21;
+        --feld: #151b22;
+        --feld-rand: #66758a;
+        --knopf: #2a333e;
+        --knopf-rand: #66758a;
+        --marke: #343f4c;
+        --marke-text: #dfe5ec;
+        --intern: #3a3113;
+        --intern-linie: #a88a2a;
+        --intern-rand: #a88a2a;
+        --intern-schwebe: #473c17;
+        --intern-gewaehlt: #5a4c1c;
+        --intern-abgesetzt: #4d411a;
+        --gut: #173524;
+        --gut-linie: #4d9463;
+        --gut-text: #a6dbb6;
+        --schlecht: #46201c;
+        --schlecht-linie: #d9685b;
+        --fehlertext: #ff9d92;
+        --warntext: #f0b955;
+        --laeuft: #1c3350;
+        --laeuft-text: #b9d6fb;
+        --wartet: #5a3410;
+        --wartet-text: #ffd9ae;
+        --wartet-rand: #b0692a;
+        --p1: #c9372c;
+        --p1-text: #ffffff;
+        --p2: #5a3410;
+        --p2-text: #ffd9ae;
+        --p2-rand: #b0692a;
+        --p3: #4d4210;
+        --p3-text: #f6e59a;
+        --p3-rand: #a08a22;
+        --p4: #343f4c;
+        --p4-text: #dfe5ec;
+        --p4-rand: #5d6b7a;
+        --p5: #262f3a;
+        --p5-text: #a9b4c0;
+        --p5-rand: #46525f;
+    }
+}
+:root[data-darstellung="dunkel"] {
+    color-scheme: dark;
+    --grund: #171c22;
+    --flaeche: #1f262e;
+    --text: #e6eaef;
+    --gedaempft: #a3aebb;
+    --linie: #38434f;
+    --linie-stark: #5d6b7a;
+    --abgesetzt: #2a333e;
+    --zeile: #252d37;
+    --gewaehlt: #1c3350;
+    --treffer: #4a3d12;
+    --akzent: #1f6fd0;
+    --akzent-dunkel: #1859a8;
+    --akzent-text: #ffffff;
+    --akzent-rand: #6ea4ea;
+    --verweis: #7db8ff;
+    --fokus: #ffb92e;
+    --kopf: #0f141a;
+    --kopf-text: #ffffff;
+    --kopf-feld: #2a333e;
+    --betont: #dfe5ec;
+    --betont-text: #141a21;
+    --feld: #151b22;
+    --feld-rand: #66758a;
+    --knopf: #2a333e;
+    --knopf-rand: #66758a;
+    --marke: #343f4c;
+    --marke-text: #dfe5ec;
+    --intern: #3a3113;
+    --intern-linie: #a88a2a;
+    --intern-rand: #a88a2a;
+    --intern-schwebe: #473c17;
+    --intern-gewaehlt: #5a4c1c;
+    --intern-abgesetzt: #4d411a;
+    --gut: #173524;
+    --gut-linie: #4d9463;
+    --gut-text: #a6dbb6;
+    --schlecht: #46201c;
+    --schlecht-linie: #d9685b;
+    --fehlertext: #ff9d92;
+    --warntext: #f0b955;
+    --laeuft: #1c3350;
+    --laeuft-text: #b9d6fb;
+    --wartet: #5a3410;
+    --wartet-text: #ffd9ae;
+    --wartet-rand: #b0692a;
+    --p1: #c9372c;
+    --p1-text: #ffffff;
+    --p2: #5a3410;
+    --p2-text: #ffd9ae;
+    --p2-rand: #b0692a;
+    --p3: #4d4210;
+    --p3-text: #f6e59a;
+    --p3-rand: #a08a22;
+    --p4: #343f4c;
+    --p4-text: #dfe5ec;
+    --p4-rand: #5d6b7a;
+    --p5: #262f3a;
+    --p5-text: #a9b4c0;
+    --p5-rand: #46525f;
 }
 
 * { box-sizing: border-box; }
@@ -27,9 +205,9 @@ body {
     font: 15px/1.5 "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
 }
 
-a { color: var(--akzent); }
+a { color: var(--verweis); }
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-    outline: 3px solid #f0a000;
+    outline: 3px solid var(--fokus);
     outline-offset: 2px;
 }
 
@@ -46,25 +224,25 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     gap: 8px 20px;
     padding: 10px 24px;
     background: var(--kopf);
-    color: #fff;
+    color: var(--kopf-text);
 }
-.kopf .marke { color: var(--akzent-text); text-decoration: none; font-weight: 700; font-size: 20px; letter-spacing: 1px; }
+.kopf .marke { color: var(--kopf-text); text-decoration: none; font-weight: 700; font-size: 20px; letter-spacing: 1px; }
 .kopf-rechts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin-left: auto; }
 
 .schnellsuche { margin: 0; flex: 0 1 380px; }
-.schnellsuche input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) { padding: 6px 10px; border: 0; }
+.schnellsuche input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) { padding: 6px 10px; border: 0; background: var(--kopf-feld); }
 
 /* Die wichtigste Aktion der Seite. */
 .kopf a.neu {
-    display: inline-block; padding: 7px 16px; border-radius: 6px; border: 1px solid #6ea4ea;
-    background: var(--akzent); color: #fff; font-weight: 700; text-decoration: none; white-space: nowrap;
+    display: inline-block; padding: 7px 16px; border-radius: 6px; border: 1px solid var(--akzent-rand);
+    background: var(--akzent); color: var(--akzent-text); font-weight: 700; text-decoration: none; white-space: nowrap;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 .kopf a.neu:hover, .kopf a.neu[aria-current="page"] { background: var(--akzent-dunkel); }
 .kopf a.neu span { font-size: 18px; line-height: 1; margin-right: 2px; }
 
 /* Konto mit Menü. Öffnet und schließt ohne Skript, das Skript schließt es zusätzlich bei Klick daneben. */
-.kopf a.hilfe { color: #fff; font-weight: 600; text-underline-offset: 3px; }
+.kopf a.hilfe { color: var(--kopf-text); font-weight: 600; text-underline-offset: 3px; }
 .kopf a.hilfe[aria-current="page"] { text-decoration-thickness: 2px; }
 .konto { position: relative; font-weight: 600; }
 details.konto summary { cursor: pointer; list-style: none; padding: 6px 2px; white-space: nowrap; }
@@ -76,7 +254,7 @@ details.konto .menue {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); padding: 4px 0; font-weight: 400;
 }
 details.konto .menue a { display: block; padding: 7px 14px; color: var(--text); text-decoration: none; white-space: nowrap; }
-details.konto .menue a:hover, details.konto .menue a[aria-current="page"] { background: #eef1f5; }
+details.konto .menue a:hover, details.konto .menue a[aria-current="page"] { background: var(--abgesetzt); }
 
 /* Die Bereiche als Reiter, der aktuelle ist unterstrichen. */
 .bereiche { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0 4px; padding: 0 16px; }
@@ -84,14 +262,14 @@ details.konto .menue a:hover, details.konto .menue a[aria-current="page"] { back
     display: flex; align-items: center; gap: 6px; padding: 10px 10px 8px;
     color: var(--text); text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap;
 }
-.bereiche a:hover { background: #eef1f5; }
-.bereiche a[aria-current="page"] { border-bottom-color: var(--kopf); font-weight: 700; }
+.bereiche a:hover { background: var(--abgesetzt); }
+.bereiche a[aria-current="page"] { border-bottom-color: var(--betont); font-weight: 700; }
 .bereiche .trenner { width: 1px; margin: 10px 8px; background: var(--linie); }
 .bereiche .zahl {
-    min-width: 22px; padding: 0 6px; border-radius: 11px; background: #e3e8ee; color: var(--gedaempft);
+    min-width: 22px; padding: 0 6px; border-radius: 11px; background: var(--marke); color: var(--gedaempft);
     font-size: 12px; font-weight: 600; text-align: center; line-height: 20px;
 }
-.bereiche .zahl.voll { background: var(--kopf); color: #fff; }
+.bereiche .zahl.voll { background: var(--betont); color: var(--betont-text); }
 
 main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
 .fuss { max-width: 1280px; margin: 0 auto; padding: 0 24px 20px; color: var(--gedaempft); font-size: 0.88em; }
@@ -120,25 +298,25 @@ table.liste {
 }
 table.liste.schmal { max-width: 760px; }
 table.liste th, table.liste td { padding: 8px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--linie); }
-table.liste th { font-size: 13px; color: var(--gedaempft); font-weight: 600; background: #eef1f5; white-space: nowrap; }
-table.liste tbody tr:hover { background: #f3f6fa; }
+table.liste th { font-size: 13px; color: var(--gedaempft); font-weight: 600; background: var(--abgesetzt); white-space: nowrap; }
+table.liste tbody tr:hover { background: var(--zeile); }
 table.liste form { margin: 0; }
 
 .prio {
     display: inline-block; min-width: 30px; padding: 1px 6px; border-radius: 4px;
     font-weight: 700; font-size: 13px; text-align: center; border: 1px solid transparent;
 }
-.prio-1 { background: #b3261e; color: #fff; }
-.prio-2 { background: #f6d5b0; color: #5c2c00; border-color: #c9772b; }
-.prio-3 { background: #fbf0b8; color: #4d3f00; border-color: #c2a31c; }
-.prio-4 { background: #e3e8ee; color: #2c3a4a; border-color: #9aa7b6; }
-.prio-5 { background: #f1f3f5; color: #55606d; border-color: #c3cad3; }
+.prio-1 { background: var(--p1); color: var(--p1-text); }
+.prio-2 { background: var(--p2); color: var(--p2-text); border-color: var(--p2-rand); }
+.prio-3 { background: var(--p3); color: var(--p3-text); border-color: var(--p3-rand); }
+.prio-4 { background: var(--p4); color: var(--p4-text); border-color: var(--p4-rand); }
+.prio-5 { background: var(--p5); color: var(--p5-text); border-color: var(--p5-rand); }
 
 .hinweis {
     display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 4px;
-    font-size: 12px; background: #e3e8ee; color: #2c3a4a; white-space: nowrap;
+    font-size: 12px; background: var(--marke); color: var(--marke-text); white-space: nowrap;
 }
-.hinweis.mich { background: var(--kopf); color: #fff; }
+.hinweis.mich { background: var(--betont); color: var(--betont-text); }
 .status { color: var(--gedaempft); }
 
 .filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
@@ -146,14 +324,14 @@ table.liste form { margin: 0; }
     padding: 4px 12px; border: 1px solid var(--linie); border-radius: 16px;
     background: var(--flaeche); text-decoration: none;
 }
-.filter a[aria-current="page"] { background: var(--kopf); border-color: var(--kopf); color: #fff; }
+.filter a[aria-current="page"] { background: var(--betont); border-color: var(--betont); color: var(--betont-text); }
 
 .zustand { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 8px; }
 .zustand .status {
-    padding: 1px 8px; border-radius: 4px; background: #e3e8ee; color: #2c3a4a; font-weight: 600; font-size: 13px;
+    padding: 1px 8px; border-radius: 4px; background: var(--marke); color: var(--marke-text); font-weight: 600; font-size: 13px;
 }
-.zustand .status-InBearbeitung { background: #d9e8fa; color: #0f3d73; }
-.zustand .status-Abgeschlossen { background: var(--gut); color: #1f5732; }
+.zustand .status-InBearbeitung { background: var(--laeuft); color: var(--laeuft-text); }
+.zustand .status-Abgeschlossen { background: var(--gut); color: var(--gut-text); }
 
 .spalten { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 32px; align-items: start; }
 @media (max-width: 900px) { .spalten { grid-template-columns: minmax(0, 1fr); } }
@@ -166,7 +344,7 @@ dl.angaben dd { margin: 0; overflow-wrap: anywhere; }
 
 ol.verlauf { list-style: none; margin: 0; padding: 0; }
 ol.verlauf > li {
-    background: var(--flaeche); border: 1px solid var(--linie); border-left: 4px solid #9aa7b6;
+    background: var(--flaeche); border: 1px solid var(--linie); border-left: 4px solid var(--linie-stark);
     padding: 8px 12px; margin-bottom: 8px;
 }
 ol.verlauf > li.intern { background: var(--intern); border-left-color: var(--intern-linie); }
@@ -189,24 +367,24 @@ form.formular fieldset {
 
 label { display: block; font-weight: 600; margin: 8px 0 3px; }
 h3 + label { margin-top: 0; }
-/* Die Textfarbe steht fest und wird nicht geerbt: Im dunklen Kopf wäre die Schrift des Suchfelds sonst weiß auf weiß. */
+/* Die Textfarbe steht fest und wird nicht geerbt: Im Kopf erbte das Suchfeld sonst dessen helle Schrift. */
 input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea {
     width: 100%; padding: 6px 8px; font: inherit; color: var(--text);
-    background: #fff; border: 1px solid #8793a1; border-radius: 4px;
+    background: var(--feld); border: 1px solid var(--feld-rand); border-radius: 4px;
 }
 textarea { resize: vertical; }
 
 /* Schaltflächen: Rahmen, runde Ecken und ein leichter Schatten. So sieht nur aus, was man drücken kann. */
 button, a.knopf, label.knopf {
     display: inline-block; font: inherit; font-weight: 600; line-height: 1.4; padding: 7px 16px; cursor: pointer;
-    background: #fff; color: var(--text); border: 1px solid #7b8794; border-radius: 6px;
+    background: var(--knopf); color: var(--text); border: 1px solid var(--knopf-rand); border-radius: 6px;
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.14); text-decoration: none; white-space: nowrap;
 }
 button { margin-top: 10px; }
 label.knopf { margin: 0; }
-button:hover, a.knopf:hover, label.knopf:hover { background: #eef1f5; border-color: #5a6675; }
+button:hover, a.knopf:hover, label.knopf:hover { background: var(--abgesetzt); border-color: var(--gedaempft); }
 button:active, a.knopf:active, label.knopf:active { box-shadow: none; transform: translateY(1px); }
-button.haupt, a.knopf.haupt, label.knopf.haupt { background: var(--akzent); border-color: var(--akzent-dunkel); color: #fff; }
+button.haupt, a.knopf.haupt, label.knopf.haupt { background: var(--akzent); border-color: var(--akzent-dunkel); color: var(--akzent-text); }
 button.haupt:hover, a.knopf.haupt:hover, label.knopf.haupt:hover { background: var(--akzent-dunkel); border-color: var(--akzent-dunkel); }
 table.liste button { margin-top: 0; }
 form.schalter { display: flex; align-items: center; gap: 10px; margin: 0; }
@@ -218,7 +396,7 @@ form.formular legend { font-weight: 700; padding: 0 6px; }
 .reihe .feld { flex: 1 1 180px; }
 .feld.ankreuz { display: flex; align-items: center; gap: 8px; padding-top: 26px; }
 .feld.ankreuz label { margin: 0; font-weight: 400; }
-.feldfehler { color: #a3261a; font-size: 13px; }
+.feldfehler { color: var(--fehlertext); font-size: 13px; }
 p.feldfehler { margin: 4px 0 0; }
 p.feldfehler:empty { display: none; }
 
@@ -229,15 +407,15 @@ p.feldfehler:empty { display: none; }
 .stufen label { flex: 1 1 0; margin: 0; font-weight: 400; position: relative; }
 .stufen span {
     display: block; padding: 6px 8px; margin-left: -1px; text-align: center; white-space: nowrap; cursor: pointer;
-    background: #fff; border: 1px solid #7b8794;
+    background: var(--knopf); border: 1px solid var(--knopf-rand);
 }
 .stufen label:first-child span { margin-left: 0; border-radius: 6px 0 0 6px; }
 .stufen label:last-child span { border-radius: 0 6px 6px 0; }
-.stufen span:hover { background: #eef1f5; }
+.stufen span:hover { background: var(--abgesetzt); }
 .stufen input:checked + span {
     position: relative; background: var(--akzent); border-color: var(--akzent-dunkel); color: var(--akzent-text); font-weight: 600;
 }
-.stufen input:focus-visible + span { position: relative; z-index: 1; outline: 3px solid #f0a000; outline-offset: 2px; }
+.stufen input:focus-visible + span { position: relative; z-index: 1; outline: 3px solid var(--fokus); outline-offset: 2px; }
 .knoepfe { display: flex; align-items: center; gap: 16px; }
 .knoepfe button { margin-top: 0; }
 
@@ -256,9 +434,9 @@ table.liste tr.inaktiv td, table.liste tr.inaktiv a { color: var(--gedaempft); }
 .spalten.gleich .kasten { margin-top: 0; max-width: none; }
 .spalten.gleich section .kasten { margin-top: 12px; }
 @media (max-width: 900px) { .spalten.gleich { grid-template-columns: minmax(0, 1fr); } }
-/* So genau wie die Regel für Eingabefelder oben, sonst gewinnt deren weißer Grund. */
+/* So genau wie die Regel für Eingabefelder oben, sonst gewinnt deren Grund. */
 select:disabled, textarea:disabled, input:disabled:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
-    background: #eef1f5; color: var(--gedaempft); cursor: not-allowed;
+    background: var(--abgesetzt); color: var(--gedaempft); cursor: not-allowed;
 }
 .kasten dl.angaben { grid-template-columns: 200px minmax(0, 1fr); }
 table.liste.schmal td { vertical-align: middle; }
@@ -275,7 +453,7 @@ ol.verlauf p.text { margin: 4px 0 0; }
 ul.auswahl { list-style: none; margin: 10px 0 0; padding: 0; }
 ul.auswahl li { display: flex; align-items: baseline; gap: 8px; padding: 5px 8px; border-top: 1px solid var(--linie); }
 ul.auswahl li:last-child { border-bottom: 1px solid var(--linie); }
-ul.auswahl li:has(input:checked) { background: #e8f0fa; }
+ul.auswahl li:has(input:checked) { background: var(--gewaehlt); }
 ul.auswahl label { margin: 0; font-weight: 400; flex: 1; cursor: pointer; }
 #kundentreffer .erklaerung { margin: 10px 0 0; }
 /* Ein neuer Kunde ist die Ausnahme: Seine Felder erscheinen erst, wenn er verlangt wird. */
@@ -302,23 +480,23 @@ ul.anhaenge { list-style: none; margin: 6px 0 0; padding: 0; }
 ul.anhaenge li { padding: 1px 0 1px 18px; position: relative; overflow-wrap: anywhere; }
 ul.anhaenge li::before { content: "↓"; position: absolute; left: 2px; color: var(--gedaempft); }
 ul.anhaenge span { color: var(--gedaempft); font-size: 13px; white-space: nowrap; }
-input[type="file"] { padding: 4px; background: #fff; }
+input[type="file"] { padding: 4px; background: var(--feld); }
 
 /* Auftragsseite: Schaltflächen wählen, welches Formular darunter aufgeht. */
 .aktionen { margin: 24px 0 8px; }
 .aktionen .leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .aktionen .leiste form { margin: 0; }
 .aktionen .leiste button { margin-top: 0; }
-label.wahl:has(input:checked) { background: #e3e8ee; border-color: #5a6675; box-shadow: inset 0 1px 3px rgba(16, 24, 40, 0.25); }
+label.wahl:has(input:checked) { background: var(--marke); border-color: var(--gedaempft); box-shadow: inset 0 1px 3px rgba(16, 24, 40, 0.25); }
 label.wahl.haupt:has(input:checked) { background: var(--akzent-dunkel); }
-label.wahl.intern { background: var(--intern); border-color: #b3922e; }
-label.wahl.intern:hover { background: #fbeab5; }
-label.wahl.intern:has(input:checked) { background: #f3dc94; }
-label:has(input.unsichtbar:focus-visible) { outline: 3px solid #f0a000; outline-offset: 2px; }
+label.wahl.intern { background: var(--intern); border-color: var(--intern-rand); }
+label.wahl.intern:hover { background: var(--intern-schwebe); }
+label.wahl.intern:has(input:checked) { background: var(--intern-gewaehlt); }
+label:has(input.unsichtbar:focus-visible) { outline: 3px solid var(--fokus); outline-offset: 2px; }
 
 .panel {
     display: none; margin-top: 12px; padding: 14px 16px;
-    background: var(--flaeche); border: 1px solid #9aa7b6; border-radius: 6px;
+    background: var(--flaeche); border: 1px solid var(--linie-stark); border-radius: 6px;
 }
 .panel.intern { background: var(--intern); border-color: var(--intern-linie); }
 .aktionen:has(.leiste input[value="oeffnen"]:checked) .panel[data-aktion="oeffnen"],
@@ -331,7 +509,7 @@ label:has(input.unsichtbar:focus-visible) { outline: 3px solid #f0a000; outline-
 
 .panelkopf { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .panelkopf h3 { margin: 0 0 4px; font-size: 16px; }
-label.schliessen { margin: 0; font-weight: 400; color: var(--akzent); text-decoration: underline; cursor: pointer; }
+label.schliessen { margin: 0; font-weight: 400; color: var(--verweis); text-decoration: underline; cursor: pointer; }
 .panel form { margin: 0; }
 .panel textarea { min-height: 96px; }
 
@@ -347,12 +525,12 @@ h2 .nebenaktion { color: var(--gedaempft); }
 /* Markierungen in Listen. */
 .marke-wartet {
     display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 10px; white-space: nowrap;
-    background: #fde4c8; color: #7a3b00; border: 1px solid #e59a4c; font-size: 12px; font-weight: 600;
+    background: var(--wartet); color: var(--wartet-text); border: 1px solid var(--wartet-rand); font-size: 12px; font-weight: 600;
 }
 .zustand .marke-wartet { margin-left: 0; font-size: 13px; }
 .termin strong { font-size: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
-.termin.ueberfaellig { color: #a3261a; font-weight: 600; }
-.termin.heute { color: #8a5a00; font-weight: 600; }
+.termin.ueberfaellig { color: var(--fehlertext); font-weight: 600; }
+.termin.heute { color: var(--warntext); font-weight: 600; }
 
 /* Mit Markdown formatierter Text. */
 .md { overflow-wrap: anywhere; margin: 0 0 12px; }
@@ -362,12 +540,12 @@ ol.verlauf .md { margin: 4px 0 0; }
 .md p, .md ul, .md ol, .md blockquote, .md pre { margin: 0 0 8px; }
 .md ul, .md ol { padding-left: 24px; }
 .md h1, .md h2, .md h3, .md h4, .md h5, .md h6 { font-size: 1.05em; margin: 10px 0 6px; }
-.md code { font-family: Consolas, "Cascadia Mono", Menlo, monospace; font-size: 0.92em; background: #eef1f5; padding: 1px 4px; border-radius: 3px; }
-.md pre { background: #eef1f5; padding: 8px 10px; border-radius: 4px; overflow-x: auto; }
+.md code { font-family: Consolas, "Cascadia Mono", Menlo, monospace; font-size: 0.92em; background: var(--abgesetzt); padding: 1px 4px; border-radius: 3px; }
+.md pre { background: var(--abgesetzt); padding: 8px 10px; border-radius: 4px; overflow-x: auto; }
 .md pre code { background: none; padding: 0; white-space: pre; }
-.md blockquote { border-left: 3px solid #9aa7b6; padding-left: 10px; color: var(--gedaempft); }
+.md blockquote { border-left: 3px solid var(--linie-stark); padding-left: 10px; color: var(--gedaempft); }
 .md hr { border: 0; border-top: 1px solid var(--linie); margin: 10px 0; }
-li.intern .md code, li.intern .md pre { background: #f3e6b8; }
+li.intern .md code, li.intern .md pre, .panel.intern .md code, .panel.intern .md pre { background: var(--intern-abgesetzt); }
 
 /* Die Hilfe: der Text links, das Inhaltsverzeichnis rechts. */
 .hilfe article.md { max-width: 820px; }
@@ -378,8 +556,8 @@ li.intern .md code, li.intern .md pre { background: #f3e6b8; }
 .hilfe article.md li { margin-bottom: 4px; }
 .hilfe .md table { border-collapse: collapse; background: var(--flaeche); }
 .hilfe .md th, .hilfe .md td { border: 1px solid var(--linie); padding: 6px 10px; text-align: left; vertical-align: top; }
-.hilfe .md th { background: #eef1f5; }
-.hilfe :target { scroll-margin-top: 12px; background: #fff6dc; }
+.hilfe .md th { background: var(--abgesetzt); }
+.hilfe :target { scroll-margin-top: 12px; background: var(--treffer); }
 .hilfe .eigen { max-width: 820px; margin: 0 0 20px; }
 .inhaltsverzeichnis { position: sticky; top: 12px; }
 .inhaltsverzeichnis h2 { font-size: 1em; margin: 0 0 6px; }
@@ -388,11 +566,11 @@ li.intern .md code, li.intern .md pre { background: #f3e6b8; }
 @media (max-width: 900px) { .hilfe .inhaltsverzeichnis { position: static; order: -1; } }
 
 /* Eine Datei wird über das Textfeld gezogen. */
-textarea.ablegen { outline: 3px dashed var(--akzent); outline-offset: 2px; }
+textarea.ablegen { outline: 3px dashed var(--verweis); outline-offset: 2px; }
 
-/* Vorschau an den Textfeldern: steht an der Stelle des Felds, aber ohne dessen weißen Grund, damit sie nicht wie ein Eingabefeld aussieht. */
+/* Vorschau an den Textfeldern: steht an der Stelle des Felds, aber ohne dessen Grund, damit sie nicht wie ein Eingabefeld aussieht. */
 textarea[hidden], .vorschau[hidden] { display: none; }
-.vorschau { padding: 6px 8px; border: 1px dashed #8793a1; border-radius: 4px; }
+.vorschau { padding: 6px 8px; border: 1px dashed var(--feld-rand); border-radius: 4px; }
 .vorschau .md, .vorschau .erklaerung { margin: 0; }
 /* Eine eigene Zeile: Sonst stünde die Schaltfläche neben der zum Absenden. */
 button.vorschauknopf { display: block; margin-top: 6px; padding: 3px 10px; font-weight: 400; }
@@ -400,7 +578,7 @@ button.vorschauknopf { display: block; margin-top: 6px; padding: 3px 10px; font-
 /* Bilder im Verlauf und Vorschau vor dem Absenden. */
 ul.bilder { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 0; padding: 0; }
 ul.bilder li { display: flex; flex-direction: column; gap: 3px; max-width: 260px; }
-ul.bilder img { display: block; max-width: 260px; max-height: 180px; border: 1px solid var(--linie); border-radius: 4px; background: #fff; }
+ul.bilder img { display: block; max-width: 260px; max-height: 180px; border: 1px solid var(--linie); border-radius: 4px; background: #fff; /* auch dunkel: Bilder mit durchsichtigem Grund sind für Weiß gemacht */ }
 ul.bilder span { color: var(--gedaempft); font-size: 13px; overflow-wrap: anywhere; }
 ul.dateivorschau { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 0; padding: 0; }
 ul.dateivorschau:empty { display: none; }
@@ -415,6 +593,6 @@ ul.dateivorschau button { margin: 0; padding: 1px 8px; font-size: 13px; box-shad
 /* Tabellen und Bilder im Text, zum Beispiel aus einer Mail. */
 .md table { border-collapse: collapse; margin: 0 0 8px; }
 .md th, .md td { border: 1px solid var(--linie); padding: 3px 8px; text-align: left; vertical-align: top; }
-.md th { background: #eef1f5; }
+.md th { background: var(--abgesetzt); }
 .md img { display: block; max-width: 100%; max-height: 480px; margin: 6px 0; border: 1px solid var(--linie); border-radius: 4px; }
 .aktionen .voraussetzung { margin: 10px 0 0; }

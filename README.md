@@ -39,6 +39,8 @@ Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
 - Kunden öffnen abgeschlossene Aufträge wieder, im Browser oder per Mail
 - Hilfe in der Anwendung für Bearbeiter, Kunden und Administratoren; „Hilfe“
   im Kopf führt von jeder Seite zum passenden Abschnitt
+- Helle und dunkle Darstellung: folgt dem Gerät oder der Wahl in den
+  persönlichen Einstellungen (Menü unter dem eigenen Namen)
 - Testanmeldung für die Entwicklung, Windows-Anmeldung für den Betrieb
 
 ## Voraussetzungen
@@ -117,6 +119,15 @@ andere genauso.
 
 Blau steht in der Oberfläche für alles, was man anklicken kann: Schaltflächen
 und Links. Der Kopf und Markierungen nutzen es nicht.
+
+Die Oberfläche gibt es hell und dunkel. Ohne eigene Wahl folgt sie dem, was am
+Gerät für helle oder dunkle Oberflächen eingestellt ist. Unter „Einstellungen“
+im Menü unter dem eigenen Namen legt jeder Benutzer sie für sein Konto fest;
+die Wahl gilt dann auf jedem Gerät. Alle Farben stehen als Variablen am Anfang
+von `src/Avis.Web/wwwroot/css/avis.css`, einmal hell und zweimal dunkel (für
+„wie das Gerät“ und für die ausdrückliche Wahl). Ein Test prüft, dass die
+beiden dunklen Blöcke gleich sind und dass im übrigen Stylesheet keine festen
+Farben stehen.
 
 ## Testen
 

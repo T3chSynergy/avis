@@ -177,6 +177,15 @@ public static class Hilfeverweise
     };
 
     /// <summary>
+    /// Seiten, die Bearbeiter und Kunden gleichermaßen benutzen. Den Abschnitt
+    /// mit dieser Sprungmarke gibt es in beiden Hilfen; jeder landet in seiner.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, string> FuerAlle = new Dictionary<string, string>
+    {
+        ["/Einstellungen"] = "einstellungen",
+    };
+
+    /// <summary>
     /// Die Hilfe, die jemand ohne weitere Angabe unter "/Hilfe" sieht: die
     /// für Bearbeiter, wenn er einer ist, sonst die für Kunden.
     /// </summary>
@@ -203,6 +212,6 @@ public static class Hilfeverweise
     {
         if (Seiten.TryGetValue(seite, out var ziel) && Erlaubt(ziel.Thema, istBearbeiter, istAdministrator))
             return ziel;
-        return (Standardthema(istBearbeiter), null);
+        return (Standardthema(istBearbeiter), FuerAlle.GetValueOrDefault(seite));
     }
 }
