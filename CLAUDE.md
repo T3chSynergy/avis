@@ -115,6 +115,6 @@ In der Entwicklungsumgebung nicht prüfbar; nur der Nutzer kann es in der Zielum
    „Paket“ nach `docs/betrieb-iis.md`. Was er meldet, beheben und die Anleitung berichtigen. Erstes Release: v0.1.0.
 2. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
-3. Anmeldung der Kunden an den Kundenabgleich binden: vom Nutzer angedacht, nicht gebaut.
+3. Angedacht, nicht gebaut (`docs/stand.md`): Kundenanmeldung an den Abgleich binden; Beteiligte am Auftrag.
 4. Bekannte Lücken: doppelte Kunden lassen sich nicht zusammenführen; Anhänge lassen sich nicht löschen;
    im Browser eingefügte Bilder stehen unter dem Text, nicht mittendrin.

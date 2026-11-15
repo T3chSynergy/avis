@@ -81,6 +81,12 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   letzten Lauf geändert hat, statt einmal täglich alles.
 - Wechsel der Datenbank zu SQL Server. Er ist im Aufbau berücksichtigt, siehe
   [Konzept](konzept.md#späterer-wechsel-zu-sql-server).
+- Weitere Personen am Auftrag. Der Auftrag behält genau einen Kunden als
+  Auftraggeber; dazu ließen sich weitere Betroffene verknüpfen, über die
+  Kundensuche und nur intern, und Bearbeiter als beteiligt nennen. Offen ist
+  vor allem, ob ein beteiligter Bearbeiter intern kommentieren darf, ohne den
+  Auftrag zu übernehmen. Das sollen zuerst die künftigen Bearbeiter
+  besprechen.
 
 ## Nicht vorgesehen
 
