@@ -260,6 +260,27 @@ public class KundenabgleichTests
             optionen.Suchfilter);
     }
 
+    // Die Beispiele aus docs/einstellungen.md, die man dort herauskopiert.
+    [Theory]
+    [InlineData("(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)")]
+    [InlineData("(&(objectCategory=person)(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))")]
+    public void Die_Filter_aus_der_Dokumentation_sind_gueltig_und_bleiben_in_sich_geschlossen(string filter)
+    {
+        ActiveDirectoryKonten.FilterPruefen(filter, "Kundenabgleich");
+
+        var gesucht = ActiveDirectoryKonten.Suchfilter(filter);
+
+        Assert.Equal($"(&(objectCategory=person)(objectClass=user)(!(userAccountControl:1.2.840.113556.1.4.803:=2)){filter})", gesucht);
+        // Jede Klammer geht wieder zu, und keine schließt zu früh.
+        var tiefe = 0;
+        foreach (var zeichen in gesucht)
+        {
+            tiefe += zeichen == '(' ? 1 : zeichen == ')' ? -1 : 0;
+            Assert.True(tiefe >= 0);
+        }
+        Assert.Equal(0, tiefe);
+    }
+
     [Fact]
     public async Task Die_Testdaten_enthalten_Kunden_aus_dem_Verzeichnis_und_stillgelegte()
     {

@@ -12,8 +12,7 @@ namespace Avis.Web.Abgleich;
 /// Archivierte und gelöschte Assets stehen nicht in dieser Liste; für den
 /// Abgleich fehlen sie damit, und AVIS mustert sie aus.
 ///
-/// Die Form der Antworten ist dem Quelltext von Snipe-IT entnommen, die
-/// Anbindung ist noch nicht an einer echten Installation erprobt.
+/// Die Form der Antworten ist dem Quelltext von Snipe-IT entnommen.
 /// </summary>
 public class SnipeItGeraetequelle(HttpClient http) : IGeraetequelle
 {
@@ -23,6 +22,9 @@ public class SnipeItGeraetequelle(HttpClient http) : IGeraetequelle
     /// <summary>Obergrenze, damit ein Fehler der Gegenseite den Abruf nicht endlos laufen lässt.</summary>
     private const int Hoechstseiten = 1000;
 
+    /// <summary>So lange wartet AVIS auf die Antwort zu einem Abruf.</summary>
+    public static readonly TimeSpan Zeitlimit = TimeSpan.FromSeconds(60);
+
     public string Name => GeraeteabgleichOptionen.SnipeIt;
 
     /// <summary>Richtet Adresse, Zugangsschlüssel und die Kopfzeilen ein, die Snipe-IT verlangt.</summary>
@@ -30,7 +32,7 @@ public class SnipeItGeraetequelle(HttpClient http) : IGeraetequelle
     {
         // Der Schrägstrich am Ende sorgt dafür, dass ein Pfad in der Adresse erhalten bleibt.
         http.BaseAddress = new Uri((optionen.Adresse ?? "").Trim().TrimEnd('/') + "/");
-        http.Timeout = TimeSpan.FromSeconds(60);
+        http.Timeout = Zeitlimit;
         http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", (optionen.Schluessel ?? "").Trim());
         // Ohne diese Zeile antwortet Snipe-IT bei einem falschen Schlüssel mit der Anmeldeseite statt mit einem Fehler.
         http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -44,7 +46,19 @@ public class SnipeItGeraetequelle(HttpClient http) : IGeraetequelle
         {
             // Nach der Nummer sortiert, damit sich die Seiten nicht verschieben, wenn während des Abrufs ein Asset dazukommt.
             var adresse = string.Create(CultureInfo.InvariantCulture, $"api/v1/hardware?limit={Seitengroesse}&offset={offset}&sort=id&order=asc");
-            using var antwort = await http.GetAsync(adresse, abbruch);
+            HttpResponseMessage antwort;
+            try
+            {
+                antwort = await http.GetAsync(adresse, abbruch);
+            }
+            catch (OperationCanceledException) when (!abbruch.IsCancellationRequested)
+            {
+                // So meldet .NET eine Zeitüberschreitung. Ohne diese Zeile sähe sie aus wie ein Abbruch und bliebe ohne Meldung.
+                throw new InvalidOperationException(
+                    $"Snipe-IT hat nicht innerhalb von {Zeitlimit.TotalSeconds:0} Sekunden geantwortet (ab Asset {offset + 1}).");
+            }
+
+            using var _ = antwort;
             if (antwort.StatusCode == HttpStatusCode.Unauthorized)
                 throw new InvalidOperationException("Snipe-IT hat den Zugangsschlüssel abgelehnt.");
             if (!antwort.IsSuccessStatusCode)

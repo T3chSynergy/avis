@@ -374,5 +374,3 @@ Alle fünf Stufen sind umgesetzt.
 
 Was noch nicht erprobt ist, welche Lücken bekannt sind und was als Nächstes
 ansteht, steht in [Stand und Ausblick](stand.md).
-- Der Abgleich der Kunden mit dem Active Directory und der Geräte mit
-  Snipe-IT ist noch nicht an den echten Systemen erprobt.

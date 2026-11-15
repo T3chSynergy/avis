@@ -21,7 +21,7 @@ Unterstrichen statt des Doppelpunkts (`Mail__Server`).
 | `Anmeldung:Administratoren` | Anmeldenamen (`domäne\\name`), die bei der Anmeldung Administrator werden |
 | `Zeitzone` | Zeitzone für die Anzeige, Zeitpunkte werden in UTC gespeichert |
 | `Auftraege:ErsteNummer` | Nummer, die der nächste Auftrag mindestens bekommt, zum Beispiel `200000`, um an eine vorhandene Zählung anzuschließen. Wird beim Start angewendet und wirkt nur nach oben. Standard 0: Die Zählung beginnt bei 1 |
-| `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon und Abteilung neuer Konten aus dem Active Directory, `Keines` lässt das aus |
+| `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon, Abteilung und Standort (Feld „Büro“) neuer Konten aus dem Active Directory, `Keines` lässt das aus |
 | `Bearbeiterabgleich:Art` | `ActiveDirectory` gleicht ab, wer Bearbeiter ist, `Aus` lässt das aus |
 | `Bearbeiterabgleich:Filter` | LDAP-Filter, der bestimmt, wer Bearbeiter ist, zum Beispiel `(memberOf=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` |
 | `Bearbeiterabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird. Leer: in der ganzen Domäne |
@@ -47,7 +47,7 @@ Unterstrichen statt des Doppelpunkts (`Mail__Server`).
 | `Posteingang:Ordner` | Ordner, aus dem ungelesene Mails geholt werden, Standard `INBOX` |
 | `Posteingang:Erledigtordner` | Ordner, in den verarbeitete Mails verschoben werden. Leer: Sie bleiben als gelesen im Eingang |
 | `Posteingang:AbstandSekunden` | Abstand zwischen zwei Abrufen, Standard 60 |
-| `Posteingang:BilderImTextAbKb` | Kleinere Bilder im Text einer Mail gelten als Logo und werden nicht übernommen, Standard 20 |
+| `Posteingang:BilderImTextAbKb` | Ein Bild im Text einer Mail, das als Datei kleiner ist und höchstens 300 × 120 Bildpunkte misst, gilt als Logo und wird nicht übernommen. Standard 20; mit 0 wird jedes Bild übernommen |
 | `Hilfe:EigenerText` | Markdown-Datei mit eigenem Text des Hauses, der über der Hilfe steht, relativ zum Ordner der Anwendung. Standard `App_Data/Hilfe.md`. Fehlt die Datei, steht dort nichts |
 | `Anhaenge:Ordner` | Ordner für Anhänge, relativ zum Ordner der Anwendung, Standard `App_Data/Anhaenge` |
 | `Anhaenge:HoechstgroesseMb` | Höchstgröße einer Datei, Standard 10 |
@@ -95,8 +95,14 @@ geschah, steht unter Verwaltung → Posteingang.
   Schriftarten, Farben, Layout-Tabellen wie in Signaturen.
 - Ein Bild im Text der Mail, etwa ein eingefügtes Bildschirmfoto, steht im
   Auftrag an derselben Stelle im Text.
-- Anhänge werden übernommen. Zu große Dateien und kleine Bilder im Text (Logos
-  in Signaturen) bleiben weg, zu große werden im Auftrag genannt.
+- Anhänge werden übernommen. Zu große Dateien bleiben weg und werden im
+  Auftrag genannt.
+- Logos in Signaturen bleiben weg. Als Logo gilt ein Bild im Text, das als
+  Datei klein ist (`Posteingang:BilderImTextAbKb`) und höchstens 300 × 120
+  Bildpunkte misst. Ein eingefügtes Bildschirmfoto ist fast immer breiter
+  oder höher und bleibt deshalb erhalten, auch wenn die Datei klein ist. Wurde
+  ein Bild ausgelassen, steht das unter Verwaltung → Posteingang in der Spalte
+  „Hinweis“.
 - Bei einer Antwort werden Bilder aus dem zitierten Schriftwechsel nicht noch
   einmal angehängt.
 - Jede Mail wird über ihre Message-ID nur einmal verarbeitet.
@@ -106,9 +112,9 @@ geschah, steht unter Verwaltung → Posteingang.
 Damit Antworten ankommen, muss `Mail:Absender` die Adresse des Postfachs sein,
 das AVIS abruft.
 
-Der Abruf ist gegen einen IMAP-Server (Dovecot) erprobt, nicht gegen
-Exchange. Die Umwandlung von HTML ist mit nachgebauten Mails aus Outlook,
-Gmail und Thunderbird geprüft, nicht mit echten Mails.
+Abruf und Versand sind im Probelauf gegen einen echten Mailserver gelaufen.
+Die Umwandlung von HTML ist vor allem mit nachgebauten Mails aus Outlook,
+Gmail und Thunderbird geprüft.
 
 ## Bearbeiterabgleich
 
@@ -120,6 +126,26 @@ wer Bearbeiter ist: die Benutzerkonten, auf die der LDAP-Filter aus
 |---|---|
 | `(memberOf=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` | die Mitglieder dieser Gruppe |
 | `(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` | ihre Mitglieder samt verschachtelter Gruppen |
+
+Zum Herauskopieren in die `appsettings.Production.json`: alle Mitglieder
+einer Gruppe, auch die aus Gruppen, die ihrerseits Mitglied sind. Die lange
+Zahl ist fest und sorgt für die Verschachtelung; zu ersetzen ist nur der Name
+der Gruppe ab `CN=`.
+
+```json
+"Bearbeiterabgleich": {
+  "Art": "ActiveDirectory",
+  "Filter": "(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)"
+}
+```
+
+Der vollständige Name der Gruppe (Distinguished Name) muss genau stimmen.
+PowerShell nennt ihn auf einem Rechner mit den Verwaltungswerkzeugen für das
+Active Directory:
+
+```powershell
+(Get-ADGroup "AVIS-Bearbeiter").DistinguishedName
+```
 
 Dass nur Benutzerkonten von Personen zählen und deaktivierte nicht, ergänzt
 AVIS selbst. Unter Verwaltung → Bearbeiterabgleich steht, was der letzte Lauf
@@ -144,8 +170,6 @@ getan hat, und er lässt sich dort sofort anstoßen.
 - Liefert das Verzeichnis keinen einzigen Bearbeiter oder ist es nicht
   erreichbar, ändert sich nichts.
 
-Der Abgleich ist noch nicht an einem echten Verzeichnis erprobt.
-
 ## Kundenabgleich
 
 Mit `Kundenabgleich:Art = ActiveDirectory` sind die Benutzerkonten des Active
@@ -164,6 +188,29 @@ zählen und deaktivierte Konten nicht, ergänzt AVIS selbst. Beispiele:
 | `(mail=*@example.org)` | alle Konten mit einer Adresse dieser Domäne |
 | `(memberOf=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | die Mitglieder dieser Gruppe |
 | `(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | ihre Mitglieder samt verschachtelter Gruppen |
+| `(&(objectCategory=person)(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))` | alle Personen, bei denen Telefon, Büro, E-Mail und Abteilung eingetragen sind |
+
+Zum Herauskopieren in die `appsettings.Production.json`: alle Personen, bei
+denen Telefonnummer, Büro, E-Mail-Adresse und Abteilung ausgefüllt sind.
+Funktionskonten und technische Konten fallen damit meist von selbst heraus.
+`(&` am Anfang verlangt, dass alle Bedingungen zugleich gelten; `=*` heißt
+„ist ausgefüllt“.
+
+```json
+"Kundenabgleich": {
+  "Art": "ActiveDirectory",
+  "Filter": "(&(objectCategory=person)(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))"
+}
+```
+
+Die Bedingung `(objectCategory=person)` ergänzt AVIS zwar selbst. Mit ihr
+trifft der Filter aber auch außerhalb von AVIS dasselbe, zum Beispiel wenn
+man ihn vorher ausprobiert. Dieser Befehl zählt die Konten, die er trifft;
+deaktivierte zählt er mit, AVIS lässt sie später weg:
+
+```powershell
+(Get-ADUser -LDAPFilter "(&(objectCategory=person)(telephoneNumber=*)(physicalDeliveryOfficeName=*)(mail=*)(department=*))").Count
+```
 
 Mit `Kundenabgleich:Suchbasis` lässt sich die Suche auf einen Teil des
 Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
@@ -184,8 +231,7 @@ Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
 
 Gelesen wird mit dem Konto, unter dem AVIS läuft, aus der Domäne des Servers.
 Ein fehlerhafter Filter lässt den Abgleich scheitern, ohne dass sich etwas
-ändert; die Meldung steht in der Verwaltung. Der Abgleich ist noch nicht an
-einem echten Verzeichnis erprobt.
+ändert; die Meldung steht in der Verwaltung.
 
 ## Geräteabgleich
 
@@ -226,9 +272,9 @@ Darf er keine Benutzer ansehen, liefert Snipe-IT keine Mailadressen, und die
 Geräte bleiben ohne Nutzer. `Geraeteabgleich:Adresse` ist die Adresse, unter
 der Snipe-IT im Browser erreichbar ist, ohne `/api/v1`.
 
-Die Abfrage ist nach dem Quelltext von Snipe-IT geschrieben und mit
-nachgestellten Antworten geprüft, aber noch nicht an einer echten Installation
-erprobt.
+Antwortet Snipe-IT auf einen Abruf nicht innerhalb von 60 Sekunden, gilt der
+Lauf als gescheitert; die Meldung nennt die Stelle. Im Probelauf hat der
+Abgleich rund 30 000 Geräte in kurzer Zeit gelesen.
 
 ## Wann die Abgleiche laufen
 

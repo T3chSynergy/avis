@@ -160,6 +160,9 @@ wurde. Oben steht die Einstellung: `Imap` ruft ab, `Aus` nicht.
   schreiben.
 - Lässt sich eine Mail dreimal nicht verarbeiten, bleibt sie gelesen und
   markiert im Postfach liegen, damit jemand sie sich ansieht.
+- Logos aus Signaturen übernimmt AVIS nicht. Hat es ein kleines Bild im Text
+  einer Mail deshalb ausgelassen, steht das im Hinweis. Vermisst jemand ein
+  Bild, das er in die Mail eingefügt hat, sieh dort nach.
 - Vermisst ein Kunde seine Mail, sieh hier nach. Fehlt sie, obwohl sie erst
   vor Kurzem kam, hat AVIS sie nicht abgeholt. Dann liegt es am Postfach oder
   an der Verbindung dorthin.

@@ -1,6 +1,6 @@
 # Stand und Ausblick
 
-Wie weit AVIS ist, was noch nicht erprobt ist und was als Nächstes ansteht.
+Wie weit AVIS ist, was erprobt ist und was nicht, und was als Nächstes ansteht.
 Diese Datei wird mit dem Projekt fortgeschrieben. Was AVIS kann, steht im
 [README](../README.md), warum es so gebaut ist, im [Konzept](konzept.md).
 
@@ -27,21 +27,29 @@ Betrieb unter Windows Server.
 - Die Oberfläche ist beim Bauen in einem Browser (Chromium) angesehen worden,
   nicht in Firefox oder Edge.
 
+## Im Probelauf
+
+Ein Probelauf in einer echten Umgebung läuft: Windows Server mit IIS, Active
+Directory, Snipe-IT und ein Mailserver. Dort hat bisher funktioniert:
+
+- der Start unter IIS und die Windows-Anmeldung
+- das Nachschlagen neuer Konten im Active Directory
+- der Abgleich der Bearbeiter und der Kunden mit dem Active Directory
+- der Abgleich der Geräte mit Snipe-IT, mit rund 30 000 Geräten
+- der Mailversand und der E-Mail-Eingang, auch mit einer Antwort im
+  HTML-Format mit eingefügtem Bild
+
+Dabei gefundene Fehler sind behoben: der fehlende Standort neuer Konten und
+kleine eingefügte Bilder, die als Logo verworfen wurden.
+
 ## Noch nicht erprobt
 
-AVIS ist bisher nur in der Entwicklungsumgebung gelaufen. Gegen die echten
-Systeme noch nie gelaufen sind:
-
-- die Windows-Anmeldung unter IIS
-- die Abgleiche mit dem Active Directory und das Nachschlagen neuer Konten
-  dort
-- der Abgleich mit Snipe-IT; er ist nach dessen Quelltext geschrieben und mit
-  nachgestellten Antworten geprüft
-- der Mailversand über SMTP und der Abruf über IMAP gegen Exchange; der Abruf
-  lief bisher nur gegen einen anderen IMAP-Server
-- die Umwandlung echter HTML-Mails aus Outlook; geprüft ist sie mit
-  nachgebauten Mails
-- die Anleitung für den [Betrieb unter IIS](betrieb-iis.md)
+- der Betrieb über längere Zeit: die nächtlichen Läufe der Abgleiche, der
+  Mailversand und der Abruf des Postfachs im Dauerbetrieb
+- das Update nach der Anleitung für den [Betrieb unter IIS](betrieb-iis.md)
+- HTML-Mails in ihrer Breite: Tabellen, Listen und Signaturen aus echten
+  Mailprogrammen
+- der Alltag mit mehreren Bearbeitern
 
 ## Bekannte Lücken
 
@@ -53,8 +61,7 @@ Systeme noch nie gelaufen sind:
 
 ## Als Nächstes
 
-1. **Probelauf in einer echten Umgebung** mit Windows Server, IIS, Active
-   Directory, Snipe-IT und Exchange. Was dabei auffällt, wird behoben, und die
+1. **Probelauf abschließen.** Was dabei auffällt, wird behoben, und die
    Anleitung wird berichtigt.
 2. **Erstes Release** mit Versionsnummer und fertigem Paket, sobald der
    Probelauf trägt.

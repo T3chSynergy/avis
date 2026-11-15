@@ -188,8 +188,8 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var gestaltet = new BodyBuilder { TextBody = "Siehe Anhang.", HtmlBody = "<p>Siehe Anhang.</p>" };
         gestaltet.Attachments.Add("fehler.log", "Fehler 42\r\n"u8.ToArray(), new ContentType("text", "plain"));
         gestaltet.Attachments.Add("riesig.iso", new byte[1024 * 1024 + 5], new ContentType("application", "octet-stream"));
-        gestaltet.LinkedResources.Add("logo.png", new byte[2_000], new ContentType("image", "png"));
-        gestaltet.LinkedResources.Add("bildschirmfoto.png", new byte[40_000], new ContentType("image", "png"));
+        gestaltet.LinkedResources.Add("logo.png", Testbild.Png(180, 60, 2_000), new ContentType("image", "png"));
+        gestaltet.LinkedResources.Add("bildschirmfoto.png", Testbild.Png(1200, 600, 40_000), new ContentType("image", "png"));
         var mail = Mail("gabi.mueller@example.org", "Mit Anhängen", "");
         mail.Body = gestaltet.ToMessageBody();
 
@@ -199,6 +199,7 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         var anhaenge = await app.DatenbankAsync(db => db.Anhaenge.AsNoTracking()
             .Where(a => a.Verlaufseintrag.AuftragId == id).OrderBy(a => a.Dateiname).ToListAsync());
         Assert.Equal(["bildschirmfoto.png", "fehler.log"], anhaenge.Select(a => a.Dateiname));
+        Assert.Equal("1 kleines Bild im Text nicht übernommen (gilt als Logo).", eingang.Hinweis);
         Assert.Equal(11, anhaenge[1].Groesse);
         var auftrag = await LadenAsync(id);
         Assert.StartsWith("Siehe Anhang.", auftrag.Beschreibung);

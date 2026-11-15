@@ -14,8 +14,8 @@ public record Verzeichniskonto(string Kennung, string? Anmeldename, string? Name
 /// Domäne, in der der Server Mitglied ist. Kunden und Bearbeiter kommen auf
 /// demselben Weg, nur mit verschiedenen Filtern.
 ///
-/// Das Lesen läuft nur unter Windows und ist noch nicht an einem echten
-/// Verzeichnis erprobt. Gelesen wird mit dem Konto, unter dem AVIS läuft.
+/// Das Lesen läuft nur unter Windows. Gelesen wird mit dem Konto, unter dem
+/// AVIS läuft.
 /// </summary>
 public static class ActiveDirectoryKonten
 {
