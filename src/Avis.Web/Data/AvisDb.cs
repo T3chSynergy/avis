@@ -32,32 +32,65 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
-        BenachrichtigungenVormerken();
-        SuchtexteAktualisieren();
-        foreach (var auftrag in AuftraegeMitNeuemText())
+        var automatisch = EinmalFeststellen();
+        try
         {
-            var texte = GenannteTexte(auftrag, GespeicherteTexte(auftrag)?.ToList());
-            var nummern = Geraetebezug.Nummern(texte);
-            if (Entry(auftrag).State != EntityState.Added)
-                Entry(auftrag).Collection(a => a.Geraete).Load();
-            auftrag.GeraeteSetzen(nummern.Count == 0 ? [] : Geraete.Where(g => nummern.Contains(g.Nummernschluessel)).ToList());
+            BenachrichtigungenVormerken();
+            SuchtexteAktualisieren();
+            foreach (var auftrag in AuftraegeMitNeuemText())
+            {
+                var texte = GenannteTexte(auftrag, GespeicherteTexte(auftrag)?.ToList());
+                var nummern = Geraetebezug.Nummern(texte);
+                if (Entry(auftrag).State != EntityState.Added)
+                    Entry(auftrag).Collection(a => a.Geraete).Load();
+                auftrag.GeraeteSetzen(nummern.Count == 0 ? [] : Geraete.Where(g => nummern.Contains(g.Nummernschluessel)).ToList());
+            }
+        }
+        finally
+        {
+            ChangeTracker.AutoDetectChangesEnabled = automatisch;
         }
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        BenachrichtigungenVormerken();
-        SuchtexteAktualisieren();
-        foreach (var auftrag in AuftraegeMitNeuemText())
+        var automatisch = EinmalFeststellen();
+        try
         {
-            var gespeichert = GespeicherteTexte(auftrag) is { } abfrage ? await abfrage.ToListAsync(cancellationToken) : null;
-            var nummern = Geraetebezug.Nummern(GenannteTexte(auftrag, gespeichert));
-            if (Entry(auftrag).State != EntityState.Added)
-                await Entry(auftrag).Collection(a => a.Geraete).LoadAsync(cancellationToken);
-            auftrag.GeraeteSetzen(nummern.Count == 0 ? [] : await Geraete.Where(g => nummern.Contains(g.Nummernschluessel)).ToListAsync(cancellationToken));
+            BenachrichtigungenVormerken();
+            SuchtexteAktualisieren();
+            foreach (var auftrag in AuftraegeMitNeuemText())
+            {
+                var gespeichert = GespeicherteTexte(auftrag) is { } abfrage ? await abfrage.ToListAsync(cancellationToken) : null;
+                var nummern = Geraetebezug.Nummern(GenannteTexte(auftrag, gespeichert));
+                if (Entry(auftrag).State != EntityState.Added)
+                    await Entry(auftrag).Collection(a => a.Geraete).LoadAsync(cancellationToken);
+                auftrag.GeraeteSetzen(nummern.Count == 0 ? [] : await Geraete.Where(g => nummern.Contains(g.Nummernschluessel)).ToListAsync(cancellationToken));
+            }
+        }
+        finally
+        {
+            ChangeTracker.AutoDetectChangesEnabled = automatisch;
         }
         return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    /// <summary>
+    /// Stellt einmal fest, was sich geändert hat, und schaltet das für die
+    /// Schritte vor dem Speichern ab. Sonst prüft jeder Blick in die Liste
+    /// der Einträge alle geladenen Einträge neu; der Geräteabgleich hat
+    /// zwanzigtausend davon geladen. Was die Schritte selbst ändern, sieht
+    /// das Speichern danach, wenn es wieder eingeschaltet ist. Gibt den
+    /// bisherigen Zustand zurück.
+    /// </summary>
+    private bool EinmalFeststellen()
+    {
+        var automatisch = ChangeTracker.AutoDetectChangesEnabled;
+        if (automatisch)
+            ChangeTracker.DetectChanges();
+        ChangeTracker.AutoDetectChangesEnabled = false;
+        return automatisch;
     }
 
     /// <summary>
@@ -69,7 +102,6 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     /// </summary>
     private List<Auftrag> AuftraegeMitNeuemText()
     {
-        ChangeTracker.DetectChanges();
         var auftraege = new HashSet<Auftrag>();
         foreach (var eintrag in ChangeTracker.Entries<Auftrag>())
         {
