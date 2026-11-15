@@ -35,9 +35,9 @@ dotnet run --project src/Avis.Web
 ```
 
 Die Anwendung läuft dann unter http://localhost:5274 mit einer Testanmeldung
-und Testdaten; Mails landen als Dateien in einem Ordner. Mehr dazu steht im
-[README](README.md) unter „Starten“, der Aufbau des Codes unter „Aufbau“ und
-das Fachliche im [Konzept](docs/konzept.md).
+und Testdaten; Mails landen als Dateien in einem Ordner. Mehr dazu und der
+Aufbau des Codes stehen unter [Entwicklung](docs/entwicklung.md), das
+Fachliche im [Konzept](docs/konzept.md).
 
 ## Vor dem Pull Request
 
@@ -60,8 +60,10 @@ dotnet test
    - **Hilfe:** Ändert sich die Oberfläche, auch die Hilfetexte unter
      `src/Avis.Web/Hilfe` anpassen. Ein Test prüft, dass jede Seite einen
      Abschnitt in der Hilfe hat.
-   - **Dokumentation:** `README.md` für Einstellungen und Betrieb,
-     `docs/konzept.md` für das Fachliche.
+   - **Dokumentation:** `docs/einstellungen.md` für Einstellungen und
+     Anbindungen, `docs/betrieb-iis.md` für den Betrieb, `docs/konzept.md`
+     für das Fachliche, `docs/stand.md` für Stand und Ausblick. Das README
+     bleibt die kurze Übersicht.
    - **Pakete:** Kommt eines hinzu oder fällt eines weg,
      `THIRD-PARTY-NOTICES.md` anpassen. Seine Lizenz muss zur AGPL passen.
 5. Einen **Pull Request gegen `main`** stellen, gegliedert in: Worum es geht,
@@ -80,7 +82,7 @@ daraus das Paket für Windows Server und hängt es an das Release.
 - **Migrationen.** Eine neue Spalte ist harmlos. Ein Fremdschlüssel oder eine
   geänderte Spalte an einer vorhandenen Tabelle baut in SQLite die ganze
   Tabelle um. Jede neue Migration lesen, bevor sie eingecheckt wird; siehe
-  „Datenbank ändern“ im README.
+  „Datenbank ändern“ unter [Entwicklung](docs/entwicklung.md).
 - **Datenbank.** Abfragen sollen nicht von SQLite abhängen: Ein späterer
   Wechsel der Datenbank soll möglich bleiben. Die Suche läuft deshalb über
   eigene Spalten in Kleinbuchstaben.

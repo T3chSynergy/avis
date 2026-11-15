@@ -1,8 +1,8 @@
 # AVIS – Hinweise für Claude
 
-AVIS ist ein schlankes Ticketsystem für die IT (ASP.NET Core Razor Pages auf .NET 10, EF Core, SQLite).
-Was es kann und wie man es startet, steht in `README.md`, das Fachliche in `docs/konzept.md`.
-Hier steht nur, was sich daraus und aus dem Code nicht ablesen lässt.
+AVIS ist ein schlankes Ticketsystem für die IT (ASP.NET Core Razor Pages auf .NET 10, EF Core, SQLite). `README.md`
+ist die kurze Übersicht; unter `docs`: `konzept.md` (Fachliches), `stand.md` (öffentlicher Stand, mitpflegen),
+`einstellungen.md`, `betrieb-iis.md`, `entwicklung.md`. Hier steht nur, was sich daraus nicht ablesen lässt.
 
 Diese Datei kurz halten (Ziel: höchstens 120 Zeilen) und keine Versionsgeschichte führen – die steht in
 Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis ergänzen, Erledigtes streichen.

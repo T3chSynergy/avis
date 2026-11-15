@@ -1,550 +1,120 @@
 # AVIS
 
-Auftrags-, Verfolgungs- und Informationssystem: das Ticketsystem der IT.
+AVIS (Auftrags-, Verfolgungs- und Informationssystem) ist ein schlankes
+Ticketsystem für die IT: Aufträge erfassen, an eine Gruppe geben, übernehmen,
+erledigen. Kunden stellen und verfolgen ihre Aufträge im Browser oder per
+E-Mail.
 
-Was AVIS können soll und warum, steht im [Konzept](docs/konzept.md).
+Es ist für eine IT-Abteilung mit einigen Dutzend Bearbeitern gedacht und
+bleibt mit Absicht klein: eine Webanwendung mit einer Datenbankdatei, ohne
+einstellbare Abläufe und ohne Dienste daneben.
+
+![Ein Auftrag in AVIS: oben Priorität, Stand und Gruppe, darunter Beschreibung, Aktionen und Verlauf mit einer Nachricht an den Kunden und einem gelb abgesetzten internen Kommentar, rechts die Angaben zu Kunde und Gerät](docs/bilder/auftrag.png)
+
+*Ein Auftrag aus Sicht eines Bearbeiters, mit den erfundenen Testdaten.*
+
+## Was AVIS kann
+
+**Für Bearbeiter**
+
+- Aufträge erfassen, übernehmen, an eine andere Gruppe weiterleiten,
+  abschließen und wieder öffnen
+- Interne Kommentare, die der Kunde nie sieht, getrennt von Nachrichten an
+  den Kunden
+- Ein lückenloser Verlauf: Wer hat wann was getan
+- Listen für das, was ich bearbeite und was in meinen Gruppen offen liegt,
+  sortiert nach Priorität; Suche über alle Aufträge
+- Gesperrte Gruppen für Vertrauliches, deren Aufträge nur ihre Mitglieder
+  sehen
+- Kunden und Geräte mit ihren bisherigen Aufträgen
+
+**Für Kunden**
+
+- Einen Auftrag stellen und den Stand der eigenen Aufträge sehen
+- Der IT antworten und einen abgeschlossenen Auftrag wieder öffnen
+- Beides auch per E-Mail
+
+**E-Mail**
+
+- Mails an den Kunden bei Erfassung, Nachricht und Abschluss; an Bearbeiter
+  nur, wenn es sie betrifft
+- E-Mail-Eingang: Eine Mail an die Hotline wird ein Auftrag, eine Antwort
+  landet im richtigen Auftrag
+
+**Anbindungen**, jede einzeln abschaltbar
+
+- Anmeldung über Windows und Active Directory, ohne Passworteingabe
+- Bearbeiter und Kunden aus dem Active Directory, Geräte aus Snipe-IT; AVIS
+  liest dort nur
+
+**Außerdem**
+
+- Texte mit Markdown, Vorschau, Bildschirmfotos einfügen mit Strg+V, Anhänge
+- Hilfe in der Anwendung für Kunden, Bearbeiter und Administratoren
+- Helle und dunkle Darstellung
+- Funktioniert auch ohne JavaScript
+
+Was AVIS mit Absicht nicht hat: einstellbare Workflows, frei definierbare
+Felder, SLA-Uhren, Zeiterfassung und Auswertungen pro Bearbeiter. Die Gründe
+stehen im [Konzept](docs/konzept.md).
 
 ## Stand
 
-Alle vier Ausbaustufen des Konzepts sind umgesetzt. Vorhanden sind:
+Alles oben Genannte ist gebaut und wird automatisch getestet, unter Windows
+und Linux. **Im echten Betrieb ist AVIS noch nicht erprobt**: Die
+Windows-Anmeldung unter IIS und die Anbindungen an Active Directory, Snipe-IT
+und Exchange sind noch nie gegen die echten Systeme gelaufen. Ein Release
+gibt es noch nicht.
 
-- Datenmodell mit Aufträgen, Verlauf, Gruppen, Benutzern, Kunden und Kategorien
-- Aufträge erfassen, übernehmen, weiterleiten, intern kommentieren, Nachricht
-  an den Kunden, abschließen und wieder öffnen
-- Angaben und Kunde eines Auftrags nachträglich ändern, mit den bisherigen
-  Werten im Verlauf
-- Kunden suchen, anlegen und pflegen, mit den Aufträgen eines Kunden; beim
-  Erfassen erscheinen Treffer schon während des Tippens, und ein neuer Kunde
-  lässt sich erst nach einer Suche anlegen
-- Listen: Meine Aufträge, offene Aufträge (meiner Gruppen und für mich vorgemerkte), alle Aufträge
-- Meine Gruppen: selbst beitreten und austreten, je Gruppe eine Mail bei
-  neuen Aufträgen ein- und ausschalten
-- Verwaltung für Administratoren: Gruppen mit Mitgliedern, Benutzer und Rollen,
-  Kategorien. Die Liste der Benutzer zeigt zuerst nur, wer eine Rolle hat, und
-  lässt sich durchsuchen: Ein Konto bekommt jeder, der sich anmeldet
-- Seiten für Kunden: eigenen Auftrag stellen, eigene Aufträge mit Stand und
-  Nachrichten sehen, der IT antworten
-- Mails über SMTP: an den Kunden bei Erfassung, Nachricht und Abschluss, an
-  Bearbeiter bei einer Antwort des Kunden, als bevorzugter Bearbeiter und, wer
-  es für eine Gruppe einschaltet, bei jedem neuen Auftrag in der Gruppe
-- Gesperrte Gruppen, deren Aufträge nur ihre Mitglieder sehen
-- Suche über alle Aufträge mit Filtern nach Status, Gruppe und Bearbeiter
-- Gerätetabelle; ein Auftrag ist mit den Geräten verknüpft, die in seinen
-  Texten mit „INV“ und ihrer Inventarnummer genannt sind
-- Abgleich der Bearbeiter und der Kunden mit dem Active Directory und der
-  Geräte mit Snipe-IT
-- Anhänge an Aufträgen, Kommentaren, Nachrichten und Antworten
-- E-Mail-Eingang über IMAP: Mails an die Hotline werden Aufträge, Antworten
-  mit Auftragsnummer im Betreff landen im Auftrag
-- Kunden öffnen abgeschlossene Aufträge wieder, im Browser oder per Mail
-- Hilfe in der Anwendung für Bearbeiter, Kunden und Administratoren; „Hilfe“
-  im Kopf führt von jeder Seite zum passenden Abschnitt
-- Helle und dunkle Darstellung: folgt dem Gerät oder der Wahl in den
-  persönlichen Einstellungen (Menü unter dem eigenen Namen)
-- Testanmeldung für die Entwicklung, Windows-Anmeldung für den Betrieb
+Was genau ungeprüft ist, welche Lücken bekannt sind und was als Nächstes
+ansteht, steht in [Stand und Ausblick](docs/stand.md).
 
-## Voraussetzungen
+## Ausprobieren
 
-- .NET 10 SDK
-
-## Starten
+Nötig ist nur das .NET 10 SDK, unter Windows oder Linux.
 
 ```bash
 dotnet run --project src/Avis.Web
 ```
 
-Die Anwendung läuft dann unter http://localhost:5274. In der
-Entwicklungsumgebung legt sie beim ersten Start eine SQLite-Datenbank unter
-`src/Avis.Web/App_Data` mit Testdaten an und bietet eine Testanmeldung, bei der
-man den Benutzer auswählt. Frische Testdaten gibt es auf der Seite der
-Testanmeldung über „Datenbank neu anlegen": Das leert die Datenbank, entfernt
-die Anhänge und beginnt die Zählung von vorn.
+AVIS läuft dann unter http://localhost:5274 mit erfundenen Testdaten. Statt
+einer Anmeldung wählt man einen der Testbenutzer: einen Administrator,
+Bearbeiter oder einen Kunden. Mails gehen an niemanden, sie landen als Dateien
+in einem Ordner. Mehr dazu steht unter [Entwicklung](docs/entwicklung.md).
 
-Zu den Testdaten gehören Kunden, die für Konten aus dem Active Directory
-stehen (Hanna Verzeichnis, Igor Abgleich und die inaktive Jana Ehemals), und
-ein von Hand stillgelegter Kunde (Karl Ruhestand). An ihnen lässt sich ohne
-Verzeichnis ansehen, wie abgeglichene und inaktive Kunden aussehen. Ebenso
-stehen drei Geräte für Assets aus Snipe-IT (TB-3001, BE-3002 und das
-ausgemusterte TB-2990) und ein Bearbeiter für ein Konto aus dem Verzeichnis
-(Finn Verzeichnis).
+## Betreiben
 
-Mails werden in der Entwicklung nicht versendet, sondern als Dateien unter
-`src/Avis.Web/App_Data/Mails` abgelegt. Ein Mailprogramm öffnet sie. Den
-Ordner nennt auch die Seite der Testanmeldung.
+AVIS läuft unter Windows Server mit IIS. Für den Betrieb hängt an jedem
+[Release](https://github.com/T3chSynergy/avis/releases) ein fertiges Paket.
 
-## Bedienung
+- [Betrieb unter IIS](docs/betrieb-iis.md): Einrichtung und Update
+- [Einstellungen und Anbindungen](docs/einstellungen.md): was sich einstellen
+  lässt und wie sich Mailversand, E-Mail-Eingang und die Abgleiche verhalten
 
-- Alt+N öffnet auf jeder Seite „Auftrag erfassen", für Kunden „Neuer Auftrag".
-- Alt+S springt in das Suchfeld im Kopf.
-- Strg+Eingabe sendet auf der Auftragsseite das Formular ab, in dem man gerade
-  schreibt.
-- Strg+V fügt ein Bild aus der Zwischenablage als Anhang ein. Dateien lassen
-  sich auch auf das Textfeld ziehen.
-- Wer nacheinander mehrmals Dateien auswählt, behält die schon gewählten. Unter
-  dem Dateifeld steht, was mitgeschickt wird; dort lässt sich jede Datei wieder
-  entfernen.
-- Fehlende Pflichtangaben und zu große, leere oder zu viele Dateien meldet schon
-  der Browser, bevor das Formular abgeschickt wird. Kommt es trotzdem mit einem
-  Fehler zurück, sind die gewählten Dateien nicht mehr im Formular; die Meldung
-  nennt sie dann, damit man sie noch einmal anhängt.
+## Dokumentation
 
-## Texte mit Markdown
-
-Beschreibung, Kommentare, Nachrichten und Antworten verstehen Markdown: fett,
-kursiv, Listen, Zitate, Code, Links und Tabellen. Wer Markdown kennt, tippt es einfach;
-eine Formatierleiste gibt es bewusst nicht. Gespeichert wird der reine Text,
-erst die Anzeige formatiert ihn. Suche und Mails arbeiten deshalb mit dem reinen Text,
-in Mails stehen die Markdown-Zeichen so, wie sie getippt wurden.
-
-Eingegebenes HTML wird als Text gezeigt. Links führen nur zu `http`, `https`
-und `mailto`. Bilder von fremden Adressen werden nicht geladen, Bilder gehören
-als Anhang an den Eintrag. Ein umgekehrter Schrägstrich ist immer er selbst,
-damit Pfade wie `\\server\freigabe` stimmen; ein Zeichen maskiert man dafür
-nicht mit `\`, sondern als Zeichencode wie `&#42;`. Die Umsetzung steht in
-`src/Avis.Web/Markdowntext.cs`.
-
-Ein Verweis der Form `![Name](anhang:…)` setzt ein Bild aus den Anhängen
-desselben Eintrags an diese Stelle im Text. So stehen Bilder aus Mails an
-ihrem Platz. Sie erscheinen dann nicht noch einmal in der Liste der Anhänge.
-
-Unter jedem dieser Textfelder steht die Schaltfläche „Vorschau“. Sie zeigt
-den Text an der Stelle des Felds so, wie er später im Auftrag steht, und
-schaltet mit „Weiter schreiben“ zurück. Die Umwandlung macht der Server über
-die Seite `/Vorschau` mit derselben Umsetzung wie bei der Anzeige; gespeichert
-wird dabei nichts. Bilder, die noch nicht hochgeladen sind, zeigt die
-Vorschau nicht, ein Verweis `anhang:…` erscheint als „[Bild: Name]“.
-
-Die Vorschau und die Tastenkürzel brauchen JavaScript. Ohne funktioniert alles
-andere genauso.
-
-Blau steht in der Oberfläche für alles, was man anklicken kann: Schaltflächen
-und Links. Der Kopf und Markierungen nutzen es nicht.
-
-Die Oberfläche gibt es hell und dunkel. Ohne eigene Wahl folgt sie dem, was am
-Gerät für helle oder dunkle Oberflächen eingestellt ist. Unter „Einstellungen“
-im Menü unter dem eigenen Namen legt jeder Benutzer sie für sein Konto fest;
-die Wahl gilt dann auf jedem Gerät. Alle Farben stehen als Variablen am Anfang
-von `src/Avis.Web/wwwroot/css/avis.css`, einmal hell und zweimal dunkel (für
-„wie das Gerät“ und für die ausdrückliche Wahl). Ein Test prüft, dass die
-beiden dunklen Blöcke gleich sind und dass im übrigen Stylesheet keine festen
-Farben stehen.
-
-## Testen
-
-```bash
-dotnet test
-```
-
-Die Tests prüfen die Regeln des Auftrags (`tests/Avis.Tests/AuftragTests.cs`)
-und die Seiten gegen eine laufende Anwendung mit eigener Datenbank
-(`tests/Avis.Tests/SeitenTests.cs`).
-
-## Code prüfen
-
-Der Build prüft den Code mit der Codeanalyse von .NET und zeigt, was sie
-findet, als Warnung. `dotnet format` bringt die Formatierung in Ordnung:
-
-```bash
-dotnet format
-```
-
-Bei jedem Pull Request laufen Build, Formatprüfung und Tests auf GitHub,
-unter Windows und Linux (`.github/workflows/pruefung.yml`). Dort lässt jede
-Warnung den Build scheitern. Vor dem Hochladen prüft man dasselbe so:
-
-```bash
-dotnet build -warnaserror
-```
-
-```bash
-dotnet format --verify-no-changes
-```
-
-Die Regeln stehen in `.editorconfig`, zusammen mit den Regeln, die
-abgeschaltet sind, und dem Grund dafür.
-
-## Aufbau
-
-| Ort | Inhalt |
+| Für wen | Wo |
 |---|---|
-| `src/Avis.Web/Domain` | Auftrag, Verlauf und Stammdaten mit ihren Regeln |
-| `src/Avis.Web/Data` | Datenbankzugriff, Migrationen, Start- und Testdaten |
-| `src/Avis.Web/Anmeldung` | Anmeldung, Rollen, Verzeichnisabfrage, Zuordnung von Konto und Kunde |
-| `src/Avis.Web/Mail` | Mailtexte und Versand |
-| `src/Avis.Web/Posteingang` | Abruf des Hotline-Postfachs und Verarbeitung eingehender Mails |
-| `src/Avis.Web/Anhaenge` | Ablage hochgeladener Dateien |
-| `src/Avis.Web/Pages` | Seiten |
-| `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
-| `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen (Suche beim Tippen, Bilder einfügen, Tastenkürzel); ohne sie funktioniert alles |
-| `tests/Avis.Tests` | Tests |
-| `docs/betrieb-iis.md` | Einrichtung und Update unter Windows Server mit IIS |
-| `.github/workflows` | Prüfung bei jedem Pull Request (`pruefung.yml`), Paket für den Betrieb bei jedem Release (`paket.yml`) |
-| `LICENSE` | Lizenz von AVIS (GNU AGPL, Version 3); wird beim Veröffentlichen in den Ausgabeordner kopiert |
-| `THIRD-PARTY-NOTICES.md` | Lizenzvermerke der mitgelieferten Komponenten; wird beim Veröffentlichen in den Ausgabeordner kopiert und ist anzupassen, wenn ein Paket hinzukommt oder wegfällt |
+| Kunden, Bearbeiter, Administratoren | Die Hilfe in der Anwendung, „Hilfe“ im Kopf jeder Seite. Hier zum Nachlesen: für [Kunden](src/Avis.Web/Hilfe/kunden.md), [Bearbeiter](src/Avis.Web/Hilfe/bearbeiter.md) und [Administratoren](src/Avis.Web/Hilfe/administratoren.md) |
+| Wer AVIS betreibt | [Betrieb unter IIS](docs/betrieb-iis.md), [Einstellungen und Anbindungen](docs/einstellungen.md) |
+| Wer wissen will, warum AVIS so ist | [Konzept](docs/konzept.md) |
+| Wer wissen will, wie weit es ist | [Stand und Ausblick](docs/stand.md) |
+| Wer mitentwickelt | [CONTRIBUTING.md](CONTRIBUTING.md), [Entwicklung](docs/entwicklung.md) |
+| Wer eine Sicherheitslücke melden will | [SECURITY.md](SECURITY.md) |
 
-Bezeichner im Code sind deutsch und folgen den Begriffen des Konzepts, Umlaute
-sind ausgeschrieben (`Auftraege`, `Geraet`).
+## Technik
 
-## Datenbank ändern
+ASP.NET Core mit Razor Pages auf .NET 10, Entity Framework Core und SQLite.
+Die Seiten erzeugt der Server; ein paar kleine eigene Skripte machen sie
+bequemer, ein JavaScript-Framework gibt es nicht. Fremde Komponenten sind
+wenige: MailKit für Mail, Markdig für Markdown, siehe
+[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
 
-Nach einer Änderung am Datenmodell wird eine Migration erzeugt:
+## Mitmachen
 
-```bash
-dotnet tool restore
-```
-
-```bash
-dotnet ef migrations add NameDerAenderung --project src/Avis.Web --output-dir Data/Migrations
-```
-
-Beim Start bringt die Anwendung die Datenbank selbst auf den aktuellen Stand.
-
-## Einstellungen
-
-Die Einstellungen stehen in `src/Avis.Web/appsettings.json`.
-
-| Einstellung | Bedeutung |
-|---|---|
-| `ConnectionStrings:Avis` | Ort der SQLite-Datei, relativ zum Ordner der Anwendung |
-| `Anmeldung:Art` | `Windows` für den Betrieb, `Entwicklung` für die Testanmeldung |
-| `Anmeldung:Administratoren` | Anmeldenamen (`domäne\\name`), die bei der Anmeldung Administrator werden |
-| `Zeitzone` | Zeitzone für die Anzeige, Zeitpunkte werden in UTC gespeichert |
-| `Auftraege:ErsteNummer` | Nummer, die der nächste Auftrag mindestens bekommt, zum Beispiel `200000`, um an eine vorhandene Zählung anzuschließen. Wird beim Start angewendet und wirkt nur nach oben. Standard 0: Die Zählung beginnt bei 1 |
-| `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon und Abteilung neuer Konten aus dem Active Directory, `Keines` lässt das aus |
-| `Bearbeiterabgleich:Art` | `ActiveDirectory` gleicht ab, wer Bearbeiter ist, `Aus` lässt das aus |
-| `Bearbeiterabgleich:Filter` | LDAP-Filter, der bestimmt, wer Bearbeiter ist, zum Beispiel `(memberOf=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` |
-| `Bearbeiterabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird. Leer: in der ganzen Domäne |
-| `Bearbeiterabgleich:Uhrzeit` | Wann der Abgleich täglich läuft, in der eingestellten Zeitzone, Standard `01:30` |
-| `Kundenabgleich:Art` | `ActiveDirectory` gleicht die Kunden mit dem Active Directory ab, `Aus` lässt das aus |
-| `Kundenabgleich:Filter` | LDAP-Filter, der bestimmt, wer Kunde ist, zum Beispiel `(department=*)` |
-| `Kundenabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird, zum Beispiel `OU=Mitarbeiter,DC=example,DC=org`. Leer: in der ganzen Domäne |
-| `Kundenabgleich:Uhrzeit` | Wann der Abgleich täglich läuft, in der eingestellten Zeitzone, Standard `02:00` |
-| `Geraeteabgleich:Art` | `SnipeIt` gleicht die Geräte mit Snipe-IT ab, `Aus` lässt das aus |
-| `Geraeteabgleich:Adresse` | Adresse der Installation von Snipe-IT, zum Beispiel `https://inventar.example.org` |
-| `Geraeteabgleich:Schluessel` | Zugangsschlüssel (API-Token) eines Benutzers in Snipe-IT |
-| `Geraeteabgleich:Uhrzeit` | Wann der Abgleich täglich läuft, in der eingestellten Zeitzone, Standard `02:30`. Nach dem Kundenabgleich, weil der Nutzer eines Geräts ein Kunde ist |
-| `Mail:Art` | `Smtp` versendet, `Ordner` legt Mails als Dateien ab, `Aus` sendet nichts |
-| `Mail:Server`, `Mail:Port` | Mailserver, Standardport 25 |
-| `Mail:Verschluesselung` | `Auto`, `Keine`, `StartTls` oder `Ssl` |
-| `Mail:Benutzer`, `Mail:Kennwort` | Nur wenn der Mailserver eine Anmeldung verlangt |
-| `Mail:Absender`, `Mail:Absendername` | Absenderadresse und angezeigter Name |
-| `Mail:BasisUrl` | Adresse von AVIS für die Links in den Mails |
-| `Posteingang:Art` | `Imap` ruft das Hotline-Postfach ab, `Aus` nicht |
-| `Posteingang:Server`, `Posteingang:Port` | IMAP-Server, Standardport 993 |
-| `Posteingang:Verschluesselung` | `Auto`, `Keine`, `StartTls` oder `Ssl` |
-| `Posteingang:Benutzer`, `Posteingang:Kennwort` | Anmeldung am Postfach |
-| `Posteingang:Ordner` | Ordner, aus dem ungelesene Mails geholt werden, Standard `INBOX` |
-| `Posteingang:Erledigtordner` | Ordner, in den verarbeitete Mails verschoben werden. Leer: Sie bleiben als gelesen im Eingang |
-| `Posteingang:AbstandSekunden` | Abstand zwischen zwei Abrufen, Standard 60 |
-| `Posteingang:BilderImTextAbKb` | Kleinere Bilder im Text einer Mail gelten als Logo und werden nicht übernommen, Standard 20 |
-| `Hilfe:EigenerText` | Markdown-Datei mit eigenem Text des Hauses, der über der Hilfe steht, relativ zum Ordner der Anwendung. Standard `App_Data/Hilfe.md`. Fehlt die Datei, steht dort nichts |
-| `Anhaenge:Ordner` | Ordner für Anhänge, relativ zum Ordner der Anwendung, Standard `App_Data/Anhaenge` |
-| `Anhaenge:HoechstgroesseMb` | Höchstgröße einer Datei, Standard 10 |
-| `Anhaenge:Hoechstzahl` | Höchstzahl der Dateien je Upload, Standard 10 |
-
-Die Testanmeldung und die Testdaten lassen sich nur in der
-Entwicklungsumgebung einschalten. Im Betrieb bricht der Start sonst ab.
-
-Kennwörter und Schlüssel gehören nicht in die Datei im Repository. Auf dem
-Server lassen sie sich als Umgebungsvariablen `Mail__Kennwort`,
-`Posteingang__Kennwort` und `Geraeteabgleich__Schluessel` setzen.
-
-Auf dem Server stehen die eigenen Werte nicht in `appsettings.json`, sondern
-in einer `appsettings.Production.json` daneben: Die überlebt ein Update.
-Näheres in [`docs/betrieb-iis.md`](docs/betrieb-iis.md).
-
-## Mails
-
-Jede Mail wird zusammen mit der Aktion vorgemerkt und im Hintergrund
-versendet, alle 15 Sekunden. Ist der Mailserver nicht erreichbar, gelingt die
-Aktion trotzdem. Die Mail wird dann nach 1, 5, 15, 60 und 240 Minuten erneut
-versucht und gilt nach sechs Versuchen als fehlgeschlagen. Unter Verwaltung →
-Mails steht, was gesendet wurde, was wartet und warum etwas entfallen ist.
-Dort lässt sich eine fehlgeschlagene Mail erneut anstoßen.
-
-Die Texte aller Mails stehen in `src/Avis.Web/Mail/Mailtexte.cs`.
-
-## E-Mail-Eingang
-
-AVIS holt ungelesene Mails aus dem Hotline-Postfach und markiert sie danach
-als gelesen oder verschiebt sie in den Erledigtordner. Was mit jeder Mail
-geschah, steht unter Verwaltung → Posteingang.
-
-- Eine Mail ohne Auftragsnummer wird ein neuer Auftrag in der Eingangsgruppe.
-  Den Kunden erkennt AVIS an der Absenderadresse, einen unbekannten Absender
-  legt es als Kunden an.
-- Steht im Betreff eine Auftragsnummer in der Form `[AVIS-123]` und kommt die
-  Mail vom Kunden dieses Auftrags, ist sie seine Antwort. Der zitierte
-  bisherige Schriftwechsel wird abgeschnitten. Ein abgeschlossener Auftrag
-  wird dadurch wieder geöffnet.
-- Kommt eine solche Mail von dem Bearbeiter, der den Auftrag bearbeitet, wird
-  sie ein interner Kommentar.
-- Kommt sie von jemand anderem, wird sie ein neuer Auftrag mit einem Hinweis.
-  Niemand kann per Mail in den Auftrag eines anderen schreiben.
-- Abwesenheitsnotizen, Zustellberichte, Rundmails und Mails von der eigenen
-  Absenderadresse werden übergangen.
-- Hat die Mail einen HTML-Teil, bleibt ihre Formatierung erhalten, soweit sie
-  eindeutig ist: fett, kursiv, Überschriften, Links, Listen, Zitate und kleine,
-  einfache Tabellen (höchstens 6 Spalten und 30 Zeilen, keine verbundenen
-  Zellen, keine Tabelle in der Tabelle). Alles andere wird gewöhnlicher Text:
-  Schriftarten, Farben, Layout-Tabellen wie in Signaturen. Die Umwandlung steht
-  in `src/Avis.Web/Posteingang/HtmlZuMarkdown.cs`.
-- Ein Bild im Text der Mail, etwa ein eingefügtes Bildschirmfoto, steht im
-  Auftrag an derselben Stelle im Text.
-- Anhänge werden übernommen. Zu große Dateien und kleine Bilder im Text (Logos
-  in Signaturen) bleiben weg, zu große werden im Auftrag genannt.
-- Bei einer Antwort werden Bilder aus dem zitierten Schriftwechsel nicht noch
-  einmal angehängt.
-- Jede Mail wird über ihre Message-ID nur einmal verarbeitet.
-- Lässt sich eine Mail dreimal nicht verarbeiten, bleibt sie gelesen und
-  markiert im Postfach liegen, damit jemand sie sich ansieht.
-
-Damit Antworten ankommen, muss `Mail:Absender` die Adresse des Postfachs sein,
-das AVIS abruft.
-
-Der Abruf ist gegen einen IMAP-Server (Dovecot) erprobt, nicht gegen
-Exchange. Die Umwandlung von HTML ist mit nachgebauten Mails aus Outlook,
-Gmail und Thunderbird geprüft, nicht mit echten Mails aus dem Haus. Der dazugehörige Test läuft nur, wenn die Umgebungsvariable
-`AVIS_TEST_IMAP` in der Form `host:port:benutzer:kennwort` gesetzt ist. Er
-verarbeitet die ungelesenen Mails dieses Postfachs und markiert sie als
-gelesen, gehört also nur an ein Testpostfach.
-
-## Bearbeiterabgleich
-
-Mit `Bearbeiterabgleich:Art = ActiveDirectory` bestimmt das Active Directory,
-wer Bearbeiter ist: die Benutzerkonten, auf die der LDAP-Filter aus
-`Bearbeiterabgleich:Filter` passt. In der Regel nennt der Filter eine Gruppe:
-
-| Filter | Bearbeiter sind |
-|---|---|
-| `(memberOf=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` | die Mitglieder dieser Gruppe |
-| `(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` | ihre Mitglieder samt verschachtelter Gruppen |
-
-Dass nur Benutzerkonten von Personen zählen und deaktivierte nicht, ergänzt
-AVIS selbst. Unter Verwaltung → Bearbeiterabgleich steht, was der letzte Lauf
-getan hat, und er lässt sich dort sofort anstoßen.
-
-- Wen das Verzeichnis nennt, der ist Bearbeiter, mit Name und E-Mail von
-  dort. Gibt es sein Konto in AVIS noch nicht, wird es angelegt: Er steht
-  dann schon zur Wahl, bevor er sich das erste Mal anmeldet.
-- Wer schon in AVIS steht, wird über den Anmeldenamen wiedererkannt und
-  übernommen.
-- Wen das Verzeichnis nicht mehr nennt, der verliert die Rolle Bearbeiter.
-  Seine Aufträge in Bearbeitung gehen zurück in ihre Gruppen, und er wird aus
-  allen Gruppen ausgetragen. Das Konto bleibt; als Kunde kommt er weiter an
-  seine eigenen Aufträge.
-- Bearbeiter, die nur in AVIS dazu gemacht wurden, bleiben unberührt.
-  Administratoren bleiben immer Bearbeiter.
-- Bei einem Konto aus dem Verzeichnis lassen sich Name, E-Mail und die Rolle
-  Bearbeiter in AVIS nicht ändern. Zum Administrator macht man jemanden
-  weiter unter Verwaltung → Benutzer oder über `Anmeldung:Administratoren`.
-- In welchen Gruppen von AVIS jemand ist, regelt der Abgleich nicht: Das
-  trägt sich jeder selbst ein.
-- Liefert das Verzeichnis keinen einzigen Bearbeiter oder ist es nicht
-  erreichbar, ändert sich nichts.
-
-Der Abgleich ist noch nicht an einem echten Verzeichnis erprobt.
-
-## Kundenabgleich
-
-Mit `Kundenabgleich:Art = ActiveDirectory` sind die Benutzerkonten des Active
-Directory, auf die der LDAP-Filter aus `Kundenabgleich:Filter` passt, die
-Kunden. AVIS liest sie einmal täglich zur eingestellten Uhrzeit (siehe
-„Wann die Abgleiche laufen“); unter Verwaltung → Kundenabgleich steht, was der letzte Lauf getan
-hat, und er lässt sich dort sofort anstoßen.
-
-Der Filter bestimmt, wer Kunde ist. Dass nur Benutzerkonten von Personen
-zählen und deaktivierte Konten nicht, ergänzt AVIS selbst. Beispiele:
-
-| Filter | Kunden sind |
-|---|---|
-| `(department=*)` | alle Konten, bei denen eine Abteilung eingetragen ist |
-| `(mail=*@example.org)` | alle Konten mit einer Adresse dieser Domäne |
-| `(memberOf=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | die Mitglieder dieser Gruppe |
-| `(memberOf:1.2.840.113556.1.4.1941:=CN=AVIS-Kunden,OU=Gruppen,DC=example,DC=org)` | ihre Mitglieder samt verschachtelter Gruppen |
-
-Mit `Kundenabgleich:Suchbasis` lässt sich die Suche auf einen Teil des
-Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
-
-- Das Verzeichnis gewinnt: Name, E-Mail, Telefon, Organisationseinheit und
-  Standort werden überschrieben und lassen sich in AVIS nicht ändern. Der
-  Standort ist das Attribut `physicalDeliveryOfficeName` (in der Verwaltung
-  des Verzeichnisses „Büro“), zum Beispiel `A 105`.
-- Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
-  wiedererkannt und übernommen.
-- Auf wen der Filter nicht mehr passt oder wessen Konto deaktiviert ist, der
-  wird als inaktiv markiert. Er bleibt mit seinen Aufträgen erhalten und steht
-  nur nicht mehr zur Wahl, wenn ein Auftrag erfasst wird.
-- Kunden, die nur in AVIS angelegt wurden, bleiben unberührt. Ein Bearbeiter
-  markiert sie auf der Seite des Kunden als inaktiv.
-- Liefert das Verzeichnis keinen einzigen Kunden oder ist es nicht
-  erreichbar, ändert sich nichts.
-
-Gelesen wird mit dem Konto, unter dem AVIS läuft, aus der Domäne des Servers.
-Ein fehlerhafter Filter lässt den Abgleich scheitern, ohne dass sich etwas
-ändert; die Meldung steht in der Verwaltung. Der Abgleich ist noch nicht an
-einem echten Verzeichnis erprobt.
-
-## Geräteabgleich
-
-Mit `Geraeteabgleich:Art = SnipeIt` kommen die Geräte aus Snipe-IT. AVIS liest
-nur: Es fragt die Assets über die Schnittstelle von Snipe-IT ab und schreibt
-dort nichts. Gelesen wird einmal täglich zur eingestellten Uhrzeit (siehe
-„Wann die Abgleiche laufen“); unter Verwaltung → Geräteabgleich steht, was der letzte
-Lauf getan hat, und er lässt sich dort sofort anstoßen.
-
-| Snipe-IT | AVIS |
-|---|---|
-| Asset Tag | Inventarnummer |
-| Name des Assets, sonst der Name des Modells | Bezeichnung |
-| Kategorie | Typ |
-| Standort, sonst der Standardstandort | Standort |
-| Mailadresse des Benutzers, an den das Asset ausgegeben ist | Nutzer: der Kunde mit dieser Adresse |
-
-- Snipe-IT gewinnt: Diese Angaben werden überschrieben. Ein Gerät aus
-  Snipe-IT lässt sich in AVIS nicht ändern.
-- Ein Gerät, das schon mit derselben Inventarnummer in AVIS steht, wird
-  übernommen, nicht verdoppelt.
-- Der Nutzer wird nur gesetzt, wenn es in AVIS einen Kunden mit der
-  Mailadresse gibt. Kunden legt der Geräteabgleich nicht an. Ist ein Asset an
-  einen Standort oder ein anderes Asset ausgegeben, bleibt der Nutzer leer.
-- Was Snipe-IT nicht mehr liefert, etwa archivierte oder gelöschte Assets,
-  wird ausgemustert. Es bleibt mit seinen Aufträgen erhalten und lässt sich
-  nur nicht mehr neu verknüpfen.
-- Geräte, die nur in AVIS angelegt wurden, bleiben unberührt.
-- Assets ohne Asset Tag werden übergangen. Kommt eine Inventarnummer mehrfach
-  vor oder gehört sie in AVIS schon einem anderen Gerät der Quelle, wird das
-  Asset ausgelassen und in der Verwaltung genannt.
-- Liefert Snipe-IT kein einziges Gerät, lehnt es den Schlüssel ab oder ist es
-  nicht erreichbar, ändert sich nichts.
-
-Der Schlüssel gehört zu einem Benutzer in Snipe-IT, der Assets ansehen darf.
-Darf er keine Benutzer ansehen, liefert Snipe-IT keine Mailadressen, und die
-Geräte bleiben ohne Nutzer. `Geraeteabgleich:Adresse` ist die Adresse, unter
-der Snipe-IT im Browser erreichbar ist, ohne `/api/v1`.
-
-Die Abfrage ist nach dem Quelltext von Snipe-IT geschrieben und mit
-nachgestellten Antworten geprüft, aber noch nicht an einer echten Installation
-erprobt.
-
-## Wann die Abgleiche laufen
-
-Die Abgleiche der Bearbeiter, Kunden und Geräte lesen ihre Quelle jedes Mal
-ganz. Sie laufen deshalb nur einmal am Tag, zur Uhrzeit aus
-`Bearbeiterabgleich:Uhrzeit`, `Kundenabgleich:Uhrzeit` und
-`Geraeteabgleich:Uhrzeit`, und nicht bei jedem Start der Anwendung.
-
-- AVIS sieht alle fünf Minuten nach, ob ein Lauf ansteht. Der letzte Lauf
-  steht in der Datenbank; die Verwaltung zeigt ihn auch nach einem Neustart.
-- Lief AVIS zur eingestellten Uhrzeit nicht, wird der Lauf nachgeholt, sobald
-  es wieder läuft. Das gilt auch für den allerersten Lauf nach dem
-  Einschalten eines Abgleichs.
-- Scheitert ein Lauf, etwa weil die Quelle nicht erreichbar ist, versucht AVIS
-  es nach einer Stunde wieder, bis er gelingt.
-- „Jetzt abgleichen“ in der Verwaltung geht jederzeit und zählt als Lauf des
-  Tages.
-
-Tagsüber ändert sich an Kunden und Geräten also nichts von selbst. Ein Gerät,
-das AVIS noch nicht kennt, steht am Auftrag einfach im Text.
-
-## Standort
-
-Kunden und Geräte tragen einen Standort als freien Text, zum Beispiel den
-Raum `A 105`. Eine Liste, aus der man wählt, gibt es nicht.
-
-- Bei abgeglichenen Kunden und Geräten kommt der Standort aus der Quelle, bei
-  den übrigen wird er von Hand eingetragen. Die Suche nach Kunden und Geräten
-  findet ihn.
-- Ein Auftrag hat keinen eigenen Standort. An ihm steht beim Kunden dessen
-  Standort, und zwar der jeweils aktuelle. Liegt das Problem woanders, steht
-  das in der Beschreibung.
-
-## Geräte am Auftrag
-
-Ein Gerät kommt an einen Auftrag, indem jemand es nennt: das Wort `INV` und
-die Inventarnummer, zum Beispiel `INV 4532436`. Ein eigenes Feld gibt es dafür
-nicht, und es dürfen beliebig viele Geräte sein.
-
-- Es zählen der Betreff, die Beschreibung und jeder spätere Text: interne
-  Kommentare, Hinweise beim Weiterleiten, Nachrichten, Antworten des Kunden
-  und eingehende Mails. Ein Bearbeiter kann also später „INV 4711 gegen
-  INV 4712 getauscht“ notieren, und beide Geräte hängen am Auftrag.
-- Groß- und Kleinschreibung spielen keine Rolle, ebenso wenig, ob zwischen
-  `INV` und der Nummer ein Leerzeichen, ein Doppelpunkt, ein Bindestrich oder
-  nichts steht. „Inventar“ oder „Inventarnummer 4711“ sind nicht gemeint.
-- Kennt AVIS die Nummer nicht, bleibt sie Text. Es gibt keine Fehlermeldung.
-- Verknüpft ist, was genannt wird. Wer eine Nennung aus der Beschreibung oder
-  aus seinem internen Kommentar streicht, löst die Verknüpfung. Was in einer
-  Nachricht an den Kunden steht, bleibt.
-- Ein ausgemustertes Gerät wird nicht neu verknüpft, bleibt aber an den
-  Aufträgen, an denen es schon hängt.
-- Die verknüpften Geräte stehen am Auftrag mit Bezeichnung und Standort, der
-  Auftrag steht am Gerät, und die Suche nach Aufträgen findet ihn auch über
-  die Bezeichnung des Geräts. Kunden sehen die Liste der Geräte nicht.
-
-Die Regel steht in `src/Avis.Web/Domain/Geraetebezug.cs`; angewendet wird sie
-bei jedem Speichern in `AvisDb`.
-
-## Hilfe
-
-Die Hilfe steht in der Anwendung unter „Hilfe“ im Kopf jeder Seite. Der
-Eintrag führt zu dem Abschnitt, der zur gerade geöffneten Seite gehört.
-Bearbeiter sehen die Hilfe für Bearbeiter und können zu der für Kunden
-wechseln; wer keine Rolle hat, sieht nur die für Kunden. Administratoren
-haben dazu eine dritte: Sie erklärt die Verwaltung, und von deren Seiten
-führt „Hilfe“ dorthin. Wie AVIS auf dem Server eingerichtet wird, steht
-weiter in dieser Datei.
-
-- Die Texte sind Markdown-Dateien: `src/Avis.Web/Hilfe/bearbeiter.md`,
-  `kunden.md` und `administratoren.md`. Wer sie ändert, braucht dafür nicht zu
-  programmieren. Sie werden mit der Anwendung ausgeliefert.
-- Jede Überschrift der zweiten Ebene (`## …`) ist ein Abschnitt mit einer
-  Sprungmarke, die sich aus ihrem Text ergibt: aus „Geräte nennen“ wird
-  `#geraete-nennen`. Welche Seite zu welchem Abschnitt führt, steht in
-  `Hilfeverweise` (`src/Avis.Web/Hilfe/Hilfetexte.cs`). Ein Test prüft, dass
-  es jeden dort genannten Abschnitt gibt und dass jede Seite einen hat. Wer
-  eine Überschrift umbenennt, sieht das also am Test.
-- **Eigener Text des Hauses**, etwa Telefonnummer und Zeiten der Hotline,
-  gehört nicht in diese Dateien: Sie sind für jede Installation gleich. Dafür
-  gibt es die Datei aus `Hilfe:EigenerText`, in der Voreinstellung
-  `App_Data/Hilfe.md` auf dem Server. Ihr Inhalt steht in einem eigenen Kasten
-  über der Hilfe, bei Kunden wie bei Bearbeitern. Eine Änderung ist ohne
-  Neustart zu sehen. Ein Beispiel:
-
-  ```markdown
-  ## So erreichen Sie die IT-Hotline
-
-  Telefon **1234**, montags bis freitags von 8 bis 16 Uhr.
-  ```
-
-In den Hilfetexten und im eigenen Text gilt dasselbe Markdown wie in den
-Aufträgen; eingegebenes HTML wird als Text gezeigt.
-
-## Anhänge
-
-Die Dateien liegen im Dateisystem unter `Anhaenge:Ordner`, sortiert nach Jahr
-und Monat und mit einem von AVIS vergebenen Namen. In der Datenbank stehen
-Dateiname, Größe und Ablageort. Zur Datensicherung gehören deshalb die
-Datenbank und dieser Ordner.
-
-Bilder (PNG, JPEG, GIF, WebP) erscheinen im Verlauf als Vorschau und lassen
-sich in voller Größe öffnen. Ob eine Datei ein Bild ist, erkennt AVIS am
-Inhalt, nicht am Namen. Alle anderen Anhänge werden nur als Download
-ausgeliefert und nie im Browser angezeigt, auch SVG nicht.
-Wer einen Anhang bekommt, entscheidet der Verlaufseintrag, an dem er hängt.
-
-Ein Upload darf insgesamt höchstens so groß sein, wie der Webserver zulässt.
-Bei IIS sind das in der Voreinstellung rund 30 MB je Anfrage.
-
-## Betrieb unter IIS
-
-Für den Betrieb gibt es ein fertiges Paket: Der Workflow
-`.github/workflows/paket.yml` baut bei jedem Release die veröffentlichte
-Anwendung für Windows Server und hängt sie als ZIP mit Prüfsumme an das
-Release. Auf Knopfdruck baut er dasselbe Paket von jedem Stand.
-
-Wie AVIS damit unter IIS eingerichtet und später aktualisiert wird, steht in
-[`docs/betrieb-iis.md`](docs/betrieb-iis.md).
+Fehlerberichte, Wünsche und Pull Requests sind willkommen, siehe
+[CONTRIBUTING.md](CONTRIBUTING.md). Sicherheitslücken bitte nicht öffentlich
+melden, sondern vertraulich: siehe [SECURITY.md](SECURITY.md).
 
 ## Lizenz
 
@@ -565,5 +135,4 @@ bereitgestellt.
   BSD-2-Clause, Apache-2.0), siehe
   [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).
 - Wer einen Pull Request stellt, erklärt sich einverstanden, dass sein Beitrag
-  unter derselben Lizenz veröffentlicht wird. Wie eine Änderung hineinkommt,
-  steht in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+  unter derselben Lizenz veröffentlicht wird.
