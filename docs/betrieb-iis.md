@@ -95,7 +95,8 @@ Lauf und trägt die Version 0.0.0 mit dem Stand des Commits.
 5. **Authentifizierung** (Authentication) der Website: Windows-Authentifizierung
    (Windows Authentication) aktivieren, anonyme Authentifizierung (Anonymous
    Authentication) deaktivieren.
-6. **Einstellungen anlegen**, siehe den nächsten Abschnitt.
+6. **Einstellungen anlegen:** die Datei `appsettings.Production.json` selbst
+   erstellen, siehe den nächsten Abschnitt.
 7. **Aufrufen.** Beim ersten Start legt AVIS die Datenbank in `App_Data` an.
    Die Seite öffnet sich ohne Anmeldedialog, oben rechts steht der eigene
    Name.
@@ -108,8 +109,12 @@ Aufruf statt in der Nacht.
 
 ## Einstellungen dieser Installation
 
-Neben `appsettings.json` liegt die Datei `appsettings.Production.json`. Sie
-enthält nur, was von den Voreinstellungen abweicht. Ein Beispiel für den
+Die Datei `appsettings.Production.json` **legt man selbst an**, im Ordner der
+Anwendung neben `appsettings.json`. Sie ist nicht im Paket, und AVIS erzeugt
+sie auch nicht: Nur so überlebt sie ein Update. Fehlt sie, gelten die
+Voreinstellungen aus `appsettings.json`.
+
+Sie enthält nur, was von den Voreinstellungen abweicht. Ein Beispiel für den
 Anfang, mit erfundenen Namen:
 
 ```json
