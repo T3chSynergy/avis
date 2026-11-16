@@ -59,6 +59,10 @@
         {
             <p class="erklaerung">Anmeldename: @k.Anmeldename</p>
         }
+        @if (Telefonbuch.AdresseFuer(k.Anmeldename) is { } imTelefonbuch)
+        {
+            <p><a href="@imTelefonbuch" rel="noopener noreferrer">@Telefonbuch.Bezeichnung</a></p>
+        }
         @if (!k.AusQuelle)
         {
             <button type="submit" class="haupt">Speichern</button>

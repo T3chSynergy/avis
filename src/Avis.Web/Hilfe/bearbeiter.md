@@ -209,6 +209,9 @@ Auftrag für ihn erfassen.
   wird, lässt sich als inaktiv markieren: Er bleibt mit seinen Aufträgen
   erhalten, steht aber beim Erfassen nicht mehr zur Wahl.
 - Eine E-Mail-Adresse gehört immer nur zu einem Kunden.
+- Ist ein Telefonbuch des Hauses angebunden, führt ein Verweis auf der Seite
+  des Kunden und am Auftrag zu seinem Eintrag dort. Am Auftrag führt auch der
+  Name des Bearbeiters dorthin.
 
 ## Geräte
 

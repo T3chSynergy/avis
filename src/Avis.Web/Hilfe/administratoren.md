@@ -291,6 +291,7 @@ Anwendung auf dem Server und nicht in der Verwaltung:
 - die drei Abgleiche mit Quelle, Filter und Uhrzeit
 - wer von vornherein Administrator ist
 - Höchstgröße und Ablageort der Anhänge
+- der Verweis von Kunden und Bearbeitern in ein Telefonbuch des Hauses
 - die erste Auftragsnummer und die Zeitzone
 
 Die Verwaltung zeigt an, was davon gilt, ändert es aber nicht. Alle

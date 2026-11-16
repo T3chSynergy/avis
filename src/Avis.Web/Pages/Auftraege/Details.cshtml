@@ -9,6 +9,15 @@
     var laeuft = a.Status != AuftragStatus.Abgeschlossen;
     var heute = Ortszeit.Heute(Uhr);
     string? Entwurf(string aktion) => Model.OffeneAktion == aktion ? Model.Entwurf : null;
+
+    // Der Name eines Bearbeiters führt zu seiner Seite im Telefonbuch, wenn eines eingestellt ist.
+    void Person(Benutzer benutzer)
+    {
+        if (Telefonbuch.AdresseFuer(benutzer.Anmeldename) is { } adresse)
+        {<a href="@adresse" rel="noopener noreferrer" title="@Telefonbuch.Bezeichnung"><strong>@benutzer.Name</strong></a>}
+        else
+        {<strong>@benutzer.Name</strong>}
+    }
 }
 <p class="pfad">Auftrag @a.Id</p>
 <h1>@a.Betreff</h1>
@@ -18,9 +27,9 @@
     <span class="status status-@a.Status">@a.Status.Text()</span>
     <span>
         Gruppe <strong>@a.Gruppe.Name</strong>@if (a.Gruppe.Gesperrt) {<text> <span class="hinweis">gesperrt</span></text>}@if (a.Status == AuftragStatus.InBearbeitung)
-        {<text>, bei <strong>@a.Bearbeiter!.Name</strong></text>}
+        {<text>, bei </text>Person(a.Bearbeiter!);}
         @if (a.Status == AuftragStatus.Offen && a.BevorzugterBearbeiter is not null)
-        {<text>, bevorzugt an <strong>@a.BevorzugterBearbeiter.Name</strong></text>}
+        {<text>, bevorzugt an </text>Person(a.BevorzugterBearbeiter);}
     </span>
     @if (a.KundeWartetSeit is not null && laeuft)
     {
@@ -218,6 +227,7 @@
                 @if (a.Kunde.Email is not null) {<br /><a href="mailto:@a.Kunde.Email">@a.Kunde.Email</a>}
                 @if (a.Kunde.Telefon is not null) {<br /><text>Tel. @a.Kunde.Telefon</text>}
                 @if (a.Kunde.Standort is not null) {<br /><text>Standort @a.Kunde.Standort</text>}
+                @if (Telefonbuch.AdresseFuer(a.Kunde.Anmeldename) is { } kundeImTelefonbuch) {<br /><a href="@kundeImTelefonbuch" rel="noopener noreferrer">@Telefonbuch.Bezeichnung</a>}
             </dd>
             <dt>Priorität</dt>
             <dd>P@(a.Prioritaet) · Dringlichkeit @a.Dringlichkeit.Text(), Wichtigkeit @a.Wichtigkeit.Text()</dd>
