@@ -6,10 +6,15 @@ Diese Datei wird mit dem Projekt fortgeschrieben. Was AVIS kann, steht im
 
 ## Versionen
 
-Die erste Version ist 0.1.0. Alle Versionen mit ihren Paketen stehen unter
+Alle Versionen mit ihren Paketen stehen unter
 [Releases](https://github.com/T3chSynergy/avis/releases). Solange die
 Versionsnummer mit 0 beginnt, kann sich von einer Version zur nächsten noch
 Grundlegendes ändern.
+
+| Version | Was dazukam |
+|---|---|
+| 0.2.0 | Bezug zwischen Aufträgen, E-Mail-Eingang nur für bekannte Absender, Link vom Gerät nach Snipe-IT, Verweis ins Telefonbuch |
+| 0.1.0 | Die erste Version |
 
 ## Umgesetzt
 
@@ -27,7 +32,7 @@ Dazu kamen die Hilfe in der Anwendung, die Vorschau an den Textfeldern, die
 dunkle Darstellung mit den persönlichen Einstellungen und das Paket für den
 Betrieb unter Windows Server.
 
-Seit Version 0.1.0 sind dazugekommen:
+Mit Version 0.2.0 kamen dazu:
 
 - der E-Mail-Eingang nur für bekannte Absender
   (`Posteingang:NurBekannteAbsender`)
@@ -86,8 +91,8 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
 
 1. **Probelauf abschließen.** Was dabei auffällt, wird behoben, und die
    Anleitung wird berichtigt.
-2. **Das erste Update erproben:** von 0.1.0 auf die nächste Version, nach der
-   Anleitung für den Betrieb unter IIS.
+2. **Das erste Update erproben:** von 0.1.0 auf 0.2.0, nach der Anleitung für
+   den Betrieb unter IIS.
 
 ## Angedacht, nicht zugesagt
 
