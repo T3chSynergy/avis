@@ -6,10 +6,15 @@ Diese Datei wird mit dem Projekt fortgeschrieben. Was AVIS kann, steht im
 
 ## Versionen
 
-Die erste Version ist 0.1.0. Alle Versionen mit ihren Paketen stehen unter
+Alle Versionen mit ihren Paketen stehen unter
 [Releases](https://github.com/T3chSynergy/avis/releases). Solange die
 Versionsnummer mit 0 beginnt, kann sich von einer Version zur nächsten noch
 Grundlegendes ändern.
+
+| Version | Was dazukam |
+|---|---|
+| 0.2.0 | Bezug zwischen Aufträgen, E-Mail-Eingang nur für bekannte Absender, Link vom Gerät nach Snipe-IT, Verweis ins Telefonbuch |
+| 0.1.0 | Die erste Version |
 
 ## Umgesetzt
 
@@ -27,7 +32,7 @@ Dazu kamen die Hilfe in der Anwendung, die Vorschau an den Textfeldern, die
 dunkle Darstellung mit den persönlichen Einstellungen und das Paket für den
 Betrieb unter Windows Server.
 
-Seit Version 0.1.0 sind dazugekommen:
+Mit Version 0.2.0 kamen dazu:
 
 - der E-Mail-Eingang nur für bekannte Absender
   (`Posteingang:NurBekannteAbsender`)
@@ -56,6 +61,11 @@ Directory, Snipe-IT und ein Mailserver. Dort hat bisher funktioniert:
 - der Abgleich der Geräte mit Snipe-IT, mit rund 30 000 Geräten
 - der Mailversand und der E-Mail-Eingang, auch mit einer Antwort im
   HTML-Format mit eingefügtem Bild
+- das Update von 0.1.0 auf 0.2.0 nach der Anleitung für den
+  [Betrieb unter IIS](betrieb-iis.md), mit den vorhandenen Daten
+- mit Version 0.2.0: der E-Mail-Eingang nur für bekannte Absender, der Link
+  von einem Gerät zu seiner Seite in Snipe-IT und der Verweis von Kunden und
+  Bearbeitern in ein Telefonbuch
 
 Dabei gefundene Fehler sind behoben: der fehlende Standort neuer Konten und
 kleine eingefügte Bilder, die als Logo verworfen wurden.
@@ -64,14 +74,8 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
 
 - der Betrieb über längere Zeit: die nächtlichen Läufe der Abgleiche, der
   Mailversand und der Abruf des Postfachs im Dauerbetrieb
-- das Update nach der Anleitung für den [Betrieb unter IIS](betrieb-iis.md)
 - HTML-Mails in ihrer Breite: Tabellen, Listen und Signaturen aus echten
   Mailprogrammen
-- der E-Mail-Eingang nur für bekannte Absender
-  (`Posteingang:NurBekannteAbsender`)
-- der Link von einem Gerät zu seiner Seite in Snipe-IT gegen eine echte
-  Installation
-- der Verweis in ein Telefonbuch gegen ein echtes
 - der Alltag mit mehreren Bearbeitern
 
 ## Bekannte Lücken
@@ -86,8 +90,8 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
 
 1. **Probelauf abschließen.** Was dabei auffällt, wird behoben, und die
    Anleitung wird berichtigt.
-2. **Das erste Update erproben:** von 0.1.0 auf die nächste Version, nach der
-   Anleitung für den Betrieb unter IIS.
+2. **Den Betrieb über längere Zeit beobachten:** die nächtlichen Abgleiche,
+   den Mailversand und den Abruf des Postfachs.
 
 ## Angedacht, nicht zugesagt
 

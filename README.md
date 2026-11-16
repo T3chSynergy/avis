@@ -68,10 +68,10 @@ echten Umgebung läuft: Dort haben die Windows-Anmeldung unter IIS, die
 Abgleiche mit Active Directory und Snipe-IT, der Mailversand und der
 E-Mail-Eingang funktioniert. Der Betrieb über längere Zeit steht noch aus.
 
-Die erste Version ist 0.1.0, siehe
-[Releases](https://github.com/T3chSynergy/avis/releases). Solange die
-Versionsnummer mit 0 beginnt, kann sich von einer Version zur nächsten noch
-Grundlegendes ändern.
+Die Versionen stehen unter
+[Releases](https://github.com/T3chSynergy/avis/releases), jede mit ihrem
+Paket für Windows Server. Solange die Versionsnummer mit 0 beginnt, kann sich
+von einer Version zur nächsten noch Grundlegendes ändern.
 
 Was genau ungeprüft ist, welche Lücken bekannt sind und was als Nächstes
 ansteht, steht in [Stand und Ausblick](docs/stand.md).
