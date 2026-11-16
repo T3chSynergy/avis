@@ -61,6 +61,8 @@ Directory, Snipe-IT und ein Mailserver. Dort hat bisher funktioniert:
 - der Abgleich der Geräte mit Snipe-IT, mit rund 30 000 Geräten
 - der Mailversand und der E-Mail-Eingang, auch mit einer Antwort im
   HTML-Format mit eingefügtem Bild
+- mit Version 0.2.0: der Link von einem Gerät zu seiner Seite in Snipe-IT und
+  der Verweis von Kunden und Bearbeitern in ein Telefonbuch
 
 Dabei gefundene Fehler sind behoben: der fehlende Standort neuer Konten und
 kleine eingefügte Bilder, die als Logo verworfen wurden.
@@ -74,9 +76,6 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   Mailprogrammen
 - der E-Mail-Eingang nur für bekannte Absender
   (`Posteingang:NurBekannteAbsender`)
-- der Link von einem Gerät zu seiner Seite in Snipe-IT gegen eine echte
-  Installation
-- der Verweis in ein Telefonbuch gegen ein echtes
 - der Alltag mit mehreren Bearbeitern
 
 ## Bekannte Lücken

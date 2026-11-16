@@ -108,8 +108,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 
 In der Entwicklungsumgebung nicht pr체fbar; nur der Nutzer kann es in der Zielumgebung ausprobieren.
 
-- Im Probelauf des Nutzers haben funktioniert: Start unter IIS, Windows-Anmeldung, Nachschlagen neuer Konten,
-  Bearbeiter- und Kundenabgleich (AD), Ger채teabgleich (Snipe-IT, rund 30 000 Ger채te), Mailversand, E-Mail-Eingang
+- Im Probelauf des Nutzers haben funktioniert: IIS mit Windows-Anmeldung, Nachschlagen neuer Konten, die drei
+  Abgleiche (AD, Snipe-IT mit rund 30 000 Ger채ten), Mailversand, E-Mail-Eingang, Links nach Snipe-IT und Telefonbuch
 - Noch offen: Dauerbetrieb mit n채chtlichen L채ufen, Update nach der Anleitung, HTML-Mails in ihrer Breite
 
 ## Offene Schritte
