@@ -41,9 +41,14 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             {
                 var texte = GenannteTexte(auftrag, GespeicherteTexte(auftrag)?.ToList());
                 var nummern = Geraetebezug.Nummern(texte);
+                var genannt = Auftragsbezug.Nummern(texte);
                 if (Entry(auftrag).State != EntityState.Added)
+                {
                     Entry(auftrag).Collection(a => a.Geraete).Load();
+                    Entry(auftrag).Collection(a => a.Bezuege).Load();
+                }
                 auftrag.GeraeteSetzen(nummern.Count == 0 ? [] : Geraete.Where(g => nummern.Contains(g.Nummernschluessel)).ToList());
+                auftrag.BezuegeSetzen(genannt.Count == 0 ? [] : Auftraege.Where(a => genannt.Contains(a.Id)).ToList());
             }
         }
         finally
@@ -63,10 +68,16 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
             foreach (var auftrag in AuftraegeMitNeuemText())
             {
                 var gespeichert = GespeicherteTexte(auftrag) is { } abfrage ? await abfrage.ToListAsync(cancellationToken) : null;
-                var nummern = Geraetebezug.Nummern(GenannteTexte(auftrag, gespeichert));
+                var texte = GenannteTexte(auftrag, gespeichert);
+                var nummern = Geraetebezug.Nummern(texte);
+                var genannt = Auftragsbezug.Nummern(texte);
                 if (Entry(auftrag).State != EntityState.Added)
+                {
                     await Entry(auftrag).Collection(a => a.Geraete).LoadAsync(cancellationToken);
+                    await Entry(auftrag).Collection(a => a.Bezuege).LoadAsync(cancellationToken);
+                }
                 auftrag.GeraeteSetzen(nummern.Count == 0 ? [] : await Geraete.Where(g => nummern.Contains(g.Nummernschluessel)).ToListAsync(cancellationToken));
+                auftrag.BezuegeSetzen(genannt.Count == 0 ? [] : await Auftraege.Where(a => genannt.Contains(a.Id)).ToListAsync(cancellationToken));
             }
         }
         finally
@@ -95,8 +106,9 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
 
     /// <summary>
     /// Die Aufträge, an deren Texten dieses Speichern etwas ändert. Für sie
-    /// wird neu bestimmt, welche Geräte genannt sind (siehe
-    /// <see cref="Geraetebezug"/>). Das geschieht hier an einer Stelle, damit
+    /// wird neu bestimmt, welche Geräte und welche anderen Aufträge genannt
+    /// sind (siehe <see cref="Geraetebezug"/> und
+    /// <see cref="Auftragsbezug"/>). Das geschieht hier an einer Stelle, damit
     /// es für jeden Weg gilt, auf dem Text an einen Auftrag kommt: Seiten,
     /// Posteingang, Testdaten.
     /// </summary>
@@ -132,7 +144,7 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
                 .Select(v => new GespeicherterText(v.Id, v.Text));
 
     /// <summary>
-    /// Alles, worin ein Gerät genannt sein kann: Betreff, Beschreibung und
+    /// Alles, worin ein Gerät oder ein Auftrag genannt sein kann: Betreff, Beschreibung und
     /// die Texte des Verlaufs, im geladenen Stand, wo er vom gespeicherten
     /// abweicht. Ausgenommen ist der frühere Text einer geänderten
     /// Beschreibung: Was dort gestrichen wurde, soll nicht mehr zählen.
@@ -332,6 +344,12 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
                 "Auftragsgeraete",
                 rechts => rechts.HasOne<Inventargeraet>().WithMany().HasForeignKey("GeraetId"),
                 links => links.HasOne<Auftrag>().WithMany().HasForeignKey("AuftragId"));
+            // Der Bezug zeigt vom Auftrag, der nennt, auf den genannten. Aufträge werden nie gelöscht;
+            // keine Seite löscht mit, sonst lehnt SQL Server die Tabelle ab (zwei Löschwege zum selben Auftrag).
+            e.HasMany(a => a.Bezuege).WithMany().UsingEntity<Dictionary<string, object>>(
+                "Auftragsbezuege",
+                rechts => rechts.HasOne<Auftrag>().WithMany().HasForeignKey("GenannterAuftragId").OnDelete(DeleteBehavior.Restrict),
+                links => links.HasOne<Auftrag>().WithMany().HasForeignKey("AuftragId").OnDelete(DeleteBehavior.Restrict));
             e.HasIndex(a => new { a.GruppeId, a.AbgeschlossenAm });
             e.HasIndex(a => new { a.BearbeiterId, a.AbgeschlossenAm });
         });

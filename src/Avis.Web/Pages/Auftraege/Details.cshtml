@@ -237,9 +237,21 @@
                 @foreach (var geraet in a.Geraete.OrderBy(g => g.Inventarnummer))
                 {
                     <div>
-                        <a asp-page="/Geraete/Details" asp-route-id="@geraet.Id">@geraet.Inventarnummer</a><text> · @geraet.Bezeichnung</text>
+                        <a asp-page="/Geraete/Details" asp-route-id="@geraet.Id">@geraet.Inventarnummer</a> · @geraet.Bezeichnung
                         @if (geraet.Standort is not null) {<text> · @geraet.Standort</text>}
                         @if (!geraet.Aktiv) { <span class="hinweis">ausgemustert</span> }
+                    </div>
+                }
+            </dd>
+            <dt>Aufträge</dt>
+            <dd>
+                @* Verbunden ist, was in einem der beiden Aufträge mit "AVIS" und Nummer genannt wird. *@
+                @if (Model.Bezuege.Count == 0) {<text>–</text>}
+                @foreach (var bezug in Model.Bezuege)
+                {
+                    <div>
+                        <a asp-page="Details" asp-route-id="@bezug.Auftrag.Id">Auftrag @bezug.Auftrag.Id</a> · @bezug.Auftrag.Betreff · <span class="status">@bezug.Auftrag.Status.Text()</span>
+                        @if (!bezug.Genannt) { <span class="hinweis">nennt diesen</span> }
                     </div>
                 }
             </dd>

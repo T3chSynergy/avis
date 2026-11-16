@@ -27,6 +27,8 @@ einstellbare Abläufe und ohne Dienste daneben.
 - Gesperrte Gruppen für Vertrauliches, deren Aufträge nur ihre Mitglieder
   sehen
 - Kunden und Geräte mit ihren bisherigen Aufträgen
+- Geräte und andere Aufträge verknüpfen, indem man sie im Text nennt
+  (`INV 4711`, `AVIS 123`), ohne Teilaufträge und Abhängigkeiten
 
 **Für Kunden**
 

@@ -53,6 +53,7 @@ public class Auftrag
 {
     private readonly List<Verlaufseintrag> _verlauf = [];
     private readonly List<Inventargeraet> _geraete = [];
+    private readonly List<Auftrag> _bezuege = [];
 
     private Auftrag() { }
 
@@ -131,6 +132,23 @@ public class Auftrag
         var bleiben = genannt.Where(g => g.Aktiv || _geraete.Contains(g)).Distinct().ToList();
         _geraete.RemoveAll(g => !bleiben.Contains(g));
         _geraete.AddRange(bleiben.Where(g => !_geraete.Contains(g)));
+    }
+
+    /// <summary>
+    /// Die anderen Aufträge, die im Betreff, in der Beschreibung oder in einem
+    /// Text des Verlaufs mit "AVIS" und ihrer Nummer genannt sind (siehe
+    /// <see cref="Auftragsbezug"/>). Die Liste wird beim Speichern aus den
+    /// Texten bestimmt, nicht von Hand. Der Bezug ist nur ein Verweis: Kein
+    /// Auftrag hängt vom Stand eines anderen ab.
+    /// </summary>
+    public IReadOnlyList<Auftrag> Bezuege => _bezuege;
+
+    /// <summary>Übernimmt die Aufträge, die in den Texten dieses Auftrags genannt sind.</summary>
+    internal void BezuegeSetzen(IEnumerable<Auftrag> genannt)
+    {
+        var bleiben = genannt.Where(a => a != this).Distinct().ToList();
+        _bezuege.RemoveAll(a => !bleiben.Contains(a));
+        _bezuege.AddRange(bleiben.Where(a => !_bezuege.Contains(a)));
     }
 
     public AuftragStatus Status =>

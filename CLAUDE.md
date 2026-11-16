@@ -60,6 +60,7 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Abgleiche laufen einmal täglich** zur festen Uhrzeit, nie beim Start: Snipe-IT ist langsam.
 - **Standort** (etwa der Raum „A 105“) ist freier Text an Kunde und Gerät. Der Auftrag hat keinen eigenen.
 - **Geräte am Auftrag** nur über „INV <Nummer>“ in seinen Texten (`Geraetebezug`), kein Feld dafür.
+- **Bezug zwischen Aufträgen** ebenso nur über „AVIS <Nummer>“ (`Auftragsbezug`). Keine Teilaufträge.
 - **Hilfe:** Markdown unter `src/Avis.Web/Hilfe`, je eine Datei für Bearbeiter, Kunden und Administratoren.
   **Bei jeder Änderung an der Oberfläche die Hilfe mitpflegen.** Hauseigenes steht nie darin (lokale Datei).
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
@@ -116,5 +117,4 @@ In der Entwicklungsumgebung nicht prüfbar; nur der Nutzer kann es in der Zielum
 1. Probelauf in der Zielumgebung (siehe „Nicht geprüft“): Was der Nutzer meldet, beheben, Anleitung berichtigen.
 2. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
-3. Angedacht, nicht gebaut: Die Liste steht in `docs/stand.md`. Nichts davon ohne Auftrag des Nutzers bauen.
-4. Bekannte Lücken stehen in `docs/stand.md`.
+3. Angedachtes und bekannte Lücken stehen in `docs/stand.md`. Nichts davon ohne Auftrag des Nutzers bauen.

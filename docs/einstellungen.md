@@ -284,6 +284,9 @@ sofort anstoßen.
   Snipe-IT lässt sich in AVIS nicht ändern.
 - Ein Gerät, das schon mit derselben Inventarnummer in AVIS steht, wird
   übernommen, nicht verdoppelt.
+- Die Seite eines solchen Geräts führt mit „In Snipe-IT ansehen“ zu seiner
+  Seite dort: `Geraeteabgleich:Adresse`, dann `/hardware/` und die Kennung des
+  Assets.
 - Der Nutzer wird nur gesetzt, wenn es in AVIS einen Kunden mit der
   Mailadresse gibt. Kunden legt der Geräteabgleich nicht an. Ist ein Asset an
   einen Standort oder ein anderes Asset ausgegeben, bleibt der Nutzer leer.

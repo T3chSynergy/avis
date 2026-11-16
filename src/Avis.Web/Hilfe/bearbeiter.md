@@ -109,7 +109,7 @@ geschrieben, geht dieser nicht verloren: AVIS zeigt ihn ihm zum Kopieren an.
 
 Auf der Seite des Auftrags stehen links Beschreibung, Aktionen und Verlauf,
 rechts die Angaben: Kunde mit Telefon und Standort, Priorität, Termin,
-Kategorie, Geräte.
+Kategorie, Geräte und die Aufträge, zu denen ein Bezug besteht.
 
 | Aktion | Was geschieht |
 |---|---|
@@ -169,6 +169,33 @@ dafür nicht, und es dürfen beliebig viele Geräte sein.
 Die verknüpften Geräte stehen rechts bei den Angaben, mit Bezeichnung und
 Standort. Am Gerät siehst du umgekehrt alle seine Aufträge.
 
+## Andere Aufträge nennen
+
+Gehört ein Auftrag zu einem anderen, nennst du diesen im Text: das Wort
+`AVIS` und die Auftragsnummer, zum Beispiel `AVIS 123`. Beide Aufträge zeigen
+einander dann rechts bei den Angaben unter „Aufträge“, mit Betreff und Stand.
+Am genannten Auftrag steht dabei „nennt diesen“.
+
+- Es zählen wie bei den Geräten Betreff, Beschreibung und jeder spätere Text.
+- Die Schreibweise ist großzügig: `avis 123`, `AVIS-123`, `AVIS#123` und
+  `[AVIS-123]` aus dem Betreff einer Mail gelten alle.
+- Gibt es die Nummer nicht, bleibt sie einfach Text.
+- Streichst du die Nennung aus der Beschreibung oder aus deinem internen
+  Kommentar, ist der Bezug gelöst.
+- Einen Auftrag einer gesperrten Gruppe sieht dort nur, wer ihn auch sonst
+  sehen darf. Kunden sehen die Bezüge nie.
+
+Der Bezug ist nur ein Verweis. Jeder Auftrag steht für sich: mit eigener
+Gruppe, eigenem Bearbeiter und eigenem Abschluss. Keiner wartet auf den
+anderen, und Teilaufträge gibt es nicht.
+
+**Wenn mehrere Gruppen etwas tun müssen:** Folgt eines auf das andere, leite
+den Auftrag weiter. Soll gleichzeitig gearbeitet werden, erfasse für den
+anderen Teil einen zweiten Auftrag in der anderen Gruppe und nenne darin den
+ersten. Soll der Anwender davon nichts mitbekommen, erfasse den zweiten
+Auftrag für dich selbst als Kunden: Dann bekommst du die Mail, wenn er
+abgeschlossen ist.
+
 ## Kunden
 
 Unter **Kunden** suchst du nach Name, E-Mail, Telefon, Organisationseinheit
@@ -189,7 +216,8 @@ Unter **Geräte** suchst du nach Inventarnummer, Bezeichnung, Typ, Standort
 oder Nutzer. Die Seite eines Geräts zeigt seine Angaben und seine Aufträge.
 Die Geräte kommen in der Regel aus dem Inventarsystem und werden jede Nacht
 abgeglichen; ändern lassen sie sich dann nur dort. Ein ausgemustertes Gerät
-bleibt an seinen Aufträgen, wird aber nicht mehr neu verknüpft.
+bleibt an seinen Aufträgen, wird aber nicht mehr neu verknüpft. Bei einem
+Gerät aus Snipe-IT führt „In Snipe-IT ansehen“ zu seiner Seite dort.
 
 ## Meine Gruppen
 

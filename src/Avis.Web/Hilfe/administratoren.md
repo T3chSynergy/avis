@@ -241,6 +241,9 @@ zurück.
   läuft dieser Abgleich nach dem Kundenabgleich.
 - Was dort fehlt, wird ausgemustert. Ein ausgemustertes Gerät bleibt an
   seinen Aufträgen, wird aber nicht mehr neu verknüpft.
+- Die Seite eines Geräts aus Snipe-IT führt mit „In Snipe-IT ansehen“ zu
+  seiner Seite dort. Der Link entsteht aus der eingestellten Adresse von
+  Snipe-IT; ohne sie fehlt er.
 
 ## Geräte anlegen und ändern
 
