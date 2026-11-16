@@ -110,14 +110,21 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
 
   Dazu passt ein Formular für Kunden je Art von Auftrag: eine Eingabemaske,
   aus der ein Auftrag mit einer bestimmten Kategorie in einer bestimmten
-  Gruppe entsteht, mit eigenem Titel und einem vorgegebenen Text, der sagt,
-  welche Angaben gebraucht werden. Eigene Felder je Formular gehören nicht
-  dazu, siehe „Nicht vorgesehen“.
+  Gruppe entsteht, mit eigenem Titel und einem vorgegebenen Beschreibungstext.
+  Der Text steht schon im Beschreibungsfeld und nennt, was zu klären ist. Bei
+  einer Postfachvergrößerung stünde dort zum Beispiel „Bitte die automatische
+  Archivierung aktivieren“, und der Kunde lässt den Satz stehen oder streicht
+  ihn. Eigene Felder je Formular gibt es nicht: AVIS steigt nicht in die
+  Gestaltung von Formularen ein.
 
   Eine Genehmigung durch jemanden, der kein Bearbeiter ist, käme nur in Frage,
   wenn der Nutzen sehr groß ist: Sie braucht einen neuen Stand, eine neue
   Rolle und eigene Mails. Eine Engine mit frei einstellbaren Ständen und
   Übergängen ist ausgeschlossen, siehe „Nicht vorgesehen“.
+- Eine Schnittstelle (API), über die andere Systeme Aufträge lesen und
+  erstellen können. Sehr spezielle Formulare und Abläufe gehören in ein
+  eigenes Formular- oder Workflowsystem; über die Schnittstelle legt es seine
+  Aufträge in AVIS an und fragt ihren Stand ab.
 
 ## Nicht vorgesehen
 

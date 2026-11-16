@@ -34,7 +34,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   nicht.“ Keine einstellbaren Abläufe, keine Pflichtkopplung an das Inventar. Solche Ausbauten nicht von
   sich aus vorschlagen. Abläufe höchstens als feste Funktion (Vorlage für mehrere Aufträge, feste Regeln,
   feste Schrittfolge); eine Genehmigung nur bei sehr großem Nutzen (neuer Stand, neue Rolle, eigene Mails);
-  eine Engine mit einstellbaren Ständen ist ausgeschlossen. So vom Nutzer entschieden, siehe `docs/stand.md`.
+  eine Engine mit einstellbaren Ständen und eigene Felder je Formular sind ausgeschlossen. Sehr Spezielles
+  gehört in ein Formular- oder Workflowsystem außerhalb; dafür ist eine API angedacht. So vom Nutzer entschieden.
 - **Begriffe:** Kunde (der Anwender, für den gearbeitet wird), Auftrag, Gruppe, Bearbeiter.
 - **Übernehmen ist Voraussetzung** für Weiterleiten, Kommentieren, Nachricht an den Kunden, Ändern und
   Abschließen. Die Regel sitzt im Domänenmodell (`Auftrag.NurZustaendig`), nicht nur in der Oberfläche.
