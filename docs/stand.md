@@ -61,8 +61,11 @@ Directory, Snipe-IT und ein Mailserver. Dort hat bisher funktioniert:
 - der Abgleich der Geräte mit Snipe-IT, mit rund 30 000 Geräten
 - der Mailversand und der E-Mail-Eingang, auch mit einer Antwort im
   HTML-Format mit eingefügtem Bild
-- mit Version 0.2.0: der Link von einem Gerät zu seiner Seite in Snipe-IT und
-  der Verweis von Kunden und Bearbeitern in ein Telefonbuch
+- das Update von 0.1.0 auf 0.2.0 nach der Anleitung für den
+  [Betrieb unter IIS](betrieb-iis.md), mit den vorhandenen Daten
+- mit Version 0.2.0: der E-Mail-Eingang nur für bekannte Absender, der Link
+  von einem Gerät zu seiner Seite in Snipe-IT und der Verweis von Kunden und
+  Bearbeitern in ein Telefonbuch
 
 Dabei gefundene Fehler sind behoben: der fehlende Standort neuer Konten und
 kleine eingefügte Bilder, die als Logo verworfen wurden.
@@ -71,11 +74,8 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
 
 - der Betrieb über längere Zeit: die nächtlichen Läufe der Abgleiche, der
   Mailversand und der Abruf des Postfachs im Dauerbetrieb
-- das Update nach der Anleitung für den [Betrieb unter IIS](betrieb-iis.md)
 - HTML-Mails in ihrer Breite: Tabellen, Listen und Signaturen aus echten
   Mailprogrammen
-- der E-Mail-Eingang nur für bekannte Absender
-  (`Posteingang:NurBekannteAbsender`)
 - der Alltag mit mehreren Bearbeitern
 
 ## Bekannte Lücken
@@ -90,8 +90,8 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
 
 1. **Probelauf abschließen.** Was dabei auffällt, wird behoben, und die
    Anleitung wird berichtigt.
-2. **Das erste Update erproben:** von 0.1.0 auf 0.2.0, nach der Anleitung für
-   den Betrieb unter IIS.
+2. **Den Betrieb über längere Zeit beobachten:** die nächtlichen Abgleiche,
+   den Mailversand und den Abruf des Postfachs.
 
 ## Angedacht, nicht zugesagt
 
