@@ -307,6 +307,10 @@ Mailsystem ist Exchange.
 - Nennt jemand anderes eine Auftragsnummer, entsteht ein neuer Auftrag. Niemand
   kann per Mail in den Auftrag eines anderen schreiben.
 - Automatische Mails wie Abwesenheitsnotizen werden übergangen.
+- Auf Wunsch entsteht ein neuer Auftrag nur aus der Mail eines bekannten
+  Absenders: eines aktiven Kunden oder eines aktiven Kontos. Alles andere
+  wird ohne Antwort übergangen. Ob ein Absender echt ist, kann nur der
+  Mailserver prüfen; das Postfach sollte deshalb dort geschützt sein.
 - Die Formatierung einer HTML-Mail bleibt erhalten, soweit sie eindeutig ist:
   fett, kursiv, Überschriften, Links, Listen und kleine, einfache Tabellen.
   Bilder im Text der Mail stehen im Auftrag an derselben Stelle.

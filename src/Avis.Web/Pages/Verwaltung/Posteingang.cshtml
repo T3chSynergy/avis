@@ -8,6 +8,7 @@
 <h2>Posteingang</h2>
 <p class="erklaerung">
     Abruf des Postfachs: <strong>@Model.Art</strong>.
+    Neue Aufträge: <strong>@(Model.NurBekannteAbsender ? "nur von bekannten Absendern" : "von jedem Absender")</strong>.
     Die letzten @PosteingangModel.Hoechstzahl Mails und was AVIS damit getan hat.
 </p>
 

@@ -38,6 +38,12 @@ public class PosteingangOptionen
 
     /// <summary>Kleinere Bilder im Text einer Mail gelten als Logo einer Signatur und werden nicht übernommen.</summary>
     public int BilderImTextAbKb { get; set; } = 20;
+
+    /// <summary>
+    /// Ein neuer Auftrag entsteht nur aus der Mail eines aktiven Kunden oder
+    /// eines aktiven Kontos. Mails anderer Absender werden übergangen.
+    /// </summary>
+    public bool NurBekannteAbsender { get; set; }
 }
 
 /// <summary>Holt neue Mails aus dem Hotline-Postfach.</summary>

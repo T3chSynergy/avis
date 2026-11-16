@@ -56,6 +56,8 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
 - das Update nach der Anleitung für den [Betrieb unter IIS](betrieb-iis.md)
 - HTML-Mails in ihrer Breite: Tabellen, Listen und Signaturen aus echten
   Mailprogrammen
+- der E-Mail-Eingang nur für bekannte Absender
+  (`Posteingang:NurBekannteAbsender`)
 - der Alltag mit mehreren Bearbeitern
 
 ## Bekannte Lücken
@@ -97,6 +99,32 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   einen Link zu seiner Detailseite dort. Dasselbe wäre bei Kunden möglich:
   ein Link zum Eintrag der Person in einem Verzeichnis des Hauses, etwa einem
   Telefonbuch, über eine einstellbare Adresse mit Platzhalter.
+- Kleine, feste Abläufe. Realistisch sind drei Formen, jede als feste
+  Funktion und ohne Änderung am Kern:
+  - eine Vorlage, die mehrere eigenständige Aufträge in verschiedenen Gruppen
+    anlegt, etwa für einen neuen Mitarbeiter;
+  - feste Regeln, zum Beispiel dass die Kategorie die Gruppe bestimmt oder
+    dass nach einigen Tagen ohne Antwort eine Erinnerung kommt;
+  - eine feste Schrittfolge, bei der ein Auftrag nach dem Erledigen von selbst
+    an die nächste Gruppe geht.
+
+  Dazu passt ein Formular für Kunden je Art von Auftrag: eine Eingabemaske,
+  aus der ein Auftrag mit einer bestimmten Kategorie in einer bestimmten
+  Gruppe entsteht, mit eigenem Titel und einem vorgegebenen Beschreibungstext.
+  Der Text steht schon im Beschreibungsfeld und nennt, was zu klären ist. Bei
+  einer Postfachvergrößerung stünde dort zum Beispiel „Bitte die automatische
+  Archivierung aktivieren“, und der Kunde lässt den Satz stehen oder streicht
+  ihn. Eigene Felder je Formular gibt es nicht: AVIS steigt nicht in die
+  Gestaltung von Formularen ein.
+
+  Eine Genehmigung durch jemanden, der kein Bearbeiter ist, käme nur in Frage,
+  wenn der Nutzen sehr groß ist: Sie braucht einen neuen Stand, eine neue
+  Rolle und eigene Mails. Eine Engine mit frei einstellbaren Ständen und
+  Übergängen ist ausgeschlossen, siehe „Nicht vorgesehen“.
+- Eine Schnittstelle (API), über die andere Systeme Aufträge lesen und
+  erstellen können. Sehr spezielle Formulare und Abläufe gehören in ein
+  eigenes Formular- oder Workflowsystem; über die Schnittstelle legt es seine
+  Aufträge in AVIS an und fragt ihren Stand ab.
 
 ## Nicht vorgesehen
 
