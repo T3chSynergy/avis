@@ -35,6 +35,8 @@ builder.AddAvisGeraeteabgleich();
 builder.Services.Configure<AnhangOptionen>(builder.Configuration.GetSection("Anhaenge"));
 builder.Services.AddSingleton<Anhangablage>();
 builder.Services.AddSingleton<Avis.Web.Hilfe.Hilfetexte>();
+builder.Services.Configure<TelefonbuchOptionen>(builder.Configuration.GetSection("Telefonbuch"));
+builder.Services.AddSingleton<Telefonbuch>();
 
 builder.Services.AddRazorPages(o =>
 {

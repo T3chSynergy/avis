@@ -35,6 +35,8 @@ Seit Version 0.1.0 sind dazugekommen:
   beide Aufträge, so wie `INV 4711` ein Gerät verknüpft. Jeder Auftrag steht
   weiter für sich; Teilaufträge gibt es nicht.
 - der Link von einem Gerät aus Snipe-IT zu seiner Seite dort
+- der Verweis von Kunden und Bearbeitern in ein Telefonbuch des Hauses
+  (`Telefonbuch:Adresse`)
 
 ## Wie es geprüft ist
 
@@ -69,6 +71,7 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   (`Posteingang:NurBekannteAbsender`)
 - der Link von einem Gerät zu seiner Seite in Snipe-IT gegen eine echte
   Installation
+- der Verweis in ein Telefonbuch gegen ein echtes
 - der Alltag mit mehreren Bearbeitern
 
 ## Bekannte Lücken
@@ -100,9 +103,6 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   vor allem, ob ein beteiligter Bearbeiter intern kommentieren darf, ohne den
   Auftrag zu übernehmen. Das sollen zuerst die künftigen Bearbeiter
   besprechen.
-- Verweis vom Kunden in ein Verzeichnis des Hauses, etwa ein Telefonbuch:
-  ein Link zum Eintrag der Person, über eine einstellbare Adresse mit
-  Platzhalter. Für Geräte aus Snipe-IT gibt es den Link zur Quelle schon.
 - Kleine, feste Abläufe. Realistisch sind drei Formen, jede als feste
   Funktion und ohne Änderung am Kern:
   - eine Vorlage, die mehrere eigenständige Aufträge in verschiedenen Gruppen

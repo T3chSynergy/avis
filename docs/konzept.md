@@ -198,6 +198,10 @@ können, ohne dass sich am Auftrag etwas ändert.
 - Ein Kunde lässt sich als inaktiv markieren. Er bleibt mit seinen Aufträgen
   erhalten, steht aber nicht mehr zur Wahl, wenn ein Auftrag erfasst wird.
 
+Wo es im Haus ein Telefonbuch mit einer Seite je Person gibt, verweist AVIS
+vom Kunden und vom Bearbeiter dorthin. Die Adresse wird aus dem Anmeldenamen
+ohne Domäne gebildet; AVIS liest dort nichts.
+
 ### Abgleich der Kunden mit dem Active Directory
 
 - AVIS holt die Kunden selbst aus dem Active Directory, einmal täglich im

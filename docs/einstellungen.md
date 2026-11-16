@@ -22,6 +22,8 @@ Unterstrichen statt des Doppelpunkts (`Mail__Server`).
 | `Zeitzone` | Zeitzone für die Anzeige, Zeitpunkte werden in UTC gespeichert |
 | `Auftraege:ErsteNummer` | Nummer, die der nächste Auftrag mindestens bekommt, zum Beispiel `200000`, um an eine vorhandene Zählung anzuschließen. Wird beim Start angewendet und wirkt nur nach oben. Standard 0: Die Zählung beginnt bei 1 |
 | `Verzeichnis:Art` | `ActiveDirectory` liest Name, E-Mail, Telefon, Abteilung und Standort (Feld „Büro“) neuer Konten aus dem Active Directory, `Keines` lässt das aus |
+| `Telefonbuch:Adresse` | Adresse der Seite einer Person in einem Telefonbuch des Hauses. An die Stelle von `{kennung}` tritt die Kennung ohne Domäne; fehlt der Platzhalter, wird sie angehängt. Leer: kein Verweis |
+| `Telefonbuch:Bezeichnung` | Wie der Verweis in der Oberfläche heißt, Standard `Telefonbuch` |
 | `Bearbeiterabgleich:Art` | `ActiveDirectory` gleicht ab, wer Bearbeiter ist, `Aus` lässt das aus |
 | `Bearbeiterabgleich:Filter` | LDAP-Filter, der bestimmt, wer Bearbeiter ist, zum Beispiel `(memberOf=CN=AVIS-Bearbeiter,OU=Gruppen,DC=example,DC=org)` |
 | `Bearbeiterabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird. Leer: in der ganzen Domäne |
@@ -60,6 +62,27 @@ Entwicklungsumgebung einschalten. Im Betrieb bricht der Start sonst ab.
 Kennwörter und Schlüssel (`Mail:Kennwort`, `Posteingang:Kennwort`,
 `Geraeteabgleich:Schluessel`) gehören nie in eine Datei im Repository. Wo sie
 auf dem Server stehen, beschreibt [Betrieb unter IIS](betrieb-iis.md).
+
+## Verweis ins Telefonbuch
+
+Gibt es im Haus ein Telefonbuch oder Verzeichnis, das zu jeder Person eine
+eigene Seite hat, etwa mit Vertretung und Anwesenheit, kann AVIS dorthin
+verweisen. AVIS baut nur die Adresse und liest dort nichts.
+
+```json
+"Telefonbuch": {
+  "Adresse": "https://telefonbuch.example.org/person/{kennung}",
+  "Bezeichnung": "Telefonbuch"
+}
+```
+
+- An die Stelle von `{kennung}` tritt der Anmeldename ohne die Domäne: aus
+  `beispiel\musteruser` wird `musteruser`. Fehlt der Platzhalter, wird die
+  Kennung an die Adresse angehängt.
+- Der Verweis steht auf der Seite eines Kunden und am Auftrag: beim Kunden
+  und am Namen des Bearbeiters und des bevorzugten Bearbeiters.
+- Ein Kunde ohne Anmeldename, etwa einer, der nur per Mail geschrieben hat,
+  bekommt keinen Verweis. Kunden selbst sehen ihn nicht.
 
 ## Mails
 
