@@ -17,6 +17,21 @@ namespace Avis.Web.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.15");
 
+            modelBuilder.Entity("Auftragsbezuege", b =>
+                {
+                    b.Property<int>("AuftragId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("GenannterAuftragId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AuftragId", "GenannterAuftragId");
+
+                    b.HasIndex("GenannterAuftragId");
+
+                    b.ToTable("Auftragsbezuege");
+                });
+
             modelBuilder.Entity("Auftragsgeraete", b =>
                 {
                     b.Property<int>("AuftragId")
@@ -554,6 +569,21 @@ namespace Avis.Web.Data.Migrations
                     b.HasIndex("BenutzerId");
 
                     b.ToTable("Verlauf", (string)null);
+                });
+
+            modelBuilder.Entity("Auftragsbezuege", b =>
+                {
+                    b.HasOne("Avis.Web.Domain.Auftrag", null)
+                        .WithMany()
+                        .HasForeignKey("AuftragId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Avis.Web.Domain.Auftrag", null)
+                        .WithMany()
+                        .HasForeignKey("GenannterAuftragId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Auftragsgeraete", b =>

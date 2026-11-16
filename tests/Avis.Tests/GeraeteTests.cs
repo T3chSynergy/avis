@@ -209,6 +209,38 @@ public class GeraeteTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains("ausgemustert", await anna.GetStringAsync("/Geraete?q=pc-0001"));
     }
 
+    [Fact]
+    public async Task Ein_Geraet_aus_Snipe_IT_fuehrt_zu_seiner_Seite_dort()
+    {
+        // TB-3001 kommt aus Snipe-IT und hat dort die Kennung 9001, NB-1017 ist in AVIS angelegt.
+        var tablet = await GeraetIdAsync("TB-3001");
+        var notebook = await GeraetIdAsync("NB-1017");
+        using var mitAdresse = app.WithWebHostBuilder(b => b.UseSetting("Geraeteabgleich:Adresse", "https://inventar.example.org/snipe/"));
+        var anna = mitAdresse.CreateClient();
+        await anna.PostFormularAsync("/Anmeldung", "/Anmeldung", new() { ["anmeldename"] = "anna" });
+
+        Assert.Contains("<a href=\"https://inventar.example.org/snipe/hardware/9001\" rel=\"noopener noreferrer\">In Snipe-IT ansehen</a>", await anna.GetStringAsync($"/Geraete/{tablet}"));
+        Assert.DoesNotContain("In Snipe-IT ansehen", await anna.GetStringAsync($"/Geraete/{notebook}"));
+
+        // Ohne eingestellte Adresse gibt es keinen Link.
+        var ohne = await app.AnmeldenAlsAsync("anna");
+        Assert.DoesNotContain("In Snipe-IT ansehen", await ohne.GetStringAsync($"/Geraete/{tablet}"));
+    }
+
+    [Theory]
+    [InlineData("SnipeIt", "9001", "https://inventar.example.org", "https://inventar.example.org/hardware/9001")]
+    [InlineData("SnipeIt", "9001", " https://inventar.example.org/snipe/ ", "https://inventar.example.org/snipe/hardware/9001")]
+    [InlineData("SnipeIt", "9001", "inventar.example.org", null)]
+    [InlineData("SnipeIt", "9001", "", null)]
+    [InlineData("SnipeIt", null, "https://inventar.example.org", null)]
+    [InlineData(null, null, "https://inventar.example.org", null)]
+    public void Die_Adresse_in_Snipe_IT_entsteht_aus_Einstellung_und_Kennung(string? quelle, string? kennung, string adresse, string? erwartet)
+    {
+        var geraet = new Inventargeraet { Inventarnummer = "X-1", Bezeichnung = "Testgerät", Quelle = quelle, ExterneKennung = kennung };
+
+        Assert.Equal(erwartet, Avis.Web.Pages.Geraete.DetailsModel.AdresseInSnipeIt(geraet, adresse));
+    }
+
     private async Task<int> ErfassenAsync(HttpClient client, string betreff, string beschreibung)
     {
         var antwort = await client.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()

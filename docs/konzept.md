@@ -115,6 +115,24 @@ Mails an den Kunden.
   wieder alle Bearbeiter, mit seinem ganzen Verlauf.
 - Die Eingangsgruppe kann nicht gesperrt sein.
 
+### Bezug zwischen Aufträgen
+
+Jeder Auftrag steht für sich: mit eigener Gruppe, eigenem Bearbeiter und
+eigenem Abschluss. Teilaufträge und Abhängigkeiten zwischen Aufträgen gibt es
+nicht, denn aus ihnen wird schnell ein Netz, das jemand pflegen muss.
+
+- Ein Auftrag kann einen anderen nennen: „AVIS“ und die Nummer, etwa
+  „AVIS 123“, in einem beliebigen Text. Daraus entsteht ein Verweis, den beide
+  Aufträge bei ihren Angaben zeigen. Das folgt demselben Muster wie die
+  Geräte, siehe [Gerätetabelle](#gerätetabelle).
+- Der Verweis hat keine Wirkung: Kein Auftrag wartet auf einen anderen, und
+  kein Stand ergibt sich aus einem anderen.
+- Wird die Nennung gestrichen, ist der Bezug gelöst.
+- Einen Auftrag einer gesperrten Gruppe zeigt der Verweis nur dem, der ihn
+  sehen darf. Kunden sehen die Verweise nicht.
+- Verteilt sich Arbeit auf mehrere Gruppen, wird nacheinander weitergeleitet
+  oder für den anderen Teil ein zweiter Auftrag erfasst, der den ersten nennt.
+
 ### Verlauf
 
 Jede Aktion erzeugt einen unveränderlichen Verlaufseintrag mit Zeitpunkt,
@@ -219,6 +237,7 @@ können, ohne dass sich am Auftrag etwas ändert.
 - Ausgemusterte Geräte bleiben an ihren Aufträgen, werden aber nicht mehr
   neu verknüpft.
 - Am Gerät sind seine bisherigen Aufträge sichtbar.
+- Ein Gerät aus Snipe-IT führt mit einem Link zu seiner Seite dort.
 
 ### Abgleich der Geräte mit Snipe-IT
 

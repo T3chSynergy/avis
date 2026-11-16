@@ -47,6 +47,10 @@
         @if (g.AusQuelle)
         {
             <p class="erklaerung">Wird in @g.Quelle gepflegt und beim Abgleich überschrieben. In AVIS lässt sich das Gerät nicht ändern.</p>
+            @if (Model.InSnipeIt is not null)
+            {
+                <p><a href="@Model.InSnipeIt" rel="noopener noreferrer">In Snipe-IT ansehen</a></p>
+            }
         }
         else if (User.IstAdministrator())
         {

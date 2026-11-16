@@ -10,12 +10,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Auftraege;
 
+/// <param name="Auftrag">Der andere Auftrag.</param>
+/// <param name="Genannt">Ob der angezeigte Auftrag ihn nennt. Sonst nennt nur der andere den angezeigten.</param>
+public record Bezug(Auftrag Auftrag, bool Genannt);
+
 public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageModel
 {
     /// <summary>In dieser Anfrage gespeicherte Dateien. Scheitert die Aktion, werden sie wieder gelöscht.</summary>
     private readonly List<Anhang> _neueAnhaenge = [];
 
     public Auftrag Auftrag { get; private set; } = null!;
+
+    /// <summary>
+    /// Die Aufträge, die dieser nennt oder die ihn nennen (siehe
+    /// <see cref="Auftragsbezug"/>), soweit der Angemeldete sie sehen darf.
+    /// </summary>
+    public IReadOnlyList<Bezug> Bezuege { get; private set; } = [];
+
     public List<SelectListItem> Gruppen { get; private set; } = [];
     public List<SelectListItem> Bearbeiter { get; private set; } = [];
 
@@ -45,6 +56,18 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
             return NotFound();
 
         Auftrag = auftrag;
+
+        // Der Bezug gilt in beide Richtungen: Am genannten Auftrag steht, wer ihn nennt.
+        // Ein Auftrag einer gesperrten Gruppe erscheint nur bei dem, der ihn sehen darf.
+        var genannt = await db.Auftraege.Where(a => a.Id == id).SelectMany(a => a.Bezuege.Select(b => b.Id)).ToListAsync();
+        Bezuege = (await db.AuftraegeFuer(User.BenutzerId())
+                .AsNoTracking()
+                .Where(a => genannt.Contains(a.Id) || a.Bezuege.Any(b => b.Id == id))
+                .OrderBy(a => a.Id)
+                .ToListAsync())
+            .Select(a => new Bezug(a, genannt.Contains(a.Id)))
+            .ToList();
+
         OffeneAktion = TempData["Aktion"] as string;
         Entwurf = TempData["Entwurf"] as string;
         Gruppen = await db.Gruppen.AsNoTracking()

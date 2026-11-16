@@ -27,6 +27,15 @@ Dazu kamen die Hilfe in der Anwendung, die Vorschau an den Textfeldern, die
 dunkle Darstellung mit den persönlichen Einstellungen und das Paket für den
 Betrieb unter Windows Server.
 
+Seit Version 0.1.0 sind dazugekommen:
+
+- der E-Mail-Eingang nur für bekannte Absender
+  (`Posteingang:NurBekannteAbsender`)
+- der Bezug zwischen Aufträgen: Wer in einem Text `AVIS 123` nennt, verbindet
+  beide Aufträge, so wie `INV 4711` ein Gerät verknüpft. Jeder Auftrag steht
+  weiter für sich; Teilaufträge gibt es nicht.
+- der Link von einem Gerät aus Snipe-IT zu seiner Seite dort
+
 ## Wie es geprüft ist
 
 - Automatische Tests für die Regeln des Auftrags und für die Seiten, bei
@@ -58,6 +67,8 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   Mailprogrammen
 - der E-Mail-Eingang nur für bekannte Absender
   (`Posteingang:NurBekannteAbsender`)
+- der Link von einem Gerät zu seiner Seite in Snipe-IT gegen eine echte
+  Installation
 - der Alltag mit mehreren Bearbeitern
 
 ## Bekannte Lücken
@@ -89,16 +100,9 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   vor allem, ob ein beteiligter Bearbeiter intern kommentieren darf, ohne den
   Auftrag zu übernehmen. Das sollen zuerst die künftigen Bearbeiter
   besprechen.
-- Bezug zwischen Aufträgen. Jeder Auftrag steht für sich; Teilaufträge und
-  Abhängigkeiten zwischen Aufträgen soll es nicht geben. Wer einen anderen
-  Auftrag im Text nennt, zum Beispiel `AVIS 123`, stellt damit den Bezug her,
-  so wie `INV 4711` ein Gerät verknüpft: Die Nennung wird ein Verweis, und am
-  genannten Auftrag steht, wo er erwähnt ist. Für Arbeit, die sich auf mehrere
-  Gruppen verteilt, reicht dann ein zweiter Auftrag mit einem solchen Bezug.
-- Verweis in das Quellsystem. Ein Gerät aus Snipe-IT bekäme auf seiner Seite
-  einen Link zu seiner Detailseite dort. Dasselbe wäre bei Kunden möglich:
-  ein Link zum Eintrag der Person in einem Verzeichnis des Hauses, etwa einem
-  Telefonbuch, über eine einstellbare Adresse mit Platzhalter.
+- Verweis vom Kunden in ein Verzeichnis des Hauses, etwa ein Telefonbuch:
+  ein Link zum Eintrag der Person, über eine einstellbare Adresse mit
+  Platzhalter. Für Geräte aus Snipe-IT gibt es den Link zur Quelle schon.
 - Kleine, feste Abläufe. Realistisch sind drei Formen, jede als feste
   Funktion und ohne Änderung am Kern:
   - eine Vorlage, die mehrere eigenständige Aufträge in verschiedenen Gruppen
