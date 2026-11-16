@@ -12,6 +12,7 @@ public class PosteingangModel(AvisDb db, IOptions<PosteingangOptionen> optionen)
     public const int Hoechstzahl = 100;
 
     public string Art => optionen.Value.Art;
+    public bool NurBekannteAbsender => optionen.Value.NurBekannteAbsender;
     public IReadOnlyList<Maileingang> Mails { get; private set; } = [];
 
     public static string Text(MaileingangErgebnis ergebnis) => ergebnis switch

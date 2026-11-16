@@ -142,11 +142,12 @@ dann, wenn der Mailserver gerade nicht erreichbar ist.
 
 Ist der E-Mail-Eingang eingerichtet, holt AVIS die ungelesenen Mails aus dem
 Postfach der Hotline. Der Bereich zeigt die letzten 100 und was daraus
-wurde. Oben steht die Einstellung: `Imap` ruft ab, `Aus` nicht.
+wurde. Oben steht die Einstellung: `Imap` ruft ab, `Aus` nicht. Daneben steht,
+ob neue Aufträge von jedem Absender angenommen werden oder nur von bekannten.
 
 | Ergebnis | Bedeutung |
 |---|---|
-| neuer Auftrag | Die Mail wurde ein Auftrag in der Eingangsgruppe. Einen unbekannten Absender legt AVIS als Kunden an. |
+| neuer Auftrag | Die Mail wurde ein Auftrag in der Eingangsgruppe. Einen unbekannten Absender legt AVIS als Kunden an, wenn es Aufträge von jedem Absender annimmt. |
 | Antwort des Kunden | Der Betreff nannte eine Auftragsnummer, und die Mail kam vom Kunden dieses Auftrags. |
 | Auftrag wieder geöffnet | Wie eine Antwort, aber der Auftrag war schon abgeschlossen. |
 | interner Kommentar | Die Mail kam von dem Bearbeiter, der den Auftrag gerade bearbeitet. |
@@ -154,6 +155,12 @@ wurde. Oben steht die Einstellung: `Imap` ruft ab, `Aus` nicht.
 
 - Übergangen werden Abwesenheitsnotizen, Zustell- und Leseberichte,
   Massenmails und Mails von der eigenen Absenderadresse.
+- Gilt „nur von bekannten Absendern“, übergeht AVIS auch jede Mail, deren
+  Absender weder ein aktiver Kunde ist noch ein aktives Konto hat. Der
+  Hinweis lautet dann „Absender unbekannt“, und der Absender bekommt keine
+  Antwort. Soll er Aufträge stellen können, leg ihn unter „Kunden“ mit seiner
+  Mailadresse an und bitte ihn, die Mail noch einmal zu schicken. Die Antwort
+  auf einen eigenen Auftrag kommt immer an.
 - Nennt eine Mail einen Auftrag, kommt aber weder von dessen Kunden noch von
   dessen Bearbeiter, wird sie ein neuer Auftrag. Der Hinweis nennt dann den
   gemeinten Auftrag. Niemand kann per Mail in den Auftrag eines anderen

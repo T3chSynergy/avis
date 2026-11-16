@@ -140,6 +140,12 @@ Anfang, mit erfundenen Namen:
   Mail.
 - **Den E-Mail-Eingang zuerst an einem Testpostfach prüfen.** AVIS markiert
   abgeholte Mails als gelesen oder verschiebt sie.
+- **Das Postfach der Hotline nach außen abschirmen.** Jede Mail, die dort
+  ankommt, kann ein Auftrag werden. Das Postfach sollte deshalb am Mailserver
+  nur Mails von angemeldeten Absendern des eigenen Hauses annehmen. Als
+  zweite Linie lässt `Posteingang:NurBekannteAbsender` in AVIS nur Aufträge
+  von bekannten Absendern zu, siehe
+  [Wer per Mail einen Auftrag stellen kann](einstellungen.md#wer-per-mail-einen-auftrag-stellen-kann).
 
 Nach einer Änderung an der Datei den Anwendungspool neu starten. Ob die Datei
 gültig ist, zeigt PowerShell; bei einem Tippfehler nennt es die Stelle:

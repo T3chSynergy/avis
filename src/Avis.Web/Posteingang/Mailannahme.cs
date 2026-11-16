@@ -25,6 +25,9 @@ namespace Avis.Web.Posteingang;
 ///   wenn ein Dritter eine Auftragsnummer nennt: Niemand kann per Mail in den
 ///   Auftrag eines anderen schreiben.
 /// - Automatische Mails wie Abwesenheitsnotizen werden übergangen.
+/// - Mit Posteingang:NurBekannteAbsender wird auch übergangen, was von einer
+///   Adresse kommt, die AVIS nicht kennt. Dann entsteht kein Kunde, und es
+///   geht keine Bestätigung an eine Adresse, die jemand gefälscht haben kann.
 /// </summary>
 public partial class Mailannahme(
     AvisDb db,
@@ -37,6 +40,9 @@ public partial class Mailannahme(
 {
     /// <summary>Anmeldename des Kontos, in dessen Namen Mails von Absendern ohne eigenes Konto eingetragen werden.</summary>
     public const string Systemkonto = "avis:e-mail-eingang";
+
+    /// <summary>Der Hinweis an einer Mail, die wegen Posteingang:NurBekannteAbsender übergangen wurde.</summary>
+    public const string UnbekannterAbsender = "Absender unbekannt: Die Adresse gehört zu keinem aktiven Kunden und keinem aktiven Konto.";
 
     private const int HoechstzahlAnhaenge = 20;
 
@@ -72,6 +78,19 @@ public partial class Mailannahme(
             return eingang;
         }
 
+        var bezug = await BezugAsync(mail.Subject, abbruch);
+
+        // Wer auf seinen eigenen Auftrag antwortet, schreibt von einer Adresse, die AVIS kennt.
+        // Geprüft wird vor den Anhängen: Von einem Unbekannten wird nichts gespeichert.
+        if (optionen.Value.NurBekannteAbsender && bezug?.Kunde.Email != adresse && !await BekanntAsync(adresse!, abbruch))
+        {
+            eingang.Ergebnis = MaileingangErgebnis.Uebergangen;
+            eingang.Hinweis = UnbekannterAbsender;
+            await db.SaveChangesAsync(abbruch);
+            log.LogInformation("Mail von {Von} übergangen: Absender unbekannt.", adresse);
+            return eingang;
+        }
+
         var (anhaenge, ausgelassen, bilderImText, logos) = await AnhaengeAsync(mail, abbruch);
         if (logos > 0)
         {
@@ -85,7 +104,6 @@ public partial class Mailannahme(
             // Ein Bild im Text der Mail steht auch im Auftrag an seiner Stelle.
             var text = Mailtext.Lesen(mail, (kennung, alternativtext) =>
                 bilderImText.TryGetValue(kennung, out var bild) ? Markdowntext.Bildverweis(bild, alternativtext) : null);
-            var bezug = await BezugAsync(mail.Subject, abbruch);
             var durch = await KontoAsync(adresse!, abbruch);
 
             if (bezug is not null && bezug.Kunde.Email == adresse)
@@ -172,6 +190,15 @@ public partial class Mailannahme(
             .Include(a => a.Bearbeiter)
             .FirstOrDefaultAsync(a => a.Id == nummer, abbruch);
     }
+
+    /// <summary>
+    /// Ob die Adresse zu einem aktiven Kunden gehört oder zu einem Konto, mit
+    /// dem sich jemand anmelden kann. Per Mail geht damit nicht weniger als
+    /// über die Oberfläche.
+    /// </summary>
+    private async Task<bool> BekanntAsync(string adresse, CancellationToken abbruch) =>
+        await db.Kunden.AnyAsync(k => k.Email == adresse && k.Aktiv, abbruch)
+        || await db.Benutzer.AnyAsync(b => b.Email == adresse && b.Aktiv, abbruch);
 
     /// <summary>Das Konto mit dieser Adresse, sonst das Systemkonto.</summary>
     private async Task<Benutzer> KontoAsync(string adresse, CancellationToken abbruch)

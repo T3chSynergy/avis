@@ -224,6 +224,90 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Mit_der_Einstellung_wird_die_Mail_eines_Unbekannten_uebergangen()
+    {
+        using var streng = Streng();
+        await app.MailsVersendenAsync();
+        var anhaengeVorher = await app.DatenbankAsync(db => db.Anhaenge.CountAsync());
+        var mail = Mail("Werbung <angebot@example.net>", "Günstige Tonerkartuschen", "Jetzt bestellen.");
+        var mitAnhang = new BodyBuilder { TextBody = "Jetzt bestellen." };
+        mitAnhang.Attachments.Add("preisliste.pdf", new byte[2000], new ContentType("application", "pdf"));
+        mail.Body = mitAnhang.ToMessageBody();
+
+        var eingang = await AnnehmenAsync(mail, streng.Services);
+
+        Assert.Equal((MaileingangErgebnis.Uebergangen, Mailannahme.UnbekannterAbsender), (eingang.Ergebnis, eingang.Hinweis));
+        Assert.Null(eingang.AuftragId);
+        // Es entsteht kein Kunde, nichts wird gespeichert, und niemand bekommt eine Antwort.
+        Assert.False(await app.DatenbankAsync(db => db.Kunden.AnyAsync(k => k.Email == "angebot@example.net")));
+        Assert.Equal(anhaengeVorher, await app.DatenbankAsync(db => db.Anhaenge.CountAsync()));
+        Assert.Empty(await app.MailsVersendenAsync());
+
+        var anna = streng.CreateClient();
+        await anna.PostFormularAsync("/Anmeldung", "/Anmeldung", new() { ["anmeldename"] = "anna" });
+        var seite = await anna.GetStringAsync("/Verwaltung/Posteingang");
+        Assert.Contains("nur von bekannten Absendern", seite);
+        Assert.Contains("Absender unbekannt", seite);
+        Assert.Contains("von jedem Absender", await (await app.AnmeldenAlsAsync("anna")).GetStringAsync("/Verwaltung/Posteingang"));
+    }
+
+    [Fact]
+    public async Task Mit_der_Einstellung_stellen_aktive_Kunden_und_Konten_weiter_Auftraege()
+    {
+        using var streng = Streng();
+
+        // Eva Test steht als Kunde in AVIS, Bernd Muster hat ein Konto, aber noch keinen Eintrag als Kunde.
+        var vonKunde = await AnnehmenAsync(Mail("eva.test@example.org", "Maus defekt", "Die linke Taste klemmt."), streng.Services);
+        var vonKonto = await AnnehmenAsync(Mail("bernd.muster@example.org", "Mein Monitor", "Flackert."), streng.Services);
+
+        Assert.Equal(MaileingangErgebnis.NeuerAuftrag, vonKunde.Ergebnis);
+        Assert.Equal("Eva Test", (await LadenAsync(vonKunde.AuftragId!.Value)).Kunde.Name);
+        Assert.Equal(MaileingangErgebnis.NeuerAuftrag, vonKonto.Ergebnis);
+        Assert.Equal("Bernd Muster", (await LadenAsync(vonKonto.AuftragId!.Value)).Kunde.Name);
+    }
+
+    [Fact]
+    public async Task Mit_der_Einstellung_gilt_ein_inaktiver_Kunde_als_unbekannt()
+    {
+        using var streng = Streng();
+
+        // Jana Ehemals steht nicht mehr im Verzeichnis und ist deshalb inaktiv.
+        var eingang = await AnnehmenAsync(Mail("jana.ehemals@example.org", "Noch eine Frage", "Bin ich noch da?"), streng.Services);
+
+        Assert.Equal((MaileingangErgebnis.Uebergangen, Mailannahme.UnbekannterAbsender), (eingang.Ergebnis, eingang.Hinweis));
+    }
+
+    [Fact]
+    public async Task Mit_der_Einstellung_bleibt_die_Antwort_auf_den_eigenen_Auftrag_moeglich()
+    {
+        using var streng = Streng();
+        // Der Auftrag entstand, als die Absenderin noch bekannt war. Danach wurde sie inaktiv.
+        var id = (await AnnehmenAsync(Mail("Ida Extern <ida.extern@example.net>", "Zugang für Dienstleister", "Bitte einrichten."))).AuftragId!.Value;
+        await app.DatenbankAsync(db => db.Kunden.Where(k => k.Email == "ida.extern@example.net").ExecuteUpdateAsync(k => k.SetProperty(x => x.Aktiv, false)));
+
+        var antwort = await AnnehmenAsync(Mail("ida.extern@example.net", $"AW: [AVIS-{id}] Zugang für Dienstleister", "Hier die fehlende Angabe."), streng.Services);
+        var neu = await AnnehmenAsync(Mail("ida.extern@example.net", "Etwas ganz anderes", "Neues Anliegen."), streng.Services);
+
+        Assert.Equal((MaileingangErgebnis.Antwort, id), (antwort.Ergebnis, antwort.AuftragId));
+        Assert.Equal(MaileingangErgebnis.Uebergangen, neu.Ergebnis);
+    }
+
+    [Fact]
+    public async Task Mit_der_Einstellung_haengt_sich_kein_Unbekannter_an_einen_Auftrag()
+    {
+        using var streng = Streng();
+        var id = (await AnnehmenAsync(Mail("gabi.mueller@example.org", "Passwort vergessen", "Bitte zurücksetzen."), streng.Services)).AuftragId!.Value;
+        var auftraege = await app.DatenbankAsync(db => db.Auftraege.CountAsync());
+        var eintraege = (await LadenAsync(id)).Verlauf.Count;
+
+        var fremd = await AnnehmenAsync(Mail("unbekannt@example.net", $"WG: [AVIS-{id}] Passwort vergessen", "Schickt es bitte mir."), streng.Services);
+
+        Assert.Equal((MaileingangErgebnis.Uebergangen, Mailannahme.UnbekannterAbsender), (fremd.Ergebnis, fremd.Hinweis));
+        Assert.Equal(auftraege, await app.DatenbankAsync(db => db.Auftraege.CountAsync()));
+        Assert.Equal(eintraege, (await LadenAsync(id)).Verlauf.Count);
+    }
+
+    [Fact]
     public async Task Die_Verwaltung_zeigt_was_mit_den_Mails_geschah()
     {
         await AnnehmenAsync(Mail("gabi.mueller@example.org", "Erscheint im Posteingang", "Text."));
@@ -301,7 +385,11 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         return mail;
     }
 
-    private async Task<Maileingang> AnnehmenAsync(MimeMessage mail)
+    /// <summary>Dieselbe Anwendung mit derselben Datenbank, aber mit Posteingang:NurBekannteAbsender.</summary>
+    private Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program> Streng() =>
+        app.WithWebHostBuilder(b => b.UseSetting("Posteingang:NurBekannteAbsender", "true"));
+
+    private async Task<Maileingang> AnnehmenAsync(MimeMessage mail, IServiceProvider? dienste = null)
     {
         // Wie nach dem Abruf: Die Mail wird einmal in ihre Rohform und zurück gewandelt,
         // mit den Zeilenenden, die eine Mail unterwegs immer hat – auf jedem Rechner.
@@ -312,7 +400,7 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         roh.Position = 0;
         var gelesen = await MimeMessage.LoadAsync(roh);
 
-        using var scope = app.Services.CreateScope();
+        using var scope = (dienste ?? app.Services).CreateScope();
         var eingang = await scope.ServiceProvider.GetRequiredService<Mailannahme>().AnnehmenAsync(gelesen);
         return eingang;
     }

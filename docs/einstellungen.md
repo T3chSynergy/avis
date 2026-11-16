@@ -47,6 +47,7 @@ Unterstrichen statt des Doppelpunkts (`Mail__Server`).
 | `Posteingang:Ordner` | Ordner, aus dem ungelesene Mails geholt werden, Standard `INBOX` |
 | `Posteingang:Erledigtordner` | Ordner, in den verarbeitete Mails verschoben werden. Leer: Sie bleiben als gelesen im Eingang |
 | `Posteingang:AbstandSekunden` | Abstand zwischen zwei Abrufen, Standard 60 |
+| `Posteingang:NurBekannteAbsender` | `true`: Ein neuer Auftrag entsteht nur aus der Mail eines aktiven Kunden oder eines aktiven Kontos. Standard `false` |
 | `Posteingang:BilderImTextAbKb` | Ein Bild im Text einer Mail, das als Datei kleiner ist und höchstens 300 × 120 Bildpunkte misst, gilt als Logo und wird nicht übernommen. Standard 20; mit 0 wird jedes Bild übernommen |
 | `Hilfe:EigenerText` | Markdown-Datei mit eigenem Text des Hauses, der über der Hilfe steht, relativ zum Ordner der Anwendung. Standard `App_Data/Hilfe.md`. Fehlt die Datei, steht dort nichts |
 | `Anhaenge:Ordner` | Ordner für Anhänge, relativ zum Ordner der Anwendung, Standard `App_Data/Anhaenge` |
@@ -77,7 +78,8 @@ geschah, steht unter Verwaltung → Posteingang.
 
 - Eine Mail ohne Auftragsnummer wird ein neuer Auftrag in der Eingangsgruppe.
   Den Kunden erkennt AVIS an der Absenderadresse, einen unbekannten Absender
-  legt es als Kunden an.
+  legt es als Kunden an. Das lässt sich einschränken, siehe
+  [Wer per Mail einen Auftrag stellen kann](#wer-per-mail-einen-auftrag-stellen-kann).
 - Steht im Betreff eine Auftragsnummer in der Form `[AVIS-123]` und kommt die
   Mail vom Kunden dieses Auftrags, ist sie seine Antwort. Der zitierte
   bisherige Schriftwechsel wird abgeschnitten. Ein abgeschlossener Auftrag
@@ -106,6 +108,34 @@ geschah, steht unter Verwaltung → Posteingang.
 - Bei einer Antwort werden Bilder aus dem zitierten Schriftwechsel nicht noch
   einmal angehängt.
 - Jede Mail wird über ihre Message-ID nur einmal verarbeitet.
+
+### Wer per Mail einen Auftrag stellen kann
+
+In der Voreinstellung wird jede Mail ein Auftrag, die im Postfach ankommt und
+nicht automatisch erzeugt ist. Der Absender wird als Kunde angelegt und
+bekommt die Bestätigung. Erreicht Werbung das Postfach, entstehen also
+Aufträge und Kunden, und AVIS antwortet an Adressen, die gefälscht sein
+können. Dagegen helfen zwei Dinge, am besten beide:
+
+1. **Das Postfach am Mailserver schützen.** Das Postfach der Hotline sollte
+   nur Mails von angemeldeten Absendern des eigenen Hauses annehmen. Ob ein
+   Absender echt ist, kann nur der Mailserver prüfen; AVIS sieht nur, was in
+   der Mail steht.
+2. **`Posteingang:NurBekannteAbsender` auf `true` setzen.** Ein neuer Auftrag
+   entsteht dann nur, wenn die Absenderadresse zu einem aktiven Kunden gehört
+   oder zu einem aktiven Konto. Mit dem Kundenabgleich sind das die Personen
+   aus dem Verzeichnis.
+
+Was mit der Einstellung für Mails anderer Absender gilt:
+
+- AVIS übergeht sie. Es entsteht kein Auftrag und kein Kunde, Anhänge werden
+  nicht gespeichert, und es geht keine Antwort hinaus.
+- Unter Verwaltung → Posteingang steht die Mail mit dem Hinweis „Absender
+  unbekannt“. Im Postfach bleibt sie wie jede verarbeitete Mail erhalten.
+- Wer von außen Aufträge stellen soll, etwa ein Dienstleister, wird vorher
+  unter „Kunden“ mit seiner Mailadresse angelegt.
+- Die Antwort auf einen eigenen Auftrag kommt immer an, auch wenn der Kunde
+  inzwischen inaktiv ist.
 - Lässt sich eine Mail dreimal nicht verarbeiten, bleibt sie gelesen und
   markiert im Postfach liegen, damit jemand sie sich ansieht.
 
