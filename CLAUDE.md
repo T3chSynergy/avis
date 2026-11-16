@@ -115,6 +115,5 @@ In der Entwicklungsumgebung nicht prüfbar; nur der Nutzer kann es in der Zielum
 1. Probelauf in der Zielumgebung (siehe „Nicht geprüft“): Was der Nutzer meldet, beheben, Anleitung berichtigen.
 2. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
    `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
-3. Angedacht, nicht gebaut (`docs/stand.md`): Kundenanmeldung an den Abgleich binden; Beteiligte am Auftrag;
-   Bezug zwischen Aufträgen über `AVIS 123` im Text, ohne Teilaufträge; Link von Gerät und Kunde ins Quellsystem.
+3. Angedacht, nicht gebaut: Die Liste steht in `docs/stand.md`. Nichts davon ohne Auftrag des Nutzers bauen.
 4. Bekannte Lücken stehen in `docs/stand.md`.

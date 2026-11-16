@@ -108,6 +108,12 @@ kleine eingefügte Bilder, die als Logo verworfen wurden.
   - eine feste Schrittfolge, bei der ein Auftrag nach dem Erledigen von selbst
     an die nächste Gruppe geht.
 
+  Dazu passt ein Formular für Kunden je Art von Auftrag: eine Eingabemaske,
+  aus der ein Auftrag mit einer bestimmten Kategorie in einer bestimmten
+  Gruppe entsteht, mit eigenem Titel und einem vorgegebenen Text, der sagt,
+  welche Angaben gebraucht werden. Eigene Felder je Formular gehören nicht
+  dazu, siehe „Nicht vorgesehen“.
+
   Eine Genehmigung durch jemanden, der kein Bearbeiter ist, käme nur in Frage,
   wenn der Nutzen sehr groß ist: Sie braucht einen neuen Stand, eine neue
   Rolle und eigene Mails. Eine Engine mit frei einstellbaren Ständen und
