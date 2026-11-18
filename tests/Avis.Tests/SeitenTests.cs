@@ -291,6 +291,22 @@ public class SeitenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Die_Seiten_nennen_das_Symbol_fuer_den_Browser_und_es_ist_ohne_Anmeldung_abrufbar()
+    {
+        var client = app.CreateClient();
+
+        // Die Adresse steht im Kopf der Seite, damit der Browser das Symbol auch unter einem Unterpfad findet.
+        var seite = await client.GetStringAsync("/Anmeldung");
+        var adresse = Regex.Match(seite, "<link rel=\"icon\" href=\"(/favicon\\.ico\\?v=[^\"]+)\"").Groups[1].Value;
+        Assert.NotEqual("", adresse);
+
+        var antwort = await client.GetAsync(adresse);
+        Assert.Equal(HttpStatusCode.OK, antwort.StatusCode);
+        Assert.Equal("image/x-icon", antwort.Content.Headers.ContentType?.MediaType);
+        Assert.True((await antwort.Content.ReadAsByteArrayAsync()).Length > 1000);
+    }
+
+    [Fact]
     public async Task Ohne_Anmeldung_geht_es_zur_Anmeldeseite()
     {
         var client = app.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
