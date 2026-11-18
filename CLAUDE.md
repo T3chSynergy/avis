@@ -73,7 +73,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **`global.json` nicht anheben.** Die Version dort ist eine Mindestversion; eine Anhebung sperrt Rechner
   mit älterem SDK der Reihe 10.0 aus (auch die Cloud-Umgebung). Dependabot beobachtet sie deshalb nicht.
 - **Codeanalyse:** Abgeschaltete Regeln stehen mit Grund in `.editorconfig`. In den Tests ist CA1305 aus,
-  weil dort nur ganze Zahlen als Formularwerte geschrieben werden.
+  weil dort nur ganze Zahlen als Formularwerte geschrieben werden. Die CodeQL-Warnung zur Bildvorschau in
+  `editor.js` („DOM text reinterpreted as HTML“) ist ein Fehlalarm; der Nutzer hat sie geschlossen.
 - **Fremde Komponenten:** Bei jedem neuen oder entfernten Paket `THIRD-PARTY-NOTICES.md` anpassen, Lizenztexte
   aus den Repos der Hersteller, nicht aus dem Gedächtnis. Das Favicon ist selbst gezeichnet; fremde Grafiken nicht.
 - **Lizenz:** AGPL-3.0-or-later, ohne Inhabernamen. Verweis am Ende der Hilfe (`Lizenz.cs`) bleibt; Pakete müssen passen.
@@ -115,6 +116,4 @@ In der Entwicklungsumgebung nicht prüfbar; nur der Nutzer kann es in der Zielum
 ## Offene Schritte
 
 1. Probelauf in der Zielumgebung (siehe „Nicht geprüft“): Was der Nutzer meldet, beheben, Anleitung berichtigen.
-2. Code-Scanning-Warnung „DOM text reinterpreted as HTML“ in `wwwroot/js/editor.js` (Bildvorschau über
-   `URL.createObjectURL` in einem `img`): Fehlalarm, der Nutzer schließt sie als „False positive“.
-3. Angedachtes und bekannte Lücken stehen in `docs/stand.md`. Nichts davon ohne Auftrag des Nutzers bauen.
+2. Angedachtes und bekannte Lücken stehen in `docs/stand.md`. Nichts davon ohne Auftrag des Nutzers bauen.
