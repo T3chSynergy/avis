@@ -11,8 +11,19 @@ if (args is ["einrichten"])
 
 try
 {
-    var optionen = Optionen.Lesen(args);
+    // "readme-bild <Datei>" nimmt nur die kurze Bildfolge für das README auf.
+    var readmeBild = args is ["readme-bild", _, ..] ? args[1] : null;
+    var optionen = Optionen.Lesen(readmeBild is null ? args : args[2..]);
     Directory.CreateDirectory(optionen.Ziel);
+    if (readmeBild is not null)
+    {
+        using var einPlaywright = await Playwright.CreateAsync();
+        using var keinSprecher = new Sprecher(optionen);
+        await using var eineKamera = await Kamera.StartenAsync(einPlaywright, optionen, keinSprecher);
+        await new Drehbuecher(eineKamera).ReadmeBildAsync(readmeBild);
+        return 0;
+    }
+
     Console.WriteLine(optionen.Schnell ? "Nur prüfen: Die Videos laufen ohne Ton und ohne Wartezeiten durch und werden nicht abgelegt."
         : optionen.MitTon ? "Aufnahme mit Ton." : "Aufnahme ohne Ton: OPENROUTER_API_KEY ist nicht gesetzt.");
 

@@ -1,14 +1,16 @@
 // Läuft während der Aufnahme in jeder Seite: ein sichtbarer Mauszeiger, ein Ring bei jedem Klick und unten ein
 // Band mit der Zeile zum Schritt. Zeiger und Zeile merkt sich die Seite, damit sie einen Seitenwechsel überstehen.
-// Die Datei ist eine Funktion; das Werkzeug ruft sie mit der Höhe des Bandes auf.
+// Die Datei ist eine Funktion; das Werkzeug ruft sie mit der Höhe des Bandes auf. Mit 0 gibt es kein Band.
 band => {
     if (window.top !== window) return;
     const bauen = () => {
         if (document.getElementById('film-zeiger')) return;
         const stil = document.createElement('style');
-        stil.textContent = `
+        const platz = band > 0 ? `
             html { scroll-padding-bottom: ${band + 24}px; }
-            body { padding-bottom: ${band + 8}px !important; }
+            body { padding-bottom: ${band + 8}px !important; }` : `
+            #film-text { display: none !important; }`;
+        stil.textContent = platz + `
             #film-zeiger { position: fixed; z-index: 2147483647; left: 0; top: 0; width: 26px; height: 26px;
                 pointer-events: none; transform: translate(-200px, -200px); }
             #film-ring { position: fixed; z-index: 2147483646; left: 0; top: 0; width: 44px; height: 44px;
