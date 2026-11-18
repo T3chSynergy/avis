@@ -114,6 +114,37 @@ internal sealed class Drehbuecher(Kamera kamera)
         }));
     }
 
+    /// <summary>
+    /// Die kurze Bildfolge für das README, ohne Band und ohne Ton: einen offenen Auftrag öffnen, übernehmen und
+    /// intern kommentieren. Sie beginnt mit frischen Testdaten.
+    /// </summary>
+    public async Task ReadmeBildAsync(string ziel)
+    {
+        const string bearbeiter = "bernd";
+        await kamera.TestdatenNeuAnlegenAsync();
+        await kamera.StillAsync(bearbeiter, async p =>
+        {
+            await p.GotoAsync(kamera.Adresse + "/Gruppen/Meine");
+            await p.Locator("tr", new() { HasText = "IT-Hotline" }).GetByRole(AriaRole.Button, new() { Name = "Beitreten" }).ClickAsync();
+            await p.GetByRole(AriaRole.Button, new() { Name = "Austreten" }).First.WaitForAsync();
+        });
+        await kamera.BildfolgeAsync(bearbeiter, async f =>
+        {
+            var s = f.Seite;
+            await f.Gehe("/Gruppen");
+            await f.Pause(1000);
+            await f.Senden(s.Locator("a", new() { HasText = "Drucker im Flur druckt nicht" }));
+            await f.Pause(600);
+            await f.Senden(s.GetByRole(AriaRole.Button, new() { Name = "Übernehmen", Exact = true }));
+            await f.Pause(600);
+            await f.Klick(Aktion(s, "Interner Kommentar"));
+            await f.Tippe(s.Locator("#intern-text"), "Warteschlange geleert, Druckdienst neu gestartet.", 20);
+            await f.Senden(s.Locator(".panel[data-aktion=intern] button.haupt"));
+            await f.Zu(s.Locator("ol.verlauf li.intern"));
+            await f.Pause(2500);
+        }, ziel);
+    }
+
     public IReadOnlyList<Drehbuch> Alle() =>
     [
         Ueberblick(), MeineGruppen(), Erfassen(), Uebernehmen(), Weiterleiten(), Abschliessen(),

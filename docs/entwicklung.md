@@ -189,11 +189,19 @@ Eintrag führt zu dem Abschnitt, der zur gerade geöffneten Seite gehört.
 
 ## Bild im README
 
-`docs/bilder/auftrag.png` zeigt Auftrag 1 der Testdaten, übernommen und um
-einen internen Kommentar und eine Nachricht an den Kunden ergänzt: helle
-Darstellung, Fenster 1280 Punkte breit, doppelte Auflösung. Ändert sich die
-Seite des Auftrags sichtbar, wird es neu aufgenommen. Es zeigt nur erfundene
-Daten.
+`docs/bilder/avis.gif` ist eine kurze Bildfolge mit den erfundenen Testdaten:
+Ein Bearbeiter öffnet den Auftrag 1, übernimmt ihn und schreibt einen internen
+Kommentar. Das Werkzeug für die Kurzvideos nimmt sie auf, ohne Textband und
+ohne Ton (siehe „Kurzvideos und Kurzanleitung“; auch dieser Aufruf legt die
+Testdaten neu an und braucht `ffmpeg`):
+
+```bash
+dotnet run --project werkzeuge/Avis.Kurzvideos -- readme-bild docs/bilder/avis.gif
+```
+
+Ändert sich die Seite des Auftrags sichtbar, wird die Bildfolge neu
+aufgenommen und eingecheckt. Sie soll klein bleiben, um die 1,5 MB: wenige
+Schritte, acht Bilder je Sekunde, 880 Punkte breit.
 
 ## Kurzvideos und Kurzanleitung
 

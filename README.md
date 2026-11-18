@@ -9,9 +9,16 @@ Es ist für eine IT-Abteilung mit einigen Dutzend Bearbeitern gedacht und
 bleibt mit Absicht klein: eine Webanwendung mit einer Datenbankdatei, ohne
 einstellbare Abläufe und ohne Dienste daneben.
 
-![Ein Auftrag in AVIS: oben Priorität, Stand und Gruppe, darunter Beschreibung, Aktionen und Verlauf mit einer Nachricht an den Kunden und einem gelb abgesetzten internen Kommentar, rechts die Angaben zu Kunde und Gerät](docs/bilder/auftrag.png)
+![Kurze Bildfolge: Ein Bearbeiter öffnet in der Liste der offenen Aufträge den Auftrag „Drucker im Flur druckt nicht“, übernimmt ihn und schreibt einen internen Kommentar, der danach gelb abgesetzt im Verlauf steht](docs/bilder/avis.gif)
 
-*Ein Auftrag aus Sicht eines Bearbeiters, mit den erfundenen Testdaten.*
+*Ein Auftrag wird übernommen und intern kommentiert, mit den erfundenen Testdaten.*
+
+**AVIS ansehen, ohne es zu installieren:**
+[Kurzvideos](https://t3chsynergy.github.io/avis/) zeigen in rund acht Minuten
+die wichtigsten Handgriffe, die
+[Kurzanleitung für Bearbeiter](https://t3chsynergy.github.io/avis/kurzanleitung.html)
+erklärt Grundprinzip und Bedienung mit Bildern, auch als
+[PDF](https://t3chsynergy.github.io/avis/AVIS-Kurzanleitung-Bearbeiter.pdf).
 
 ## Was AVIS kann
 

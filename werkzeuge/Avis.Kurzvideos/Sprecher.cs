@@ -109,6 +109,16 @@ internal static class Schnitt
         await StartenAsync("ffmpeg", [.. aufruf]);
     }
 
+    /// <summary>
+    /// Ein GIF aus einer Aufnahme: wenige Bilder je Sekunde und eine eigene Farbpalette, damit die Datei klein
+    /// bleibt. Der Anfang fällt weg, weil die Aufnahme mit einer leeren Seite beginnt.
+    /// </summary>
+    public static Task GifAsync(string quelle, string ziel, int breite) =>
+        StartenAsync("ffmpeg", "-y", "-loglevel", "error", "-ss", "0.5", "-i", quelle, "-vf",
+            string.Create(CultureInfo.InvariantCulture, $"fps=8,scale={breite}:-1:flags=lanczos,split[a][b];") +
+            "[a]palettegen=max_colors=96:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle",
+            "-loop", "0", ziel);
+
     public static Task StandbildAsync(string video, string ziel) =>
         StartenAsync("ffmpeg", "-y", "-loglevel", "error", "-ss", "1.5", "-i", video, "-frames:v", "1", "-q:v", "4", ziel);
 

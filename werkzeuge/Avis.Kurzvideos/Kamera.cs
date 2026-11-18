@@ -19,7 +19,10 @@ internal sealed class Kamera(IBrowser browser, Optionen optionen, Sprecher sprec
 {
     public const int Breite = 1280, Hoehe = 720, Band = 88;
 
-    private static readonly string Einblendung = $"({Quelle.Lesen("Einblendung.js")})({Band});";
+    /// <summary>Format der kurzen Bildfolge für das README: kleiner als die Videos, damit die Schrift lesbar bleibt.</summary>
+    private const int BildfolgeBreite = 1100, BildfolgeHoehe = 700;
+
+    private static string Einblendung(int band) => $"({Quelle.Lesen("Einblendung.js")})({band});";
 
     public string Adresse => optionen.Adresse;
 
@@ -125,37 +128,8 @@ internal sealed class Kamera(IBrowser browser, Optionen optionen, Sprecher sprec
     public async Task<Aufnahme> AufnehmenAsync(Drehbuch drehbuch)
     {
         var ton = await sprecher.SprechenAsync(drehbuch.Saetze);
-        var roh = Path.Combine(optionen.Arbeit, "roh");
-        var einstellungen = Kontext(await AnmeldenAsync(drehbuch.Anmeldename));
-        einstellungen.RecordVideoDir = roh;
-        einstellungen.RecordVideoSize = new() { Width = Breite, Height = Hoehe };
-
-        var kontext = await browser.NewContextAsync(einstellungen);
-        await kontext.AddInitScriptAsync(Einblendung);
-        var seite = await kontext.NewPageAsync();
-        seite.PageError += (_, fehler) => Console.WriteLine("  Fehler in der Seite: " + fehler);
-        var film = new Film(seite, optionen, ton);
-
-        Exception? fehler = null;
-        try
-        {
-            await drehbuch.Ablauf(film);
-            await film.Pause(700);
-        }
-        catch (Exception e) when (e is PlaywrightException or TimeoutException or InvalidOperationException)
-        {
-            fehler = e;
-            await seite.ScreenshotAsync(new() { Path = Path.Combine(optionen.Ziel, drehbuch.Datei + "-fehler.png") });
-        }
-
+        var (quelle, film) = await FilmenAsync(drehbuch.Datei, drehbuch.Anmeldename, Breite, Hoehe, Band, false, ton, drehbuch.Ablauf);
         var laenge = film.Sekunden;
-        await kontext.CloseAsync();
-        var quelle = await seite.Video!.PathAsync();
-        if (fehler is not null)
-        {
-            throw new InvalidOperationException($"{drehbuch.Datei}: {fehler.Message.Split('\n')[0]}", fehler);
-        }
-
         var datei = drehbuch.Datei + ".mp4";
         if (!optionen.Schnell)
         {
@@ -170,23 +144,73 @@ internal sealed class Kamera(IBrowser browser, Optionen optionen, Sprecher sprec
             $"{drehbuch.Datei}: {laenge:0.0} s, {film.Marken.Count} Schritte{(optionen.Schnell ? " (nur geprüft)" : "")}"));
         return new Aufnahme(drehbuch, datei, laenge, film.Marken);
     }
+
+    /// <summary>Nimmt eine kurze Bildfolge ohne Band und ohne Ton auf und legt sie als GIF ab: das Bild im README.</summary>
+    public async Task BildfolgeAsync(string anmeldename, Func<Film, Task> ablauf, string ziel)
+    {
+        var keinTon = new Dictionary<int, Satz>();
+        var (quelle, film) = await FilmenAsync("bildfolge", anmeldename, BildfolgeBreite, BildfolgeHoehe, 0, true, keinTon, ablauf);
+        await Schnitt.GifAsync(quelle, ziel, BildfolgeBreite * 4 / 5);
+        File.Delete(quelle);
+        Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+            $"Bildfolge: {film.Sekunden:0.0} s, {new FileInfo(ziel).Length / 1024} KB, {ziel}"));
+    }
+
+    /// <summary>Spielt einen Ablauf vor laufender Aufnahme ab und gibt die rohe Aufnahme zurück.</summary>
+    private async Task<(string Quelle, Film Film)> FilmenAsync(string name, string anmeldename, int breite, int hoehe, int band,
+        bool sparsam, IReadOnlyDictionary<int, Satz> ton, Func<Film, Task> ablauf)
+    {
+        var einstellungen = Kontext(await AnmeldenAsync(anmeldename), breite, hoehe);
+        einstellungen.RecordVideoDir = Path.Combine(optionen.Arbeit, "roh");
+        einstellungen.RecordVideoSize = new() { Width = breite, Height = hoehe };
+
+        var kontext = await browser.NewContextAsync(einstellungen);
+        await kontext.AddInitScriptAsync(Einblendung(band));
+        var seite = await kontext.NewPageAsync();
+        seite.PageError += (_, fehler) => Console.WriteLine("  Fehler in der Seite: " + fehler);
+        var film = new Film(seite, optionen, ton, breite, hoehe, band, sparsam);
+
+        Exception? fehler = null;
+        try
+        {
+            await ablauf(film);
+            await film.Pause(700);
+        }
+        catch (Exception e) when (e is PlaywrightException or TimeoutException or InvalidOperationException)
+        {
+            fehler = e;
+            await seite.ScreenshotAsync(new() { Path = Path.Combine(optionen.Ziel, name + "-fehler.png") });
+        }
+
+        film.Anhalten();
+        await kontext.CloseAsync();
+        var quelle = await seite.Video!.PathAsync();
+        return fehler is null
+            ? (quelle, film)
+            : throw new InvalidOperationException($"{name}: {fehler.Message.Split('\n')[0]}", fehler);
+    }
 }
 
 /// <summary>
 /// Die Handgriffe eines Videos: ruhige Mausbewegung, Klick, Tippen und die Zeile im Band. Ein Schritt dauert
-/// mindestens so lange wie sein gesprochener Satz.
+/// mindestens so lange wie sein gesprochener Satz. "Sparsam" rollt die Seite nur, wenn das Ziel sonst nicht zu
+/// sehen wäre, und dann ohne Übergang: In einem GIF kostet jedes bewegte Bild Platz.
 /// </summary>
-internal sealed class Film(IPage seite, Optionen optionen, IReadOnlyDictionary<int, Satz> ton)
+internal sealed class Film(
+    IPage seite, Optionen optionen, IReadOnlyDictionary<int, Satz> ton, int breite, int hoehe, int band, bool sparsam)
 {
     private readonly Stopwatch _uhr = Stopwatch.StartNew();
     private readonly List<Marke> _marken = [];
-    private (double X, double Y) _maus = (Kamera.Breite * 0.6, Kamera.Hoehe * 0.42);
+    private (double X, double Y) _maus = (breite * 0.6, hoehe * 0.42);
 
     public IPage Seite => seite;
 
     public IReadOnlyList<Marke> Marken => _marken;
 
     public double Sekunden => _uhr.Elapsed.TotalSeconds;
+
+    /// <summary>Hält die Uhr an, sobald der Ablauf zu Ende ist: Danach steht die Länge der Aufnahme fest.</summary>
+    public void Anhalten() => _uhr.Stop();
 
     /// <summary>Wartet, damit der Zuschauer folgen kann. Beim schnellen Prüfen fast nicht.</summary>
     public Task Pause(int ms) => seite.WaitForTimeoutAsync(optionen.Schnell ? Math.Min(ms, 30) : ms);
@@ -229,10 +253,16 @@ internal sealed class Film(IPage seite, Optionen optionen, IReadOnlyDictionary<i
     {
         ort = ort.First;
         await ort.WaitForAsync(new() { State = WaitForSelectorState.Visible, Timeout = 10000 });
-        var art = optionen.Schnell ? "auto" : "smooth";
-        await ort.EvaluateAsync("(e, art) => e.scrollIntoView({ behavior: art, block: 'center' })", art);
+        var art = optionen.Schnell || sparsam ? "auto" : "smooth";
+        double unten = hoehe - band - 16;
+        var sichtbar = sparsam && await ort.EvaluateAsync<bool>(
+            "(e, unten) => { const r = e.getBoundingClientRect(); return r.top >= 8 && r.top + Math.min(r.height, 120) <= unten; }", unten);
+        if (!sichtbar)
+        {
+            await ort.EvaluateAsync("(e, art) => e.scrollIntoView({ behavior: art, block: 'center' })", art);
+        }
+
         var r = await RuhigAsync(ort);
-        const double unten = Kamera.Hoehe - Kamera.Band - 16;
         var kante = r.Y + Math.Min(r.Height, 120);
         if (kante > unten)
         {
