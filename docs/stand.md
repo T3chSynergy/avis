@@ -13,6 +13,7 @@ Grundlegendes ändern.
 
 | Version | Was dazukam |
 |---|---|
+| 0.2.1 | Favicon auch in einem Unterverzeichnis, Verweis aus der Hilfe auf Kurzvideos und Kurzanleitung |
 | 0.2.0 | Bezug zwischen Aufträgen, E-Mail-Eingang nur für bekannte Absender, Link vom Gerät nach Snipe-IT, Verweis ins Telefonbuch |
 | 0.1.0 | Die erste Version |
 
@@ -43,8 +44,15 @@ Mit Version 0.2.0 kamen dazu:
 - der Verweis von Kunden und Bearbeitern in ein Telefonbuch des Hauses
   (`Telefonbuch:Adresse`)
 
-Seitdem gibt es außerdem [Kurzvideos](https://t3chsynergy.github.io/avis/) und
-eine [Kurzanleitung](https://t3chsynergy.github.io/avis/kurzanleitung.html)
+Mit Version 0.2.1 kamen dazu:
+
+- das Favicon auch dann, wenn AVIS in einem Unterverzeichnis läuft
+- in der Hilfe für Bearbeiter der Verweis auf die Kurzvideos und die
+  Kurzanleitung; Verweise der Hilfe nach außen geben die Adresse der
+  Installation nicht weiter
+
+Neben der Anwendung gibt es [Kurzvideos](https://t3chsynergy.github.io/avis/)
+und eine [Kurzanleitung](https://t3chsynergy.github.io/avis/kurzanleitung.html)
 für Bearbeiter. Videos und Bilder werden automatisch mit den Testdaten
 aufgenommen, die Videos durch KI vertont. Neu gebaut wird beides, wenn sich
 die Oberfläche sichtbar ändert.
