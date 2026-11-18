@@ -85,8 +85,9 @@ abgeschaltet sind, und dem Grund dafür.
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
 | `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen (Suche beim Tippen, Bilder einfügen, Tastenkürzel); ohne sie funktioniert alles |
 | `tests/Avis.Tests` | Tests |
+| `werkzeuge/Avis.Kurzvideos` | Nimmt die Kurzvideos zur Dokumentation auf; gehört nicht zu `Avis.slnx` (siehe „Kurzvideos“) |
 | `docs` | Konzept, Betrieb, Einstellungen, Stand und diese Datei |
-| `.github/workflows` | Prüfung bei jedem Pull Request (`pruefung.yml`), Paket für den Betrieb bei jedem Release (`paket.yml`) |
+| `.github/workflows` | Prüfung bei jedem Pull Request (`pruefung.yml`), Paket für den Betrieb bei jedem Release (`paket.yml`), Kurzvideos auf GitHub Pages auf Knopfdruck (`kurzvideos.yml`) |
 | `LICENSE` | Lizenz von AVIS (GNU AGPL, Version 3); wird beim Veröffentlichen in den Ausgabeordner kopiert |
 | `THIRD-PARTY-NOTICES.md` | Lizenzvermerke der mitgelieferten Komponenten; wird beim Veröffentlichen in den Ausgabeordner kopiert und ist anzupassen, wenn ein Paket hinzukommt oder wegfällt |
 
@@ -189,6 +190,58 @@ einen internen Kommentar und eine Nachricht an den Kunden ergänzt: helle
 Darstellung, Fenster 1280 Punkte breit, doppelte Auflösung. Ändert sich die
 Seite des Auftrags sichtbar, wird es neu aufgenommen. Es zeigt nur erfundene
 Daten.
+
+## Kurzvideos
+
+Unter https://t3chsynergy.github.io/avis/ stehen kurze Videos, die Bearbeitern
+die wichtigsten Handgriffe zeigen. Niemand nimmt sie von Hand auf: Das Werkzeug
+`werkzeuge/Avis.Kurzvideos` bedient AVIS mit den erfundenen Testdaten in einem
+Browser (Playwright für .NET), nimmt das Bild auf, lässt die Sätze von einer
+künstlichen Stimme sprechen und schneidet beides mit ffmpeg zusammen. Dazu
+baut es die Seite mit den Videos, Standbildern und Untertiteln. Die Seite sagt
+ausdrücklich, dass die Videos durch KI vertont und bearbeitet sind.
+
+| Datei | Inhalt |
+|---|---|
+| `Drehbuch.cs` | Die Videos: Titel, gesprochene Sätze und der Ablauf im Browser |
+| `Kamera.cs` | Aufnahme und die Handgriffe eines Videos (Maus, Klick, Tippen, Zeile im Band) |
+| `Einblendung.js` | Was während der Aufnahme in der Seite mitläuft: Mauszeiger, Klickring, Band am unteren Rand |
+| `Sprecher.cs` | Sprachausgabe und Schnitt |
+| `Seite.cs`, `Seite.css` | Die veröffentlichte Seite |
+
+Der Workflow `.github/workflows/kurzvideos.yml` nimmt die Videos neu auf und
+veröffentlicht sie auf GitHub Pages, und zwar nur auf Knopfdruck (Actions →
+Kurzvideos → Run workflow, vom Zweig `main`). Bei einem Release läuft er
+absichtlich nicht von selbst: Die meisten Releases ändern an der Oberfläche
+nichts, und jeder Lauf kostet die Sprachausgabe. **Ein Lauf lohnt sich, wenn
+sich die Oberfläche sichtbar geändert hat** – am besten gleich nach dem
+Release, dann steht dessen Name auf der Seite. Den Schlüssel für die
+Sprachausgabe (OpenRouter) liest der Workflow aus dem Secret
+`PAGES_OPENROUTER`. Ohne Schlüssel entstehen die Videos ohne Ton, mit
+Untertiteln.
+
+Die Videos bauen aufeinander auf und brauchen frische Testdaten. **Ändert sich
+die Oberfläche, kann ein Ablauf hängen bleiben:** Dann das Drehbuch anpassen.
+Ob alle Abläufe durchlaufen, zeigt ein Schnelldurchgang ohne Ton und ohne
+Wartezeiten in etwa einer Minute:
+
+```bash
+dotnet run --project src/Avis.Web          # in einem zweiten Fenster, mit frischen Testdaten
+dotnet run --project werkzeuge/Avis.Kurzvideos -- einrichten    # einmalig: lädt den Browser
+dotnet run --project werkzeuge/Avis.Kurzvideos -- --schnell
+```
+
+Ohne `--schnell` entstehen die Videos (dafür muss `ffmpeg` installiert sein),
+mit `OPENROUTER_API_KEY` in der Umgebung auch der Ton. `--nur 3,5` nimmt nur
+einzelne Videos auf, `--ziel` nennt den Ordner für die Seite. Scheitert ein
+Ablauf, liegt dort ein Bild der Stelle (`…-fehler.png`). Bei Pull Requests,
+die das Werkzeug ändern, läuft der Schnelldurchgang im Workflow.
+
+Jeder Lauf lässt die Sätze neu sprechen; die Aussprache kann sich deshalb von
+Lauf zu Lauf leicht unterscheiden. **Nach jedem Lauf die Videos einmal
+durchspielen:** Ob Bild und Ton stimmen, hört und sieht nur ein Mensch. Die
+gesprochenen Sätze meiden Abkürzungen und Sonderzeichen, über die eine
+künstliche Stimme stolpert.
 
 ## Paket und Versionen
 

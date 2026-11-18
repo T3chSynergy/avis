@@ -102,6 +102,7 @@ AVIS läuft unter Windows Server mit IIS. Für den Betrieb hängt an jedem
 
 | Für wen | Wo |
 |---|---|
+| Wer AVIS kurz kennenlernen will | [Kurzvideos](https://t3chsynergy.github.io/avis/): die wichtigsten Handgriffe für Bearbeiter, zusammen rund acht Minuten |
 | Kunden, Bearbeiter, Administratoren | Die Hilfe in der Anwendung, „Hilfe“ im Kopf jeder Seite. Hier zum Nachlesen: für [Kunden](src/Avis.Web/Hilfe/kunden.md), [Bearbeiter](src/Avis.Web/Hilfe/bearbeiter.md) und [Administratoren](src/Avis.Web/Hilfe/administratoren.md) |
 | Wer AVIS betreibt | [Betrieb unter IIS](docs/betrieb-iis.md), [Einstellungen und Anbindungen](docs/einstellungen.md) |
 | Wer wissen will, warum AVIS so ist | [Konzept](docs/konzept.md) |

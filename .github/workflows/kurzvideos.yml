@@ -1,0 +1,125 @@
+# Nimmt die Kurzvideos zur Dokumentation auf und veröffentlicht sie auf
+# GitHub Pages. Das Werkzeug unter werkzeuge/Avis.Kurzvideos bedient dazu AVIS
+# mit den erfundenen Testdaten in einem Browser. Mehr dazu steht in
+# docs/entwicklung.md, Abschnitt "Kurzvideos".
+#
+# - Auf Knopfdruck (Actions → Kurzvideos → Run workflow): aufnehmen, vertonen
+#   und veröffentlichen. Absichtlich nicht bei jedem Release: Die meisten
+#   ändern an der Oberfläche nichts, und jeder Lauf kostet die Sprachausgabe.
+#   Ein Lauf lohnt sich, wenn sich die Oberfläche sichtbar geändert hat.
+# - Bei Pull Requests, die das Werkzeug betreffen: nur prüfen, ob es sich
+#   bauen lässt und die Abläufe durchlaufen. Ohne Ton, ohne Veröffentlichung.
+#
+# Die Stimme kommt von einer Sprachausgabe bei OpenRouter; der Schlüssel dafür
+# ist das Secret PAGES_OPENROUTER. Fehlt es, entstehen die Videos ohne Ton.
+name: Kurzvideos
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/kurzvideos.yml
+      - werkzeuge/Avis.Kurzvideos/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kurzvideos-${{ github.ref }}
+  # Eine laufende Veröffentlichung wird nicht abgebrochen, ein überholter Stand eines Pull Requests schon.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  aufnahme:
+    name: Videos aufnehmen
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      WERKZEUG: werkzeuge/Avis.Kurzvideos
+    steps:
+      # Mit der ganzen Geschichte, damit sich feststellen lässt, ob der Stand ein Release ist.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+
+      # Das Werkzeug gehört nicht zu Avis.slnx; der Workflow "Prüfung" sieht es deshalb nicht.
+      - name: Bauen
+        run: |
+          dotnet build src/Avis.Web
+          dotnet build "$WERKZEUG" -warnaserror
+          dotnet format "$WERKZEUG" --verify-no-changes --no-restore
+
+      - name: Browser einrichten
+        run: dotnet run --project "$WERKZEUG" --no-build -- einrichten
+
+      - name: AVIS mit Testdaten starten
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          TZ: Europe/Berlin
+        run: |
+          nohup dotnet run --project src/Avis.Web --no-build --no-launch-profile --urls http://localhost:5274 > avis.log 2>&1 &
+          for versuch in $(seq 1 60); do
+            if curl --silent --fail --output /dev/null http://localhost:5274/Anmeldung; then exit 0; fi
+            sleep 1
+          done
+          cat avis.log
+          exit 1
+
+      - name: Abläufe prüfen
+        if: github.event_name == 'pull_request'
+        run: dotnet run --project "$WERKZEUG" --no-build -- --schnell --ziel seite
+
+      - name: ffmpeg einrichten
+        if: github.event_name != 'pull_request'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends ffmpeg
+
+      # Auf der Seite steht der Name des Release, wenn der Stand genau eines ist, sonst der Commit.
+      - name: Videos aufnehmen
+        if: github.event_name != 'pull_request'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.PAGES_OPENROUTER }}
+        run: |
+          stand="$(git describe --tags --exact-match --match 'v*' 2>/dev/null || echo "Stand ${GITHUB_SHA:0:7}")"
+          dotnet run --project "$WERKZEUG" --no-build -- --ziel seite --stand "$stand"
+
+      # Scheitert ein Ablauf, zeigt ein Bild, wo er hing.
+      - name: Fehlerbilder aufheben
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: kurzvideos-fehler
+          path: |
+            seite/*-fehler.png
+            avis.log
+          if-no-files-found: ignore
+
+      - name: Seite bereitstellen
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: seite
+
+  seite:
+    name: Auf GitHub Pages veröffentlichen
+    if: github.event_name != 'pull_request'
+    needs: aufnahme
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.veroeffentlichung.outputs.page_url }}
+    steps:
+      - id: veroeffentlichung
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

@@ -13,8 +13,12 @@
 version: 2
 
 updates:
+  # "/" ist die Anwendung mit ihren Tests, das zweite Verzeichnis das Werkzeug
+  # für die Kurzvideos, das nicht zu Avis.slnx gehört.
   - package-ecosystem: "nuget"
-    directory: "/"
+    directories:
+      - "/"
+      - "/werkzeuge/Avis.Kurzvideos"
     schedule:
       interval: "weekly"
       day: "monday"
