@@ -1,0 +1,114 @@
+
+/* Die Kurzanleitung: am Bildschirm eine Spalte zum Lesen, im Druck A4. */
+.anleitung main { max-width: 860px; }
+
+.anleitung h1 { margin-bottom: 4px; }
+
+.anleitung h2 { font-size: 24px; margin: 44px 0 10px; padding-top: 14px; border-top: 1px solid var(--linie); }
+
+.anleitung h3 { font-size: 18px; margin: 26px 0 6px; }
+
+.untertitel, .herunterladen { color: var(--gedaempft); margin: 0 0 6px; }
+
+.herunterladen { margin-top: 22px; font-size: 14px; }
+
+nav.inhalt { margin: 22px 0 0; }
+
+nav.inhalt h2 { font-size: 18px; margin: 0 0 6px; padding: 0; border: 0; }
+
+nav.inhalt ol { list-style: none; padding: 0; margin: 0; columns: 2 300px; }
+
+nav.inhalt li { padding: 1px 0; break-inside: avoid; }
+
+table { border-collapse: collapse; width: 100%; margin: 12px 0 18px; }
+
+th, td { border: 1px solid var(--linie); padding: 6px 10px; text-align: left; vertical-align: top; }
+
+th, td:first-child:empty { background: var(--kopfzeile); }
+
+blockquote {
+    margin: 14px 0 18px;
+    padding: 10px 14px;
+    background: var(--kopfzeile);
+    border-left: 4px solid var(--verweis);
+    border-radius: 4px;
+}
+
+blockquote p { margin: 0; }
+
+code { font-family: Consolas, "Liberation Mono", monospace; font-size: .93em; background: var(--kopfzeile); padding: 1px 4px; border-radius: 3px; }
+
+figure { margin: 16px 0 20px; }
+
+figure div { display: flex; gap: 12px; align-items: flex-start; }
+
+figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--linie-stark); border-radius: 3px; min-width: 0; }
+
+figure.paar img { flex: 1 1 0; width: 50%; }
+
+figure img.mittel { width: 76%; }
+
+figure img.schmal { width: 46%; }
+
+figure img.ohnerand { border: 0; }
+
+figcaption { font-size: 14px; color: var(--gedaempft); margin-top: 6px; }
+
+p.video { margin: 0 0 10px; font-size: 15px; }
+
+p.video a::before { content: "▶ "; font-size: .8em; }
+
+ul.contains-task-list { list-style: none; padding-left: 4px; }
+
+ul.contains-task-list li { padding: 3px 0 3px 28px; text-indent: -28px; }
+
+ul.contains-task-list input { margin: 0 10px 0 0; width: 15px; height: 15px; vertical-align: -2px; }
+
+@media screen and (max-width: 640px) {
+    table { display: block; overflow-x: auto; }
+
+    figure img.mittel, figure img.schmal, figure.paar img { width: 100%; }
+
+    figure.paar div { flex-direction: column; }
+}
+
+@media print {
+    :root {
+        color-scheme: light;
+        --grund: #ffffff; --flaeche: #ffffff; --text: #1b2430; --gedaempft: #5a6675; --linie: #d8dde4;
+        --linie-stark: #9aa7b6; --verweis: #14509f; --kopfzeile: #eef1f5;
+    }
+
+    body { font-size: 10.5pt; line-height: 1.42; }
+
+    header, footer, .herunterladen { display: none; }
+
+    .anleitung main { max-width: none; padding: 0; }
+
+    .anleitung h1 { font-size: 26pt; margin-top: 0; }
+
+    .anleitung h2 { font-size: 16pt; margin: 22pt 0 8pt; padding: 0; border: 0; }
+
+    .anleitung h3 { font-size: 12pt; margin: 14pt 0 5pt; }
+
+    h2, h3 { break-after: avoid; }
+
+    h2.neueseite { break-before: page; margin-top: 0; }
+
+    figure, tr, blockquote, li, p.video + p { break-inside: avoid; }
+
+    p.video { break-after: avoid; }
+
+    figcaption { font-size: 8.5pt; }
+
+    /* Hohe Bilder werden kleiner, damit Bild und Text öfter auf dieselbe Seite passen. */
+    figure img { width: auto; max-height: 130mm; }
+
+    figure img.mittel, figure img.schmal { width: auto; max-height: 118mm; }
+
+    figure.paar img { width: 50%; max-height: none; }
+
+    figure { margin: 10pt 0 12pt; }
+
+    a { text-decoration: none; }
+}

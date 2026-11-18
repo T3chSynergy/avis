@@ -85,9 +85,9 @@ abgeschaltet sind, und dem Grund dafür.
 | `src/Avis.Web/wwwroot/css/avis.css` | Stylesheet |
 | `src/Avis.Web/wwwroot/js` | Kleine Skripte, die Seiten bequemer machen (Suche beim Tippen, Bilder einfügen, Tastenkürzel); ohne sie funktioniert alles |
 | `tests/Avis.Tests` | Tests |
-| `werkzeuge/Avis.Kurzvideos` | Nimmt die Kurzvideos zur Dokumentation auf; gehört nicht zu `Avis.slnx` (siehe „Kurzvideos“) |
+| `werkzeuge/Avis.Kurzvideos` | Nimmt die Kurzvideos auf und baut die Kurzanleitung für Bearbeiter; gehört nicht zu `Avis.slnx` (siehe „Kurzvideos und Kurzanleitung“) |
 | `docs` | Konzept, Betrieb, Einstellungen, Stand und diese Datei |
-| `.github/workflows` | Prüfung bei jedem Pull Request (`pruefung.yml`), Paket für den Betrieb bei jedem Release (`paket.yml`), Kurzvideos auf GitHub Pages auf Knopfdruck (`kurzvideos.yml`) |
+| `.github/workflows` | Prüfung bei jedem Pull Request (`pruefung.yml`), Paket für den Betrieb bei jedem Release (`paket.yml`), Kurzvideos und Kurzanleitung auf GitHub Pages auf Knopfdruck (`kurzvideos.yml`) |
 | `LICENSE` | Lizenz von AVIS (GNU AGPL, Version 3); wird beim Veröffentlichen in den Ausgabeordner kopiert |
 | `THIRD-PARTY-NOTICES.md` | Lizenzvermerke der mitgelieferten Komponenten; wird beim Veröffentlichen in den Ausgabeordner kopiert und ist anzupassen, wenn ein Paket hinzukommt oder wegfällt |
 
@@ -191,15 +191,20 @@ Darstellung, Fenster 1280 Punkte breit, doppelte Auflösung. Ändert sich die
 Seite des Auftrags sichtbar, wird es neu aufgenommen. Es zeigt nur erfundene
 Daten.
 
-## Kurzvideos
+## Kurzvideos und Kurzanleitung
 
 Unter https://t3chsynergy.github.io/avis/ stehen kurze Videos, die Bearbeitern
-die wichtigsten Handgriffe zeigen. Niemand nimmt sie von Hand auf: Das Werkzeug
-`werkzeuge/Avis.Kurzvideos` bedient AVIS mit den erfundenen Testdaten in einem
-Browser (Playwright für .NET), nimmt das Bild auf, lässt die Sätze von einer
-künstlichen Stimme sprechen und schneidet beides mit ffmpeg zusammen. Dazu
-baut es die Seite mit den Videos, Standbildern und Untertiteln. Die Seite sagt
-ausdrücklich, dass die Videos durch KI vertont und bearbeitet sind.
+die wichtigsten Handgriffe zeigen, und die Kurzanleitung für Bearbeiter als
+Webseite und als PDF. Niemand nimmt die Videos oder die Bilder von Hand auf:
+Das Werkzeug `werkzeuge/Avis.Kurzvideos` bedient AVIS mit den erfundenen
+Testdaten in einem Browser (Playwright für .NET).
+
+- **Videos:** Es nimmt das Bild auf, lässt die Sätze von einer künstlichen
+  Stimme sprechen und schneidet beides mit ffmpeg zusammen. Die Seite dazu
+  sagt ausdrücklich, dass die Videos durch KI vertont und bearbeitet sind.
+- **Kurzanleitung:** Der Text steht in `Kurzanleitung.md`. Das Werkzeug nimmt
+  die Bildschirmfotos dazu auf, macht aus beidem eine Webseite und druckt sie
+  als PDF. Im Repository liegen die Bilder nicht.
 
 | Datei | Inhalt |
 |---|---|
@@ -207,41 +212,56 @@ ausdrücklich, dass die Videos durch KI vertont und bearbeitet sind.
 | `Kamera.cs` | Aufnahme und die Handgriffe eines Videos (Maus, Klick, Tippen, Zeile im Band) |
 | `Einblendung.js` | Was während der Aufnahme in der Seite mitläuft: Mauszeiger, Klickring, Band am unteren Rand |
 | `Sprecher.cs` | Sprachausgabe und Schnitt |
-| `Seite.cs`, `Seite.css` | Die veröffentlichte Seite |
+| `Kurzanleitung.md` | Der Text der Kurzanleitung; am Anfang steht, welche Platzhalter er kennt |
+| `Bildschirmfotos.cs` | Das Szenario, an dessen Stationen die Bilder der Kurzanleitung entstehen |
+| `Anleitung.cs`, `Anleitung.css`, `Ablauf.svg` | Webseite und PDF der Kurzanleitung |
+| `Seite.cs`, `Seite.css` | Die Seite mit den Videos, Kopf und Fuß beider Seiten |
 
-Der Workflow `.github/workflows/kurzvideos.yml` nimmt die Videos neu auf und
-veröffentlicht sie auf GitHub Pages, und zwar nur auf Knopfdruck (Actions →
+Der Workflow `.github/workflows/kurzvideos.yml` baut alles neu und
+veröffentlicht es auf GitHub Pages, und zwar nur auf Knopfdruck (Actions →
 Kurzvideos → Run workflow, vom Zweig `main`). Bei einem Release läuft er
 absichtlich nicht von selbst: Die meisten Releases ändern an der Oberfläche
 nichts, und jeder Lauf kostet die Sprachausgabe. **Ein Lauf lohnt sich, wenn
 sich die Oberfläche sichtbar geändert hat** – am besten gleich nach dem
-Release, dann steht dessen Name auf der Seite. Den Schlüssel für die
+Release, dann steht dessen Name auf den Seiten. Den Schlüssel für die
 Sprachausgabe (OpenRouter) liest der Workflow aus dem Secret
 `PAGES_OPENROUTER`. Ohne Schlüssel entstehen die Videos ohne Ton, mit
 Untertiteln.
 
-Die Videos bauen aufeinander auf und brauchen frische Testdaten. **Ändert sich
-die Oberfläche, kann ein Ablauf hängen bleiben:** Dann das Drehbuch anpassen.
-Ob alle Abläufe durchlaufen, zeigt ein Schnelldurchgang ohne Ton und ohne
-Wartezeiten in etwa einer Minute:
+**Ändert sich die Oberfläche, gehören Drehbuch und Kurzanleitung
+mitgepflegt:** Ein Ablauf kann hängen bleiben, und Text oder Bild der
+Kurzanleitung können nicht mehr stimmen. Ob alles durchläuft, zeigt ein
+Schnelldurchgang in gut einer Minute. Er baut die Kurzanleitung vollständig
+und spielt die Videos ohne Ton und ohne Wartezeiten durch:
 
 ```bash
-dotnet run --project src/Avis.Web          # in einem zweiten Fenster, mit frischen Testdaten
+dotnet run --project src/Avis.Web          # in einem zweiten Fenster
 dotnet run --project werkzeuge/Avis.Kurzvideos -- einrichten    # einmalig: lädt den Browser
 dotnet run --project werkzeuge/Avis.Kurzvideos -- --schnell
 ```
 
-Ohne `--schnell` entstehen die Videos (dafür muss `ffmpeg` installiert sein),
-mit `OPENROUTER_API_KEY` in der Umgebung auch der Ton. `--nur 3,5` nimmt nur
-einzelne Videos auf, `--ziel` nennt den Ordner für die Seite. Scheitert ein
-Ablauf, liegt dort ein Bild der Stelle (`…-fehler.png`). Bei Pull Requests,
-die das Werkzeug ändern, läuft der Schnelldurchgang im Workflow.
+**Achtung: Das Werkzeug legt die Testdaten der Entwicklungsumgebung neu
+an**, so wie „Datenbank neu anlegen“ auf der Seite der Testanmeldung. Videos
+und Bilder bauen aufeinander auf und brauchen jeweils denselben Anfang.
+
+- Ohne `--schnell` entstehen auch die Videos (dafür muss `ffmpeg` installiert
+  sein), mit `OPENROUTER_API_KEY` in der Umgebung auch der Ton.
+- `--bis 3` hört nach dem dritten Video auf, `--bis 0` baut nur die
+  Kurzanleitung. Einzelne Videos lassen sich nicht herausgreifen.
+- `--ziel` nennt den Ordner für die Seiten. Scheitert ein Ablauf, liegt dort
+  ein Bild der Stelle (`…-fehler.png`).
+- Die Verweise ins Telefonbuch und nach Snipe-IT sind auf den Bildern nur zu
+  sehen, wenn AVIS mit `Telefonbuch__Adresse` und `Geraeteabgleich__Adresse`
+  in der Umgebung gestartet wurde; der Workflow setzt dafür erfundene Adressen.
+
+Bei Pull Requests, die das Werkzeug ändern, läuft der Schnelldurchgang im
+Workflow; die gebaute Kurzanleitung hängt dann zum Ansehen am Lauf.
 
 Jeder Lauf lässt die Sätze neu sprechen; die Aussprache kann sich deshalb von
 Lauf zu Lauf leicht unterscheiden. **Nach jedem Lauf die Videos einmal
-durchspielen:** Ob Bild und Ton stimmen, hört und sieht nur ein Mensch. Die
-gesprochenen Sätze meiden Abkürzungen und Sonderzeichen, über die eine
-künstliche Stimme stolpert.
+durchspielen und die Kurzanleitung durchblättern:** Ob Bild, Ton und Text
+stimmen, hört und sieht nur ein Mensch. Die gesprochenen Sätze meiden
+Abkürzungen und Sonderzeichen, über die eine künstliche Stimme stolpert.
 
 ## Paket und Versionen
 

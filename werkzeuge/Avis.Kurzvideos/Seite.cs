@@ -7,6 +7,9 @@ namespace Avis.Kurzvideos;
 /// <summary>Baut die Seite, auf der die Videos veröffentlicht werden: eine einzige Datei ohne Skripte.</summary>
 internal static class Seite
 {
+    /// <summary>Wo die Seite veröffentlicht wird. Verweise aus dem PDF brauchen die volle Adresse.</summary>
+    public const string Adresse = "https://t3chsynergy.github.io/avis/";
+
     private const string Quelltext = "https://github.com/T3chSynergy/avis";
 
     public static void Schreiben(Optionen optionen, IReadOnlyList<Aufnahme> aufnahmen)
@@ -34,12 +37,13 @@ internal static class Seite
             {{Quelle.Lesen("Seite.css")}}</style>
             </head>
             <body>
-            <header><div><strong>AVIS</strong> <span>Kurzvideos</span></div></header>
+            {{Kopf("Kurzvideos")}}
             <main>
             <h1>AVIS in Kurzvideos</h1>
             <p>AVIS ist ein schlankes Ticketsystem für die IT. Diese {{aufnahmen.Count}} kurzen Videos zeigen, wie Bearbeiter
-            damit arbeiten: jedes zu einem Thema, zusammen rund {{gesamt}} Minuten. Ausführlicher steht alles in der Hilfe,
-            die in AVIS auf jeder Seite oben erreichbar ist.</p>
+            damit arbeiten: jedes zu einem Thema, zusammen rund {{gesamt}} Minuten. Zum Nachlesen gibt es die
+            <a href="{{Anleitung.Seitenname}}">Kurzanleitung für Bearbeiter</a>, auch als
+            <a href="{{Anleitung.Pdf}}">PDF</a>, und die Hilfe, die in AVIS auf jeder Seite oben erreichbar ist.</p>
             <p class="hinweis"><strong>Mit KI erstellt.</strong> {{KiHinweis(optionen)}}
             Alle gezeigten Namen und Daten sind erfunden.</p>
             <ol class="inhalt">
@@ -70,17 +74,27 @@ internal static class Seite
                 """);
         }
 
-        var stand = optionen.Stand.Length > 0 ? $" mit AVIS {Text(optionen.Stand)}" : "";
         html.Append(deutsch, $"""
             </main>
-            <footer>Aufgenommen am {heute:d. MMMM yyyy}{stand}.
-            Quelltext und Dokumentation: <a href="{Quelltext}">AVIS auf GitHub</a>.</footer>
+            {Fuss(optionen, heute)}
             </body>
             </html>
 
             """);
         return html.ToString();
     }
+
+    /// <summary>Der Kopf beider Seiten, mit dem Wechsel zwischen Videos und Kurzanleitung.</summary>
+    public static string Kopf(string hier)
+    {
+        string Verweis(string name, string ziel) =>
+            $"<a href=\"{ziel}\"{(name == hier ? " aria-current=\"page\"" : "")}>{name}</a>";
+        return $"<header><div><strong>AVIS</strong> {Verweis("Kurzvideos", "./")} {Verweis("Kurzanleitung", Anleitung.Seitenname)}</div></header>";
+    }
+
+    public static string Fuss(Optionen optionen, DateTime heute) => string.Create(CultureInfo.GetCultureInfo("de-DE"),
+        $"<footer>Aufgenommen am {heute:d. MMMM yyyy} mit AVIS {Text(optionen.StandOderEntwicklung)}. " +
+        $"Quelltext und Dokumentation: <a href=\"{Quelltext}\">AVIS auf GitHub</a>.</footer>");
 
     private static string KiHinweis(Optionen optionen) => optionen.MitTon
         ? "Die Videos wurden durch KI vertont und bearbeitet: Die Stimme ist künstlich erzeugt, Aufnahme und Schnitt laufen "

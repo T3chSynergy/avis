@@ -5,6 +5,8 @@
     --text: #1b2430;
     --gedaempft: #5a6675;
     --linie: #d8dde4;
+    --linie-stark: #9aa7b6;
+    --kopfzeile: #eef1f5;
     --verweis: #1565c0;
     --kopf: #25303d;
     --kopf-text: #ffffff;
@@ -19,6 +21,8 @@
         --text: #e6eaef;
         --gedaempft: #a3adba;
         --linie: #36404d;
+        --linie-stark: #55616f;
+        --kopfzeile: #28313c;
         --verweis: #7db4f5;
         --kopf: #10151b;
         --hinweis: #3a3216;
@@ -41,9 +45,15 @@ header { background: var(--kopf); color: var(--kopf-text); }
 
 header div, main, footer { max-width: 960px; margin: 0 auto; padding: 0 20px; }
 
-header div { padding-top: 12px; padding-bottom: 12px; display: flex; gap: 14px; align-items: baseline; }
+header div { padding-top: 12px; padding-bottom: 12px; display: flex; gap: 22px; align-items: baseline; flex-wrap: wrap; }
 
 header strong { font-size: 20px; letter-spacing: .04em; }
+
+header a { color: var(--kopf-text); text-decoration: none; padding-bottom: 2px; }
+
+header a:hover { text-decoration: underline; }
+
+header a[aria-current] { border-bottom: 2px solid var(--kopf-text); }
 
 h1 { font-size: 28px; margin: 28px 0 8px; }
 
