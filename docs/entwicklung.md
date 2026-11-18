@@ -180,6 +180,10 @@ Eintrag führt zu dem Abschnitt, der zur gerade geöffneten Seite gehört.
   `Hilfeverweise` (`src/Avis.Web/Hilfe/Hilfetexte.cs`). Ein Test prüft, dass
   es jeden dort genannten Abschnitt gibt und dass jede Seite einen hat. Wer
   eine Überschrift umbenennt, sieht das also am Test.
+- Die Hilfe für Bearbeiter verweist am Anfang auf die Kurzvideos und die
+  Kurzanleitung im Internet (siehe „Kurzvideos und Kurzanleitung“). Verweise
+  nach außen geben die Adresse der Installation nicht weiter (`rel="noopener
+  noreferrer"`); das gilt auch für den eigenen Text eines Hauses.
 - Eigener Text eines Hauses gehört nicht in diese Dateien, siehe
   [Einstellungen](einstellungen.md#eigener-text-in-der-hilfe).
 

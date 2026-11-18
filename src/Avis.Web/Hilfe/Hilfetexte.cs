@@ -104,8 +104,17 @@ public class Hilfetexte(IWebHostEnvironment umgebung, IConfiguration konfigurati
                 abschnitte.Add(new Hilfeabschnitt(anker, text));
         }
 
+        // Wer einem Verweis nach außen folgt, soll dort nicht die Adresse dieser Installation hinterlassen.
+        foreach (var verweis in dokument.Descendants<LinkInline>().Where(v => FuehrtNachAussen(v.Url)))
+            verweis.GetAttributes().AddPropertyIfNotExist("rel", "noopener noreferrer");
+        foreach (var verweis in dokument.Descendants<AutolinkInline>().Where(v => FuehrtNachAussen(v.Url)))
+            verweis.GetAttributes().AddPropertyIfNotExist("rel", "noopener noreferrer");
+
         return new Hilfeseite(titel, new HtmlString(dokument.ToHtml(Pipeline)), abschnitte);
     }
+
+    private static bool FuehrtNachAussen(string? adresse) =>
+        Uri.TryCreate(adresse, UriKind.Absolute, out var ziel) && ziel.Scheme is "https" or "http";
 
     /// <summary>
     /// Die Sprungmarke zu einer Überschrift: Kleinbuchstaben, Umlaute

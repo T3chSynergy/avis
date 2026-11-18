@@ -3,6 +3,13 @@
 AVIS ist für formale IT-Aufträge da: erfassen, an eine Gruppe geben,
 übernehmen, erledigen. Diese Seite erklärt, wie du damit arbeitest.
 
+Zum Einstieg gibt es im Internet
+[Kurzvideos](https://t3chsynergy.github.io/avis/) zu den wichtigsten
+Handgriffen und eine
+[Kurzanleitung mit Bildern](https://t3chsynergy.github.io/avis/kurzanleitung.html),
+auch zum Ausdrucken. Beide zeigen den neuesten Stand von AVIS; eure
+Installation kann älter sein.
+
 ## Wo ein Auftrag liegt
 
 Ein Auftrag gehört immer zu genau einer Gruppe und hat höchstens einen
