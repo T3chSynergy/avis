@@ -26,7 +26,12 @@ public class HilfeTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains("Für Kunden</a>", hilfe);
         Assert.DoesNotContain("Für Administratoren", hilfe);
 
+        // Kurzvideos und Kurzanleitung liegen im Internet. Der Verweis dorthin gibt die Adresse dieser Seite nicht weiter.
+        Assert.Contains("<a href=\"https://t3chsynergy.github.io/avis/\" rel=\"noopener noreferrer\">Kurzvideos</a>", hilfe);
+        Assert.Contains("<a href=\"https://t3chsynergy.github.io/avis/kurzanleitung.html\" rel=\"noopener noreferrer\">Kurzanleitung mit Bildern</a>", hilfe);
+
         var fuerKunden = await bernd.GetStringAsync("/Hilfe/kunden");
+        Assert.DoesNotContain("t3chsynergy.github.io", fuerKunden);
         Assert.Contains("<h2 id=\"einen-auftrag-stellen\">Einen Auftrag stellen</h2>", fuerKunden);
         Assert.DoesNotContain("id=\"uebernehmen\"", fuerKunden);
         Assert.Equal(HttpStatusCode.NotFound, (await bernd.GetAsync("/Hilfe/verwaltung")).StatusCode);
