@@ -238,8 +238,10 @@ Ablauf, liegt dort ein Bild der Stelle (`…-fehler.png`). Bei Pull Requests,
 die das Werkzeug ändern, läuft der Schnelldurchgang im Workflow.
 
 Jeder Lauf lässt die Sätze neu sprechen; die Aussprache kann sich deshalb von
-Lauf zu Lauf leicht unterscheiden. Die gesprochenen Sätze meiden Abkürzungen
-und Sonderzeichen, über die eine künstliche Stimme stolpert.
+Lauf zu Lauf leicht unterscheiden. **Nach jedem Lauf die Videos einmal
+durchspielen:** Ob Bild und Ton stimmen, hört und sieht nur ein Mensch. Die
+gesprochenen Sätze meiden Abkürzungen und Sonderzeichen, über die eine
+künstliche Stimme stolpert.
 
 ## Paket und Versionen
 
