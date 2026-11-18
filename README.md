@@ -13,6 +13,13 @@ einstellbare Abläufe und ohne Dienste daneben.
 
 *Ein Auftrag aus Sicht eines Bearbeiters, mit den erfundenen Testdaten.*
 
+**AVIS ansehen, ohne es zu installieren:**
+[Kurzvideos](https://t3chsynergy.github.io/avis/) zeigen in rund acht Minuten
+die wichtigsten Handgriffe, die
+[Kurzanleitung für Bearbeiter](https://t3chsynergy.github.io/avis/kurzanleitung.html)
+erklärt Grundprinzip und Bedienung mit Bildern, auch als
+[PDF](https://t3chsynergy.github.io/avis/AVIS-Kurzanleitung-Bearbeiter.pdf).
+
 ## Was AVIS kann
 
 **Für Bearbeiter**
