@@ -25,8 +25,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Nur der Nutzer kann:** Repo-Einstellungen ändern (Beschreibung, Standardzweig, Schalter unter „Security“)
   und Code-Scanning-Warnungen einsehen oder schließen. Claude sieht nur das CodeQL-Ergebnis am einzelnen
   Pull Request; für eine Warnung auf `main` den Nutzer um Regel, Datei und Zeile bitten.
-- **Cloud-Sitzung:** Umgebung `avis`; ihr Skript installiert das .NET-SDK aus dem Ubuntu-Paket (Reihe
-  10.0.1xx). Bauen und Testen geht dort, die Zielumgebung (siehe „Nicht geprüft“) nicht.
+- **Cloud-Sitzung:** Umgebung `avis`; ihr Skript installiert das .NET-SDK aus dem Ubuntu-Paket (Reihe 10.0.1xx).
+  Bauen und Testen geht dort, die Zielumgebung nicht. Ihr Browser passt nur zu Playwright 1.63 (Kurzvideos).
 
 ## Entscheidungen
 
@@ -63,6 +63,10 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Bezug zwischen Aufträgen** ebenso nur über „AVIS <Nummer>“ (`Auftragsbezug`). Keine Teilaufträge.
 - **Hilfe:** Markdown unter `src/Avis.Web/Hilfe`, je eine Datei für Bearbeiter, Kunden und Administratoren.
   **Bei jeder Änderung an der Oberfläche die Hilfe mitpflegen.** Hauseigenes steht nie darin (lokale Datei).
+- **Kurzvideos** auf GitHub Pages: `werkzeuge/Avis.Kurzvideos` (Playwright, nicht in `Avis.slnx`) nimmt sie auf,
+  der Workflow „Kurzvideos“ veröffentlicht bei jedem Release. Stimme über OpenRouter (Secret `PAGES_OPENROUTER`;
+  in der Cloud-Sitzung genügt `OPENROUTER_API_KEY=platzhalter`). Die Seite nennt die KI. Nach Änderungen an der
+  Oberfläche die Abläufe mit `--schnell` prüfen und das Drehbuch anpassen (`docs/entwicklung.md`).
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.
   Ausnahmen in `Startdaten`: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt
@@ -72,9 +76,8 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   Hauptversion nicht vor. Der Umstieg ist eine eigene Entscheidung.
 - **`global.json` nicht anheben.** Die Version dort ist eine Mindestversion; eine Anhebung sperrt Rechner
   mit älterem SDK der Reihe 10.0 aus (auch die Cloud-Umgebung). Dependabot beobachtet sie deshalb nicht.
-- **Codeanalyse:** Abgeschaltete Regeln stehen mit Grund in `.editorconfig`. In den Tests ist CA1305 aus,
-  weil dort nur ganze Zahlen als Formularwerte geschrieben werden. Die CodeQL-Warnung zur Bildvorschau in
-  `editor.js` („DOM text reinterpreted as HTML“) ist ein Fehlalarm; der Nutzer hat sie geschlossen.
+- **Codeanalyse:** Abgeschaltete Regeln stehen mit Grund in `.editorconfig`. Die CodeQL-Warnung zur Bildvorschau
+  in `editor.js` („DOM text reinterpreted as HTML“) ist ein Fehlalarm; der Nutzer hat sie geschlossen.
 - **Fremde Komponenten:** Bei jedem neuen oder entfernten Paket `THIRD-PARTY-NOTICES.md` anpassen, Lizenztexte
   aus den Repos der Hersteller, nicht aus dem Gedächtnis. Das Favicon ist selbst gezeichnet; fremde Grafiken nicht.
 - **Lizenz:** AGPL-3.0-or-later, ohne Inhabernamen. Verweis am Ende der Hilfe (`Lizenz.cs`) bleibt; Pakete müssen passen.
@@ -85,14 +88,12 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 ## Erkenntnisse
 
 - **Sprache des Rechners:** Anfragen laufen mit `de-DE` (`UseRequestLocalization`), die Hintergrunddienste
-  für Mailversand und Posteingang aber mit der Einstellung des Servers. Zahlen und Datumsangaben deshalb
-  immer mit fester Kultur schreiben und lesen. Zweimal ging das schief: beim Ablageordner der Anhänge
-  (`yyyy/MM` wurde zu `yyyy.MM`) und bei der Dateigröße.
+  für Mailversand und Posteingang aber mit der Einstellung des Servers. Zahlen und Datumsangaben deshalb immer
+  mit fester Kultur schreiben und lesen. Zweimal ging das schief: Ablageordner der Anhänge, Dateigröße.
 - **Zeilenenden in Mails:** MimeKit schreibt und liest den Text eines Mailteils mit den Zeilenenden des
   Rechners (unter Windows CRLF). Die Anwendung vereinheitlicht eingehende Texte. Tests wandeln Mails mit
   `NewLineFormat.Dos` in die Rohform und vergleichen Mailtexte mit `ReplaceLineEndings("\n")`.
-- **Windows und Linux:** Die Tests müssen unter beiden laufen. `.gitattributes` legt LF fest, sonst
-  enthielten mehrzeilige Texte im Code unter Windows andere Zeichen.
+- **Windows und Linux:** Tests laufen unter beiden; `.gitattributes` legt LF fest (mehrzeilige Texte im Code).
 - **Namensvergleich in der Verwaltung** (`ToLower()` in der Abfrage) läuft in der Datenbank und ist von den
   Kultur-Regeln ausgenommen. SQLite wandelt dabei nur ASCII um: „Ärger“ und „ärger“ gelten als verschieden.
 - **Dependabot-Pull-Requests:** Ihre Prüfungen liefen gegen den Stand von `main` beim Anlegen – vor dem

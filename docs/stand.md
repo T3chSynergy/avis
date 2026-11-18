@@ -43,6 +43,10 @@ Mit Version 0.2.0 kamen dazu:
 - der Verweis von Kunden und Bearbeitern in ein Telefonbuch des Hauses
   (`Telefonbuch:Adresse`)
 
+Seitdem gibt es außerdem [Kurzvideos](https://t3chsynergy.github.io/avis/) für
+Bearbeiter. Sie werden automatisch mit den Testdaten aufgenommen und durch KI
+vertont; bei jedem Release entstehen sie neu.
+
 ## Wie es geprüft ist
 
 - Automatische Tests für die Regeln des Auftrags und für die Seiten, bei
