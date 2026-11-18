@@ -87,7 +87,7 @@ abgeschaltet sind, und dem Grund dafür.
 | `tests/Avis.Tests` | Tests |
 | `werkzeuge/Avis.Kurzvideos` | Nimmt die Kurzvideos zur Dokumentation auf; gehört nicht zu `Avis.slnx` (siehe „Kurzvideos“) |
 | `docs` | Konzept, Betrieb, Einstellungen, Stand und diese Datei |
-| `.github/workflows` | Prüfung bei jedem Pull Request (`pruefung.yml`), Paket für den Betrieb bei jedem Release (`paket.yml`), Kurzvideos auf GitHub Pages bei jedem Release (`kurzvideos.yml`) |
+| `.github/workflows` | Prüfung bei jedem Pull Request (`pruefung.yml`), Paket für den Betrieb bei jedem Release (`paket.yml`), Kurzvideos auf GitHub Pages auf Knopfdruck (`kurzvideos.yml`) |
 | `LICENSE` | Lizenz von AVIS (GNU AGPL, Version 3); wird beim Veröffentlichen in den Ausgabeordner kopiert |
 | `THIRD-PARTY-NOTICES.md` | Lizenzvermerke der mitgelieferten Komponenten; wird beim Veröffentlichen in den Ausgabeordner kopiert und ist anzupassen, wenn ein Paket hinzukommt oder wegfällt |
 
@@ -209,13 +209,16 @@ ausdrücklich, dass die Videos durch KI vertont und bearbeitet sind.
 | `Sprecher.cs` | Sprachausgabe und Schnitt |
 | `Seite.cs`, `Seite.css` | Die veröffentlichte Seite |
 
-Der Workflow `.github/workflows/kurzvideos.yml` nimmt die Videos bei jedem
-Release neu auf und veröffentlicht sie auf GitHub Pages; auf Knopfdruck tut er
-dasselbe vom Stand auf `main`. Den Schlüssel für die Sprachausgabe (OpenRouter)
-liest er aus dem Secret `PAGES_OPENROUTER`. Ohne Schlüssel entstehen die Videos
-ohne Ton, mit Untertiteln. Damit ein Release veröffentlichen darf, muss die
-Umgebung `github-pages` des Repositorys neben `main` auch Tags der Form `v*`
-zulassen (Settings → Environments → github-pages).
+Der Workflow `.github/workflows/kurzvideos.yml` nimmt die Videos neu auf und
+veröffentlicht sie auf GitHub Pages, und zwar nur auf Knopfdruck (Actions →
+Kurzvideos → Run workflow, vom Zweig `main`). Bei einem Release läuft er
+absichtlich nicht von selbst: Die meisten Releases ändern an der Oberfläche
+nichts, und jeder Lauf kostet die Sprachausgabe. **Ein Lauf lohnt sich, wenn
+sich die Oberfläche sichtbar geändert hat** – am besten gleich nach dem
+Release, dann steht dessen Name auf der Seite. Den Schlüssel für die
+Sprachausgabe (OpenRouter) liest der Workflow aus dem Secret
+`PAGES_OPENROUTER`. Ohne Schlüssel entstehen die Videos ohne Ton, mit
+Untertiteln.
 
 Die Videos bauen aufeinander auf und brauchen frische Testdaten. **Ändert sich
 die Oberfläche, kann ein Ablauf hängen bleiben:** Dann das Drehbuch anpassen.

@@ -45,7 +45,7 @@ Mit Version 0.2.0 kamen dazu:
 
 Seitdem gibt es außerdem [Kurzvideos](https://t3chsynergy.github.io/avis/) für
 Bearbeiter. Sie werden automatisch mit den Testdaten aufgenommen und durch KI
-vertont; bei jedem Release entstehen sie neu.
+vertont. Neu aufgenommen werden sie, wenn sich die Oberfläche sichtbar ändert.
 
 ## Wie es geprüft ist
 

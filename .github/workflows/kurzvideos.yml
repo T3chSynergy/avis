@@ -3,8 +3,10 @@
 # mit den erfundenen Testdaten in einem Browser. Mehr dazu steht in
 # docs/entwicklung.md, Abschnitt "Kurzvideos".
 #
-# - Bei einem veröffentlichten Release und auf Knopfdruck (Actions →
-#   Kurzvideos → Run workflow): aufnehmen, vertonen und veröffentlichen.
+# - Auf Knopfdruck (Actions → Kurzvideos → Run workflow): aufnehmen, vertonen
+#   und veröffentlichen. Absichtlich nicht bei jedem Release: Die meisten
+#   ändern an der Oberfläche nichts, und jeder Lauf kostet die Sprachausgabe.
+#   Ein Lauf lohnt sich, wenn sich die Oberfläche sichtbar geändert hat.
 # - Bei Pull Requests, die das Werkzeug betreffen: nur prüfen, ob es sich
 #   bauen lässt und die Abläufe durchlaufen. Ohne Ton, ohne Veröffentlichung.
 #
@@ -13,8 +15,6 @@
 name: Kurzvideos
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
   pull_request:
     paths:
@@ -39,9 +39,11 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       WERKZEUG: werkzeuge/Avis.Kurzvideos
     steps:
+      # Mit der ganzen Geschichte, damit sich feststellen lässt, ob der Stand ein Release ist.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
@@ -80,14 +82,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ffmpeg
 
-      # Der Name des Release kommt von außen und wird deshalb nur als Umgebungsvariable gelesen.
+      # Auf der Seite steht der Name des Release, wenn der Stand genau eines ist, sonst der Commit.
       - name: Videos aufnehmen
         if: github.event_name != 'pull_request'
         env:
           OPENROUTER_API_KEY: ${{ secrets.PAGES_OPENROUTER }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          stand="${RELEASE_TAG:-Stand ${GITHUB_SHA:0:7}}"
+          stand="$(git describe --tags --exact-match --match 'v*' 2>/dev/null || echo "Stand ${GITHUB_SHA:0:7}")"
           dotnet run --project "$WERKZEUG" --no-build -- --ziel seite --stand "$stand"
 
       # Scheitert ein Ablauf, zeigt ein Bild, wo er hing.

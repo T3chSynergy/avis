@@ -63,10 +63,10 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Bezug zwischen Aufträgen** ebenso nur über „AVIS <Nummer>“ (`Auftragsbezug`). Keine Teilaufträge.
 - **Hilfe:** Markdown unter `src/Avis.Web/Hilfe`, je eine Datei für Bearbeiter, Kunden und Administratoren.
   **Bei jeder Änderung an der Oberfläche die Hilfe mitpflegen.** Hauseigenes steht nie darin (lokale Datei).
-- **Kurzvideos** auf GitHub Pages: `werkzeuge/Avis.Kurzvideos` (Playwright, nicht in `Avis.slnx`) nimmt sie auf,
-  der Workflow „Kurzvideos“ veröffentlicht bei jedem Release. Stimme über OpenRouter (Secret `PAGES_OPENROUTER`;
-  in der Cloud-Sitzung genügt `OPENROUTER_API_KEY=platzhalter`). Die Seite nennt die KI. Nach Änderungen an der
-  Oberfläche die Abläufe mit `--schnell` prüfen und das Drehbuch anpassen (`docs/entwicklung.md`).
+- **Kurzvideos** auf GitHub Pages: `werkzeuge/Avis.Kurzvideos` (Playwright, nicht in `Avis.slnx`) nimmt sie auf.
+  Der Workflow „Kurzvideos“ läuft nur auf Knopfdruck, nicht bei jedem Release (so vom Nutzer entschieden). Stimme
+  über OpenRouter (Secret `PAGES_OPENROUTER`; Cloud-Sitzung: `OPENROUTER_API_KEY=platzhalter`). Nach sichtbaren
+  Änderungen an der Oberfläche: Abläufe mit `--schnell` prüfen, Drehbuch anpassen, den Nutzer an den Lauf erinnern.
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.
   Ausnahmen in `Startdaten`: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt
