@@ -63,10 +63,11 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
 - **Bezug zwischen Aufträgen** ebenso nur über „AVIS <Nummer>“ (`Auftragsbezug`). Keine Teilaufträge.
 - **Hilfe:** Markdown unter `src/Avis.Web/Hilfe`, je eine Datei für Bearbeiter, Kunden und Administratoren.
   **Bei jeder Änderung an der Oberfläche die Hilfe mitpflegen.** Hauseigenes steht nie darin (lokale Datei).
-- **Kurzvideos** auf GitHub Pages: `werkzeuge/Avis.Kurzvideos` (Playwright, nicht in `Avis.slnx`) nimmt sie auf.
-  Der Workflow „Kurzvideos“ läuft nur auf Knopfdruck, nicht bei jedem Release (so vom Nutzer entschieden). Stimme
-  über OpenRouter (Secret `PAGES_OPENROUTER`; Cloud-Sitzung: `OPENROUTER_API_KEY=platzhalter`). Nach sichtbaren
-  Änderungen an der Oberfläche: Abläufe mit `--schnell` prüfen, Drehbuch anpassen, den Nutzer an den Lauf erinnern.
+- **Kurzvideos und Kurzanleitung** auf GitHub Pages: `werkzeuge/Avis.Kurzvideos` (Playwright, nicht in
+  `Avis.slnx`) nimmt Videos und Bilder auf; Text in `Kurzanleitung.md`. Der Workflow „Kurzvideos“ läuft nur auf
+  Knopfdruck, nicht bei jedem Release (so entschieden). Stimme über OpenRouter (Secret `PAGES_OPENROUTER`; Cloud:
+  `OPENROUTER_API_KEY=platzhalter`). Nach sichtbaren Änderungen an der Oberfläche: Kurzanleitung und Drehbuch
+  anpassen, mit `--schnell` prüfen (legt die Testdaten neu an), den Nutzer an einen neuen Lauf erinnern.
 - **Datenbank:** SQLite; ein späterer Wechsel zu SQL Server soll möglich bleiben. Die Suche läuft deshalb
   über eigene `Suchtext`-Spalten in Kleinbuchstaben, nicht über Funktionen einer bestimmten Datenbank.
   Ausnahmen in `Startdaten`: `Auftraege:ErsteNummer` setzt den Zähler von SQLite direkt
@@ -94,17 +95,16 @@ Git und in den Pull Requests. Nach einer neuen Entscheidung oder Erkenntnis erg�
   Rechners (unter Windows CRLF). Die Anwendung vereinheitlicht eingehende Texte. Tests wandeln Mails mit
   `NewLineFormat.Dos` in die Rohform und vergleichen Mailtexte mit `ReplaceLineEndings("\n")`.
 - **Windows und Linux:** Tests laufen unter beiden; `.gitattributes` legt LF fest (mehrzeilige Texte im Code).
-- **Namensvergleich in der Verwaltung** (`ToLower()` in der Abfrage) läuft in der Datenbank und ist von den
-  Kultur-Regeln ausgenommen. SQLite wandelt dabei nur ASCII um: „Ärger“ und „ärger“ gelten als verschieden.
+- **Namensvergleich in der Verwaltung** (`ToLower()`) läuft in der Datenbank, ausgenommen von den Kultur-Regeln.
+  SQLite wandelt dabei nur ASCII um: „Ärger“ und „ärger“ gelten als verschieden.
 - **Dependabot-Pull-Requests:** Ihre Prüfungen liefen gegen den Stand von `main` beim Anlegen – vor dem
   Mergen auf dem aktuellen `main` nachprüfen. Bei neuen Hauptversionen der Testwerkzeuge im Log nachsehen,
   dass wirklich alle Tests liefen: Ein Testläufer, der keine Tests findet, meldet ebenfalls Erfolg.
 - **Analysemeldungen** zeigt `dotnet build -warnaserror` nur für Projekte, die es neu übersetzt. Nach einem
   Fehlversuch vor dem Hochladen mit `--no-incremental` bauen, sonst fällt eine Meldung erst im Workflow auf.
-- **Migrationen:** Eine neue Spalte ist harmlos. Ein Fremdschlüssel oder eine geänderte Spalte an einer
-  vorhandenen Tabelle baut in SQLite die ganze Tabelle um, und das läuft nicht in einer Transaktion (EF
-  warnt beim Start). Deshalb ist `Benachrichtigung.EmpfaengerId` nur eine Nummer ohne Verknüpfung. Jede
-  neue Migration lesen, bevor sie eingecheckt wird.
+- **Migrationen:** Eine neue Spalte ist harmlos. Ein Fremdschlüssel oder eine geänderte Spalte an einer vorhandenen
+  Tabelle baut in SQLite die ganze Tabelle um, ohne Transaktion (EF warnt beim Start). Deshalb ist
+  `Benachrichtigung.EmpfaengerId` nur eine Nummer ohne Verknüpfung. Jede neue Migration vor dem Einchecken lesen.
 
 ## Nicht geprüft
 

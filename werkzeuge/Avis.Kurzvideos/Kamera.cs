@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Playwright;
@@ -25,22 +26,47 @@ internal sealed class Kamera(IBrowser browser, Optionen optionen, Sprecher sprec
     public static async Task<Kamera> StartenAsync(IPlaywright playwright, Optionen optionen, Sprecher sprecher)
     {
         // Mit diesen Angaben beschriftet der Browser seine eigenen Teile deutsch, etwa das Dateifeld.
-        Environment.SetEnvironmentVariable("LANGUAGE", "de");
-        Environment.SetEnvironmentVariable("LANG", "de_DE.UTF-8");
-        var browser = await playwright.Chromium.LaunchAsync(new() { Channel = "chromium", Args = ["--lang=de-DE"] });
+        var umgebung = Environment.GetEnvironmentVariables().Cast<DictionaryEntry>()
+            .ToDictionary(e => (string)e.Key, e => e.Value as string ?? "");
+        umgebung["LANGUAGE"] = "de";
+        umgebung["LANG"] = "de_DE.UTF-8";
+        var browser = await playwright.Chromium.LaunchAsync(new() { Channel = "chromium", Args = ["--lang=de-DE"], Env = umgebung });
         return new Kamera(browser, optionen, sprecher);
     }
 
     public ValueTask DisposeAsync() => browser.DisposeAsync();
 
-    private static BrowserNewContextOptions Kontext(string? zustand = null) => new()
+    private static BrowserNewContextOptions Kontext(string? zustand = null, int breite = Breite, int hoehe = Hoehe, float schaerfe = 1) => new()
     {
         Locale = "de-DE",
         TimezoneId = "Europe/Berlin",
-        ViewportSize = new() { Width = Breite, Height = Hoehe },
+        ViewportSize = new() { Width = breite, Height = hoehe },
+        DeviceScaleFactor = schaerfe,
         ColorScheme = ColorScheme.Light,
         StorageState = zustand,
     };
+
+    /// <summary>
+    /// Leert die Datenbank und legt die Testdaten neu an, über die Schaltfläche auf der Seite der Testanmeldung.
+    /// Die Videos und die Bilder der Kurzanleitung beginnen so jeweils mit demselben Stand.
+    /// </summary>
+    public async Task TestdatenNeuAnlegenAsync()
+    {
+        await using var kontext = await browser.NewContextAsync(Kontext());
+        var seite = await kontext.NewPageAsync();
+        await seite.GotoAsync(Adresse + "/Anmeldung");
+        var knopf = seite.GetByRole(AriaRole.Button, new() { Name = "Datenbank neu anlegen" });
+        if (await knopf.CountAsync() == 0)
+        {
+            throw new InvalidOperationException(
+                $"Unter {Adresse} läuft AVIS nicht in der Entwicklungsumgebung mit Testdaten: Die Seite der Testanmeldung " +
+                "bietet „Datenbank neu anlegen“ nicht an.");
+        }
+
+        await seite.CheckAsync("#bestaetigt");
+        await knopf.ClickAsync();
+        await seite.GetByText("Die Datenbank wurde geleert").WaitForAsync();
+    }
 
     /// <summary>Meldet einen Testbenutzer an und gibt den Zustand zurück, mit dem ein Kontext angemeldet beginnt.</summary>
     private async Task<string> AnmeldenAsync(string anmeldename)
@@ -58,6 +84,38 @@ internal sealed class Kamera(IBrowser browser, Optionen optionen, Sprecher sprec
     {
         await using var kontext = await browser.NewContextAsync(Kontext(await AnmeldenAsync(anmeldename)));
         return await tun(await kontext.NewPageAsync());
+    }
+
+    /// <summary>
+    /// Eine Seite für Bildschirmfotos: angemeldet, in der gewünschten Breite und mit doppelter Auflösung. Das
+    /// Fenster ist niedrig, damit ein Foto der ganzen Seite genau so hoch wird wie ihr Inhalt.
+    /// </summary>
+    public async Task FotosAsync(string anmeldename, int breite, Func<IPage, Task> tun)
+    {
+        await using var kontext = await browser.NewContextAsync(Kontext(await AnmeldenAsync(anmeldename), breite, 300, 2));
+        await tun(await kontext.NewPageAsync());
+    }
+
+    /// <summary>Druckt eine fertige Seite als PDF im Format A4, mit Seitenzahlen im Fuß.</summary>
+    public async Task PdfAsync(string html, string ziel, string fusszeile)
+    {
+        await using var kontext = await browser.NewContextAsync(Kontext());
+        var seite = await kontext.NewPageAsync();
+        await seite.GotoAsync(new Uri(Path.GetFullPath(html)).AbsoluteUri);
+        await seite.PdfAsync(new()
+        {
+            Path = ziel,
+            Format = "A4",
+            PrintBackground = true,
+            Outline = true,
+            Tagged = true,
+            DisplayHeaderFooter = true,
+            HeaderTemplate = "<span></span>",
+            FooterTemplate = "<div style=\"width:100%;margin:0 18mm;font:7.5pt Arial,sans-serif;color:#5a6675;display:flex;" +
+                $"justify-content:space-between\"><span>{System.Net.WebUtility.HtmlEncode(fusszeile)}</span>" +
+                "<span>Seite <span class=\"pageNumber\"></span> von <span class=\"totalPages\"></span></span></div>",
+            Margin = new() { Top = "16mm", Bottom = "20mm", Left = "18mm", Right = "18mm" },
+        });
     }
 
     public Task StillAsync(string anmeldename, Func<IPage, Task> tun) =>

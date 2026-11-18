@@ -84,8 +84,7 @@ internal sealed class Drehbuecher(Kamera kamera)
             if (erster != 4)
             {
                 throw new InvalidOperationException(
-                    "Die Videos brauchen frische Testdaten: Der erste neue Auftrag muss die Nummer 4 bekommen, " +
-                    $"nicht {erster}. Auf der Seite der Testanmeldung „Datenbank neu anlegen“ wählen und noch einmal starten.");
+                    $"Die Videos brauchen frische Testdaten: Der erste neue Auftrag muss die Nummer 4 bekommen, nicht {erster}.");
             }
 
             await ErfassenAsync(p, new("igor", "Igor Abgleich", "Beamer im Sitzungssaal zeigt kein Bild",

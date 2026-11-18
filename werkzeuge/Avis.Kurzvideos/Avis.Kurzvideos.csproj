@@ -11,12 +11,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Markdig" Version="1.6.0" />
     <PackageReference Include="Microsoft.Playwright" Version="1.63.0" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Einblendung.js" LogicalName="Einblendung.js" />
     <EmbeddedResource Include="Seite.css" LogicalName="Seite.css" />
+    <EmbeddedResource Include="Anleitung.css" LogicalName="Anleitung.css" />
+    <EmbeddedResource Include="Kurzanleitung.md" LogicalName="Kurzanleitung.md" />
+    <EmbeddedResource Include="Ablauf.svg" LogicalName="Ablauf.svg" />
     <EmbeddedResource Include="../../src/Avis.Web/wwwroot/favicon.ico" LogicalName="favicon.ico" Link="favicon.ico" />
   </ItemGroup>
 

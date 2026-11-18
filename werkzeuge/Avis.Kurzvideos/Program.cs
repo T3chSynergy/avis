@@ -13,28 +13,29 @@ try
 {
     var optionen = Optionen.Lesen(args);
     Directory.CreateDirectory(optionen.Ziel);
-    Console.WriteLine(optionen.Schnell ? "Nur prüfen: ohne Ton, ohne Wartezeiten, ohne Dateien."
+    Console.WriteLine(optionen.Schnell ? "Nur prüfen: Die Videos laufen ohne Ton und ohne Wartezeiten durch und werden nicht abgelegt."
         : optionen.MitTon ? "Aufnahme mit Ton." : "Aufnahme ohne Ton: OPENROUTER_API_KEY ist nicht gesetzt.");
 
     using var playwright = await Playwright.CreateAsync();
     using var sprecher = new Sprecher(optionen);
     await using var kamera = await Kamera.StartenAsync(playwright, optionen, sprecher);
     var drehbuecher = new Drehbuecher(kamera);
+
+    // Kurzanleitung und Videos verändern die Testdaten; jedes beginnt deshalb mit frischen.
+    await kamera.TestdatenNeuAnlegenAsync();
+    await Anleitung.BauenAsync(kamera, optionen, drehbuecher.Alle());
+    await kamera.TestdatenNeuAnlegenAsync();
     await drehbuecher.TestdatenAsync();
 
     var aufnahmen = new List<Aufnahme>();
-    foreach (var (drehbuch, nummer) in drehbuecher.Alle().Select((d, i) => (d, i + 1)))
+    foreach (var drehbuch in drehbuecher.Alle().Take(optionen.Bis))
     {
-        // Die Vorbereitung läuft auch für ausgelassene Videos, weil die folgenden auf ihr aufbauen.
         if (drehbuch.Vorher is not null)
         {
             await drehbuch.Vorher();
         }
 
-        if (optionen.Nur.Count == 0 || optionen.Nur.Contains(nummer))
-        {
-            aufnahmen.Add(await kamera.AufnehmenAsync(drehbuch));
-        }
+        aufnahmen.Add(await kamera.AufnehmenAsync(drehbuch));
     }
 
     if (!optionen.Schnell)
@@ -45,7 +46,7 @@ try
 
     return 0;
 }
-catch (Exception fehler) when (fehler is InvalidOperationException or PlaywrightException or HttpRequestException or ArgumentException)
+catch (Exception fehler) when (fehler is InvalidOperationException or PlaywrightException or TimeoutException or HttpRequestException or ArgumentException)
 {
     Console.Error.WriteLine("Abbruch: " + fehler.Message);
     return 1;

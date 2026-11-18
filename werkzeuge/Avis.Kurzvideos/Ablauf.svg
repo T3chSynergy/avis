@@ -1,0 +1,49 @@
+<svg width="1000" height="330" viewBox="0 0 1000 330" xmlns="http://www.w3.org/2000/svg" font-family="Inter, 'Segoe UI', Arial, sans-serif">
+  <style>
+    .kasten { fill: #f4f6f9; stroke: #9aa5b4; stroke-width: 1.5; }
+    .titel { font-size: 19px; font-weight: 700; fill: #1c2530; text-anchor: middle; }
+    .unter { font-size: 13.5px; fill: #4a5564; text-anchor: middle; }
+    .pfeil { stroke: #1c2530; stroke-width: 1.8; fill: none; marker-end: url(#spitze); }
+    .tat { font-size: 14.5px; font-weight: 600; fill: #14509f; text-anchor: middle; }
+    .neben { font-size: 12.5px; fill: #4a5564; text-anchor: middle; }
+  </style>
+  <defs><marker id="spitze" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1c2530"/></marker></defs>
+  <rect width="1000" height="330" fill="#ffffff"/>
+
+  <!-- Weiterleiten: oben zurück -->
+  <path class="pfeil" d="M 560 120 C 560 50, 300 50, 300 118"/>
+  <text class="tat" x="430" y="42">Weiterleiten</text>
+  <text class="neben" x="430" y="60">an eine andere Gruppe</text>
+
+  <!-- Erfassen -->
+  <path class="pfeil" d="M 20 165 L 148 165"/>
+  <text class="tat" x="80" y="152">Erfassen</text>
+  <text class="neben" x="80" y="186">Telefon, Web,</text>
+  <text class="neben" x="80" y="202">E-Mail</text>
+
+  <rect class="kasten" x="150" y="120" width="210" height="90" rx="6"/>
+  <text class="titel" x="255" y="158">offen</text>
+  <text class="unter" x="255" y="180">liegt in einer Gruppe,</text>
+  <text class="unter" x="255" y="197">niemand ist zuständig</text>
+
+  <path class="pfeil" d="M 360 165 L 468 165"/>
+  <text class="tat" x="414" y="152">Übernehmen</text>
+
+  <rect class="kasten" x="470" y="120" width="210" height="90" rx="6"/>
+  <text class="titel" x="575" y="158">in Bearbeitung</text>
+  <text class="unter" x="575" y="180">ein Bearbeiter</text>
+  <text class="unter" x="575" y="197">ist zuständig</text>
+
+  <path class="pfeil" d="M 680 165 L 778 165"/>
+  <text class="tat" x="729" y="152">Abschließen</text>
+
+  <rect class="kasten" x="780" y="120" width="200" height="90" rx="6"/>
+  <text class="titel" x="880" y="158">abgeschlossen</text>
+  <text class="unter" x="880" y="180">erledigt, der Kunde hat</text>
+  <text class="unter" x="880" y="197">den Abschlusstext</text>
+
+  <!-- Wieder öffnen: unten zurück -->
+  <path class="pfeil" d="M 880 210 C 880 300, 255 300, 255 212"/>
+  <text class="tat" x="568" y="296">Wieder öffnen</text>
+  <text class="neben" x="568" y="314">durch einen Bearbeiter oder den Kunden</text>
+</svg>
