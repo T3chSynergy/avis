@@ -50,10 +50,12 @@ public class EintragAendernModel(AvisDb db, TimeProvider uhr) : PageModel
             TempData["Meldung"] = geaendert ? "Der Eintrag wurde geändert." : "Am Eintrag hat sich nichts geändert.";
             return RedirectToPage("Details", new { id });
         }
-        catch (AuftragException ex)
+        catch (Exception ex) when (ex is AuftragException or DbUpdateConcurrencyException)
         {
             // Der geschriebene Text bleibt im Formular stehen.
-            ModelState.AddModelError(nameof(Text), ex.Message);
+            ModelState.AddModelError(nameof(Text), ex is AuftragException
+                ? ex.Message
+                : "Der Auftrag wurde in diesem Augenblick geändert. Bitte noch einmal speichern.");
             Id = id;
             Eintrag = gefunden;
             return Page();

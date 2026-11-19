@@ -71,6 +71,11 @@ public class SucheTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.DoesNotContain("Filtertest Hotline", nachBearbeiter);
 
         Assert.DoesNotContain("Filtertest Netzwerk", await anna.GetStringAsync($"/Auftraege?q=filtertest&status=offen"));
+
+        // Der Filter nach dem Bearbeiter gilt auch für Abgeschlossenes: Dort steht sein Name weiter am Auftrag.
+        await bernd.PostFormularAsync($"/Auftraege/{imNetzwerk}", $"/Auftraege/{imNetzwerk}?handler=Abschliessen", new() { ["version"] = "2", ["text"] = "Erledigt." });
+        Assert.Contains("Filtertest Netzwerk", await anna.GetStringAsync($"/Auftraege?bearbeiter={berndId}&status=abgeschlossen"));
+        Assert.DoesNotContain("Filtertest Netzwerk", await anna.GetStringAsync($"/Auftraege?bearbeiter={berndId}"));
     }
 
     [Fact]

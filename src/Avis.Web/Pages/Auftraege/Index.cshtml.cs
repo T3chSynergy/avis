@@ -51,7 +51,7 @@ public class IndexModel(AvisDb db) : PageModel
         if (Gruppe is not null)
             auftraege = auftraege.Where(a => a.GruppeId == Gruppe);
         if (Bearbeiter is not null)
-            auftraege = auftraege.Where(a => a.BearbeiterId == Bearbeiter && a.AbgeschlossenAm == null);
+            auftraege = auftraege.Where(a => a.BearbeiterId == Bearbeiter);
 
         var sortiert = Status switch
         {

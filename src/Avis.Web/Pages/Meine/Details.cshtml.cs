@@ -92,11 +92,13 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
             }
             await db.SaveChangesAsync();
         }
-        catch (AuftragException ex)
+        catch (Exception ex) when (ex is AuftragException or DbUpdateConcurrencyException)
         {
+            // Hat die IT den Auftrag im selben Augenblick geändert, geht nichts verloren: Der Text bleibt stehen.
+            var fehler = ex is AuftragException ? ex.Message : "Der Auftrag wurde in diesem Augenblick geändert. Bitte noch einmal absenden.";
             ablage.Verwerfen(anhaenge);
             TempData.Remove("Meldung");
-            TempData["Fehler"] = Anhangablage.NochmalAnhaengen(dateien) is { } hinweis ? $"{ex.Message} {hinweis}" : ex.Message;
+            TempData["Fehler"] = Anhangablage.NochmalAnhaengen(dateien) is { } hinweis ? $"{fehler} {hinweis}" : fehler;
             TempData["Entwurf"] = text;
         }
 

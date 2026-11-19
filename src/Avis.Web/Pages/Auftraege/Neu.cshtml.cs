@@ -103,6 +103,12 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         {
             ModelState.AddModelError(nameof(KundeId), "Bitte einen Kunden suchen und auswählen. Ist er nicht dabei, lässt er sich nach der Suche neu anlegen.");
         }
+        else if (Adresse(Eingabe.KundeEmail) is { } email
+            && await db.Kunden.FirstOrDefaultAsync(k => k.Email == email) is { Aktiv: false } inaktiv)
+        {
+            // Wer zu einer Adresse schon einen Kunden hat, bekommt diesen. Ist er inaktiv, gilt dasselbe wie oben.
+            ModelState.AddModelError("Eingabe.KundeEmail", $"Diese Adresse gehört zu {inaktiv.Name}. {inaktiv.Name} ist als inaktiv markiert. Für inaktive Kunden wird kein Auftrag erfasst.");
+        }
 
         var gruppe = await db.Gruppen.FirstOrDefaultAsync(g => g.Id == Eingabe.GruppeId && g.Aktiv);
         if (gruppe is null)
@@ -185,9 +191,12 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         && ((Request.HasFormContentType && Request.Form.ContainsKey("kundeId"))
             || new[] { Eingabe.KundeName, Eingabe.KundeEmail, Eingabe.KundeTelefon }.Any(t => !string.IsNullOrWhiteSpace(t)));
 
+    private static string? Adresse(string? eingabe) =>
+        string.IsNullOrWhiteSpace(eingabe) ? null : eingabe.Trim().ToLowerInvariant();
+
     private async Task<Kunde> KundeFindenOderAnlegenAsync()
     {
-        var email = string.IsNullOrWhiteSpace(Eingabe.KundeEmail) ? null : Eingabe.KundeEmail.Trim().ToLowerInvariant();
+        var email = Adresse(Eingabe.KundeEmail);
         var telefon = string.IsNullOrWhiteSpace(Eingabe.KundeTelefon) ? null : Eingabe.KundeTelefon.Trim();
 
         if (email is not null)

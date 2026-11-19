@@ -462,10 +462,14 @@ public sealed partial class HtmlZuMarkdown
         if (string.IsNullOrEmpty(markdown))
             return;
 
-        var ziel = _linktext ?? K.Aktuell;
+        // Auch ein verlinktes Bild steht für sich im Text, vor dem Link: Im Linktext würde sein Verweis beim
+        // Maskieren der eckigen Klammern zerstört, und ein Bild im Link ließe sich nicht mehr groß öffnen.
+        var ziel = K.Aktuell;
         if (ziel.Length > 0 && !char.IsWhiteSpace(ziel[^1]))
             ziel.Append(' ');
         ziel.Append(markdown);
+        if (_linktext is not null)
+            ziel.Append(' ');
     }
 
     // ----- Tabellen -----

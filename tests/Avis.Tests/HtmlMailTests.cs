@@ -482,6 +482,17 @@ public class HtmlMailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Equal($"Vorher\n\n![Foto](anhang:{bild.Ablagename.Split('/')[^1]})\n\nNachher", (await LadenAsync(id)).Beschreibung);
     }
 
+    [Theory]
+    [InlineData("<p>Gruß <a href=\"https://example.org\"><img src=\"cid:banner\"></a></p>", "Gruß ![Banner](anhang:0123456789abcdef0123456789abcdef) https://example.org")]
+    [InlineData("<p><a href=\"https://example.org\">Zur Seite <img src=\"cid:banner\"></a></p>", "![Banner](anhang:0123456789abcdef0123456789abcdef) [Zur Seite](https://example.org)")]
+    public void Ein_verlinktes_Bild_steht_fuer_sich_vor_dem_Link(string html, string erwartet)
+    {
+        // Im Linktext würde der Verweis auf das Bild zerstört, und das Bild fehlte dann auch bei den Anhängen.
+        var text = HtmlZuMarkdown.Wandeln(html, (kennung, _) => kennung == "banner" ? "![Banner](anhang:0123456789abcdef0123456789abcdef)" : null);
+
+        Assert.Equal(erwartet, text);
+    }
+
     [Fact]
     public void Ein_Verweis_auf_ein_Bild_das_nicht_zum_Eintrag_gehoert_zeigt_nur_den_Namen()
     {

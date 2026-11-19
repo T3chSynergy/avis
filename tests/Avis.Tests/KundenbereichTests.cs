@@ -1,7 +1,10 @@
 using System.Net;
 using Avis.Web.Domain;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Avis.Tests;
 
@@ -267,4 +270,48 @@ public class KundenbereichTests(AvisAnwendung app) : IClassFixture<AvisAnwendung
         .Include(a => a.Gruppe)
         .Include(a => a.Verlauf)
         .FirstAsync(a => a.Id == id));
+
+    /// <summary>Ändert einen Auftrag von anderer Stelle, genau bevor die erste Änderung an ihm gespeichert wird.</summary>
+    private sealed class Dazwischen(Func<int, Task> aendern) : SaveChangesInterceptor
+    {
+        private bool _erledigt;
+
+        public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
+            DbContextEventData daten, InterceptionResult<int> ergebnis, CancellationToken abbruch = default)
+        {
+            var auftrag = daten.Context!.ChangeTracker.Entries<Auftrag>().FirstOrDefault(e => e.State == EntityState.Modified);
+            if (auftrag is not null && !_erledigt)
+            {
+                _erledigt = true;
+                await aendern(auftrag.Entity.Id);
+            }
+            return ergebnis;
+        }
+    }
+
+    [Fact]
+    public async Task Aendert_die_IT_den_Auftrag_waehrend_der_Kunde_antwortet_bleibt_sein_Text_erhalten()
+    {
+        var id = await StellenAsync(await app.AnmeldenAlsAsync("dieter"), "Tastatur klemmt weiter");
+        // Im selben Augenblick übernimmt jemand den Auftrag: Seine Fassung ist danach eine andere.
+        var dazwischen = new Dazwischen(auftrag => app.DatenbankAsync(db =>
+            db.Database.ExecuteSqlAsync($"UPDATE Auftraege SET Version = Version + 1 WHERE Id = {auftrag}")));
+        using var gleichzeitig = app.WithWebHostBuilder(b => b.ConfigureTestServices(
+            s => s.ConfigureDbContext<Avis.Web.Data.AvisDb>(o => o.AddInterceptors(dazwischen))));
+        var dieter = gleichzeitig.CreateClient();
+        await dieter.PostFormularAsync("/Anmeldung", "/Anmeldung", new() { ["anmeldename"] = "dieter" });
+
+        var antwort = await dieter.PostFormularAsync($"/Meine/{id}", $"/Meine/{id}", new() { ["text"] = "Jetzt klemmt auch die Eingabetaste." });
+
+        // Keine Fehlerseite: Der Kunde erfährt, was los war, und sein Text steht noch im Feld.
+        Assert.Equal(HttpStatusCode.OK, antwort.StatusCode);
+        var seite = await antwort.Content.ReadAsStringAsync();
+        Assert.Contains("Der Auftrag wurde in diesem Augenblick geändert. Bitte noch einmal absenden.", seite);
+        Assert.Matches("<textarea[^>]*>\\s*Jetzt klemmt auch die Eingabetaste.", seite);
+        Assert.False(await app.DatenbankAsync(db => db.Verlauf.AnyAsync(v => v.AuftragId == id && v.Text == "Jetzt klemmt auch die Eingabetaste.")));
+
+        // Beim zweiten Absenden kommt die Antwort an.
+        await dieter.PostFormularAsync($"/Meine/{id}", $"/Meine/{id}", new() { ["text"] = "Jetzt klemmt auch die Eingabetaste." });
+        Assert.True(await app.DatenbankAsync(db => db.Verlauf.AnyAsync(v => v.AuftragId == id && v.Text == "Jetzt klemmt auch die Eingabetaste.")));
+    }
 }

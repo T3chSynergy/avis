@@ -98,6 +98,18 @@ public class KundenabgleichTests
         Assert.Contains("Test, Eva ist als inaktiv markiert.", await erfassen.Content.ReadAsStringAsync());
         Assert.False(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.Betreff == "Für eine Inaktive")));
 
+        // Auch nicht über "neuer Kunde" mit ihrer Adresse: Zu einer Adresse gehört immer derselbe Kunde.
+        var alsNeu = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        {
+            ["Eingabe.KundeName"] = "Eva Test",
+            ["Eingabe.KundeEmail"] = eva.Email!.ToUpperInvariant(),
+            ["Eingabe.Felder.Betreff"] = "Für eine Inaktive, anders",
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync())).ToString(),
+        });
+        Assert.Contains("Diese Adresse gehört zu Test, Eva. Test, Eva ist als inaktiv markiert.", await alsNeu.Content.ReadAsStringAsync());
+        Assert.False(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.Betreff == "Für eine Inaktive, anders")));
+
         // Steht Eva wieder in der Gruppe, ist sie wieder aktiv, derselbe Eintrag.
         app.Kundenquelle.Kunden.Add(Eva);
         ergebnis = await AbgleichenAsync(app);

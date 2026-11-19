@@ -63,6 +63,7 @@
             <div class="feld">
                 <label asp-for="Eingabe.GruppeId">Gruppe</label>
                 <select asp-for="Eingabe.GruppeId" asp-items="Model.Gruppen"></select>
+                <span asp-validation-for="Eingabe.GruppeId" class="feldfehler"></span>
             </div>
             <div class="feld">
                 <label asp-for="Eingabe.BevorzugtId">Bevorzugter Bearbeiter (optional)</label>
