@@ -95,6 +95,14 @@ public static partial class Markdowntext
                 link.ReplaceBy(new LiteralInline(Beschriftung(link) is { Length: > 0 } t ? t : link.Url ?? ""), copyChildren: false);
         }
 
+        // Die Kurzform in spitzen Klammern ("<javascript:…>") ist für Markdig ein eigener Knoten und käme an
+        // der Prüfung oben vorbei. Eine Mailadresse in spitzen Klammern bleibt ein Verweis.
+        foreach (var kurzform in dokument.Descendants<AutolinkInline>().ToList())
+        {
+            if (!kurzform.IsEmail && !Erlaubt(kurzform.Url))
+                kurzform.ReplaceBy(new LiteralInline($"<{kurzform.Url}>"));
+        }
+
         return new HtmlString($"<div class=\"md\">{Markdown.ToHtml(dokument, Pipeline)}</div>");
     }
 

@@ -301,8 +301,12 @@ public partial class Mailannahme(
                     var verwiesen = istBild && !string.IsNullOrEmpty(datei.ContentId)
                         && html.Contains("cid:" + datei.ContentId, StringComparison.OrdinalIgnoreCase);
                     var bildImText = verwiesen || (istBild && !datei.IsAttachment);
-                    if (!datei.IsAttachment && !bildImText)
-                        continue; // der Text der Mail selbst
+
+                    // Der Text der Mail selbst ist kein Anhang: ein Textteil ohne Dateinamen. Alles andere ist
+                    // eine Datei, auch wenn das Mailprogramm sie nicht als Anhang kennzeichnet. Manche schicken
+                    // ein PDF als "inline", Scanner oft ganz ohne Angabe.
+                    if (datei is TextPart && !datei.IsAttachment && string.IsNullOrWhiteSpace(datei.FileName))
+                        continue;
 
                     await datei.Content.DecodeToAsync(inhalt, abbruch);
                     if (bildImText && inhalt.Length < mindestgroesseBild && IstKlein(inhalt))

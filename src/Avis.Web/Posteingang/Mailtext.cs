@@ -9,10 +9,16 @@ namespace Avis.Web.Posteingang;
 public static partial class Mailtext
 {
     /// <summary>
+    /// Ein größerer HTML-Teil wird nicht mehr umgewandelt: Die Umwandlung hält den ganzen Text samt seiner
+    /// Gliederung im Speicher. Gewöhnliche Mails liegen weit darunter.
+    /// </summary>
+    public const int HoechstlaengeHtml = 1_000_000;
+
+    /// <summary>
     /// Der Text der Mail als Markdown. Hat die Mail einen HTML-Teil, bleiben
     /// dessen Formatierungen erhalten (siehe HtmlZuMarkdown). Geht dabei
-    /// etwas schief oder kommt deutlich weniger Text heraus als im
-    /// Nur-Text-Teil steht, gilt der Nur-Text-Teil.
+    /// etwas schief, kommt deutlich weniger Text heraus als im Nur-Text-Teil
+    /// steht oder ist der HTML-Teil übergroß, gilt der Nur-Text-Teil.
     /// </summary>
     /// <param name="bild">Liefert zu einem Bild im Text der Mail das Markdown für seine Stelle, oder null.</param>
     public static string Lesen(MimeMessage mail, Func<string, string?, string?>? bild = null)
@@ -21,15 +27,18 @@ public static partial class Mailtext
         if (string.IsNullOrWhiteSpace(mail.HtmlBody))
             return nurText;
 
-        try
+        if (mail.HtmlBody.Length <= HoechstlaengeHtml)
         {
-            var markdown = HtmlZuMarkdown.Wandeln(mail.HtmlBody, bild);
-            if (markdown.Length > 0 && Buchstaben(markdown) >= Buchstaben(nurText) / 2)
-                return markdown;
-        }
-        catch (Exception)
-        {
-            // Der Nur-Text-Teil genügt.
+            try
+            {
+                var markdown = HtmlZuMarkdown.Wandeln(mail.HtmlBody, bild);
+                if (markdown.Length > 0 && Buchstaben(markdown) >= Buchstaben(nurText) / 2)
+                    return markdown;
+            }
+            catch (Exception)
+            {
+                // Der Nur-Text-Teil genügt.
+            }
         }
 
         return nurText.Length > 0 ? nurText : Aufgeraeumt(AusHtml(mail.HtmlBody));
