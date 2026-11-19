@@ -78,6 +78,7 @@ public class Kundenabgleich(
     AvisDb db,
     IEnumerable<IKundenquelle> quellen,
     Abgleichprotokoll protokoll,
+    Abgleichsperre sperre,
     TimeProvider uhr,
     ILogger<Kundenabgleich> log)
 {
@@ -87,6 +88,11 @@ public class Kundenabgleich(
 
     public async Task<Abgleichergebnis> AusfuehrenAsync(CancellationToken abbruch = default)
     {
+        // Läuft derselbe Abgleich schon, geschieht nichts: Das Ergebnis des laufenden bleibt das letzte.
+        using var belegt = sperre.Belegen(Abgleichlauf.Kunden);
+        if (belegt is null)
+            return new(uhr.GetUtcNow().UtcDateTime, Fehler: Abgleichsperre.LaeuftBereits);
+
         Abgleichergebnis ergebnis;
         try
         {
@@ -140,6 +146,7 @@ public class Kundenabgleich(
         var kunden = await db.Kunden.ToListAsync(abbruch);
         var hinweise = new List<string>();
         var vergeben = new HashSet<Kunde>();
+        var kennungenDerQuelle = eintraege.Select(e => e.Kennung.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase);
         int neu = 0, geaendert = 0, reaktiviert = 0, inaktiv = 0;
 
         foreach (var eintrag in eintraege)
@@ -150,8 +157,13 @@ public class Kundenabgleich(
 
             // Wiedererkannt wird zuerst über die Kennung der Quelle. Wer noch keine hat, aber schon in AVIS
             // steht, weil er sich angemeldet hat oder von Hand angelegt wurde, wird übernommen statt verdoppelt.
+            // Dasselbe gilt für einen Kunden aus dieser Quelle, dessen Kennung es dort nicht mehr gibt: Sein
+            // Konto wurde gelöscht und mit demselben Anmeldenamen neu angelegt. Sonst entstünde ein zweiter
+            // Kunde, dem die Adresse des ersten für immer verwehrt bliebe.
+            bool Uebernehmbar(Kunde k) => !vergeben.Contains(k)
+                && (k.Quelle is null || (k.Quelle == _quelle.Name && !kennungenDerQuelle.Contains(k.ExterneKennung ?? "")));
             var kunde = kunden.FirstOrDefault(k => k.Quelle == _quelle.Name && string.Equals(k.ExterneKennung, kennung, StringComparison.OrdinalIgnoreCase))
-                ?? (anmeldename is null ? null : kunden.FirstOrDefault(k => k.Quelle is null && k.Anmeldename == anmeldename && !vergeben.Contains(k)))
+                ?? (anmeldename is null ? null : kunden.FirstOrDefault(k => k.Anmeldename == anmeldename && Uebernehmbar(k)))
                 ?? (email is null ? null : kunden.FirstOrDefault(k => k.Quelle is null && k.Anmeldename is null && k.Email == email && !vergeben.Contains(k)));
 
             var istNeu = kunde is null;
@@ -217,6 +229,7 @@ public static class KundenabgleichExtensions
         var abschnitt = builder.Configuration.GetSection("Kundenabgleich");
         builder.Services.Configure<KundenabgleichOptionen>(abschnitt);
         builder.Services.TryAddScoped<Abgleichprotokoll>();
+        builder.Services.TryAddSingleton<Abgleichsperre>();
         builder.Services.AddScoped<Kundenabgleich>();
 
         var optionen = abschnitt.Get<KundenabgleichOptionen>() ?? new KundenabgleichOptionen();

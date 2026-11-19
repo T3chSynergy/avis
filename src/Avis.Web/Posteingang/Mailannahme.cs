@@ -117,7 +117,7 @@ public partial class Mailannahme(
 
             if (bezug is not null && bezug.Kunde.Email == adresse)
             {
-                var antwort = MitHinweis(OhneZitat(text, anhaenge, bilderImText), ausgelassen);
+                var antwort = OderKeinText(MitHinweis(OhneZitat(text, anhaenge, bilderImText), ausgelassen), anhaenge);
                 if (bezug.Status == AuftragStatus.Abgeschlossen)
                 {
                     bezug.KundeOeffnetWieder(durch, antwort, jetzt, anhaenge);
@@ -132,7 +132,7 @@ public partial class Mailannahme(
             }
             else if (bezug is not null && durch is { Aktiv: true, IstBearbeiter: true } && bezug.BearbeiterId == durch.Id)
             {
-                bezug.InternKommentieren(durch, MitHinweis(OhneZitat(text, anhaenge, bilderImText), ausgelassen), jetzt, anhaenge);
+                bezug.InternKommentieren(durch, OderKeinText(MitHinweis(OhneZitat(text, anhaenge, bilderImText), ausgelassen), anhaenge), jetzt, anhaenge);
                 eingang.Ergebnis = MaileingangErgebnis.InternerKommentar;
                 eingang.Auftrag = bezug;
             }
@@ -174,6 +174,13 @@ public partial class Mailannahme(
     /// abgeschnittenen Teil standen, gehören zu früheren Nachrichten und
     /// werden nicht noch einmal angehängt.
     /// </summary>
+    /// <summary>
+    /// Eine Antwort ohne Text und ohne Anhang, etwa nur mit dem zitierten Schriftwechsel, wird trotzdem
+    /// eingetragen, wie ein neuer Auftrag ohne Text. Sonst scheiterte sie bei jedem Abruf aufs Neue.
+    /// </summary>
+    private static string? OderKeinText(string? text, List<Anhang> anhaenge) =>
+        string.IsNullOrWhiteSpace(text) && anhaenge.Count == 0 ? "(kein Text)" : text;
+
     private string OhneZitat(string text, List<Anhang> anhaenge, Dictionary<string, Anhang> bilderImText)
     {
         var gekuerzt = Mailtext.OhneZitat(text);

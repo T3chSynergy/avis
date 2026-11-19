@@ -278,7 +278,9 @@ Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
   Standort ist das Attribut `physicalDeliveryOfficeName` (in der Verwaltung
   des Verzeichnisses „Büro“), zum Beispiel `A 105`.
 - Wer schon in AVIS steht, wird über Anmeldename oder Mailadresse
-  wiedererkannt und übernommen.
+  wiedererkannt und übernommen. Das gilt auch für ein Konto, das im
+  Verzeichnis gelöscht und mit demselben Anmeldenamen neu angelegt wurde: Es
+  bleibt derselbe Kunde mit seinen Aufträgen.
 - Auf wen der Filter nicht mehr passt oder wessen Konto deaktiviert ist, der
   wird als inaktiv markiert. Er bleibt mit seinen Aufträgen erhalten und steht
   nur nicht mehr zur Wahl, wenn ein Auftrag erfasst wird.
@@ -323,8 +325,10 @@ sofort anstoßen.
   nur nicht mehr neu verknüpfen.
 - Geräte, die nur in AVIS angelegt wurden, bleiben unberührt.
 - Assets ohne Asset Tag werden übergangen. Kommt eine Inventarnummer mehrfach
-  vor oder gehört sie in AVIS schon einem anderen Gerät der Quelle, wird das
-  Asset ausgelassen und in der Verwaltung genannt.
+  vor oder gehört sie in AVIS schon einem anderen Gerät, das die Quelle noch
+  liefert, wird das Asset ausgelassen und in der Verwaltung genannt.
+- Wurde ein Asset in Snipe-IT gelöscht und mit demselben Asset Tag neu
+  angelegt, bleibt es in AVIS dasselbe Gerät mit seinen Aufträgen.
 - Liefert Snipe-IT kein einziges Gerät, lehnt es den Schlüssel ab oder ist es
   nicht erreichbar, ändert sich nichts.
 
@@ -352,7 +356,7 @@ ganz. Sie laufen deshalb nur einmal am Tag, zur Uhrzeit aus
 - Scheitert ein Lauf, etwa weil die Quelle nicht erreichbar ist, versucht AVIS
   es nach einer Stunde wieder, bis er gelingt.
 - „Jetzt abgleichen“ in der Verwaltung geht jederzeit und zählt als Lauf des
-  Tages.
+  Tages. Läuft derselbe Abgleich gerade, startet kein zweiter.
 
 Tagsüber ändert sich an Kunden und Geräten also nichts von selbst. Ein Gerät,
 das AVIS noch nicht kennt, steht am Auftrag einfach im Text.

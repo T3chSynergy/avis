@@ -59,6 +59,7 @@ public class Bearbeiterabgleich(
     AvisDb db,
     IEnumerable<IBearbeiterquelle> quellen,
     Abgleichprotokoll protokoll,
+    Abgleichsperre sperre,
     TimeProvider uhr,
     ILogger<Bearbeiterabgleich> log)
 {
@@ -71,6 +72,11 @@ public class Bearbeiterabgleich(
 
     public async Task<Abgleichergebnis> AusfuehrenAsync(CancellationToken abbruch = default)
     {
+        // Läuft derselbe Abgleich schon, geschieht nichts: Das Ergebnis des laufenden bleibt das letzte.
+        using var belegt = sperre.Belegen(Abgleichlauf.Bearbeiter);
+        if (belegt is null)
+            return new(uhr.GetUtcNow().UtcDateTime, Fehler: Abgleichsperre.LaeuftBereits);
+
         Abgleichergebnis ergebnis;
         try
         {
@@ -236,6 +242,7 @@ public static class BearbeiterabgleichExtensions
         var abschnitt = builder.Configuration.GetSection("Bearbeiterabgleich");
         builder.Services.Configure<BearbeiterabgleichOptionen>(abschnitt);
         builder.Services.TryAddScoped<Abgleichprotokoll>();
+        builder.Services.TryAddSingleton<Abgleichsperre>();
         builder.Services.AddScoped<Bearbeiterabgleich>();
 
         var optionen = abschnitt.Get<BearbeiterabgleichOptionen>() ?? new BearbeiterabgleichOptionen();

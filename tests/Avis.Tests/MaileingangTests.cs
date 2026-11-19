@@ -79,6 +79,18 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Eine_Antwort_ohne_eigenen_Text_wird_trotzdem_eingetragen()
+    {
+        var id = (await AnnehmenAsync(Mail("gabi.mueller@example.org", "Maus defekt", "Die Maus klickt nicht mehr."))).AuftragId!.Value;
+
+        // Früher scheiterte so eine Mail bei jedem Abruf und blieb am Ende markiert im Postfach liegen.
+        var antwort = await AnnehmenAsync(Mail("gabi.mueller@example.org", $"AW: [AVIS-{id}] Maus defekt", ""));
+
+        Assert.Equal(MaileingangErgebnis.Antwort, antwort.Ergebnis);
+        Assert.Equal("(kein Text)", (await LadenAsync(id)).Verlauf.OrderBy(v => v.Id).Last().Text);
+    }
+
+    [Fact]
     public async Task Eine_Antwort_auf_einen_abgeschlossenen_Auftrag_oeffnet_ihn_wieder()
     {
         var anna = await app.AnmeldenAlsAsync("anna");

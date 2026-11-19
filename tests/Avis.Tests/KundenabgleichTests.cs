@@ -315,6 +315,27 @@ public class KundenabgleichTests
         Assert.DoesNotContain("Jana Ehemals", treffer);
     }
 
+    [Fact]
+    public async Task Ein_im_Verzeichnis_neu_angelegtes_Konto_mit_altem_Anmeldenamen_wird_wiedererkannt()
+    {
+        using var app = await OhneVerzeichniskundenAsync();
+        app.Kundenquelle.Kunden.AddRange([Eva, Hans]);
+        await AbgleichenAsync(app);
+        var hans = await KundeAsync(app, "Neu, Hans");
+
+        // Das Konto wurde gelöscht und mit demselben Anmeldenamen neu angelegt: Die Kennung ist eine andere.
+        app.Kundenquelle.Kunden.Clear();
+        app.Kundenquelle.Kunden.AddRange([Eva, Hans with { Kennung = "guid-hans-neu" }]);
+        var ergebnis = await AbgleichenAsync(app);
+
+        // Derselbe Kunde mit seinen Aufträgen und seiner Adresse, kein zweiter Eintrag.
+        Assert.Null(ergebnis.Fehler);
+        Assert.Empty(ergebnis.Hinweise ?? []);
+        Assert.Equal((2, 0, 1, 0, 0), (ergebnis.Gelesen, ergebnis.Neu, ergebnis.Geaendert, ergebnis.Reaktiviert, ergebnis.Inaktiv));
+        var danach = await KundeAsync(app, "Neu, Hans");
+        Assert.Equal((hans.Id, "guid-hans-neu", "hans.neu@example.org", true), (danach.Id, danach.ExterneKennung, danach.Email, danach.Aktiv));
+    }
+
     /// <summary>
     /// Eine Anwendung ohne die Kunden aus dem Verzeichnis, die die Testdaten
     /// mitbringen: Diese Tests zählen genau, was ein Abgleich tut.

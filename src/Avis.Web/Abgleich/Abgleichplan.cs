@@ -63,6 +63,37 @@ public static class Abgleichplan
     }
 }
 
+/// <summary>
+/// Sorgt dafür, dass derselbe Abgleich nicht zweimal gleichzeitig läuft, etwa von Hand aus der Verwaltung, während
+/// der geplante Lauf noch arbeitet. Zwei Läufe sähen beide denselben Stand und legten dieselben Einträge doppelt an.
+/// </summary>
+public sealed class Abgleichsperre
+{
+    public const string LaeuftBereits = "Dieser Abgleich läuft gerade schon. Sein Ergebnis steht hier, sobald er fertig ist.";
+
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim> _sperren = new();
+
+    /// <summary>Belegt den Abgleich dieser Art bis zum Dispose. Null, wenn er gerade läuft.</summary>
+    public IDisposable? Belegen(string art)
+    {
+        var sperre = _sperren.GetOrAdd(art, _ => new SemaphoreSlim(1, 1));
+        return sperre.Wait(0) ? new Freigabe(sperre) : null;
+    }
+
+    private sealed class Freigabe(SemaphoreSlim sperre) : IDisposable
+    {
+        private bool _frei;
+
+        public void Dispose()
+        {
+            if (_frei)
+                return;
+            _frei = true;
+            sperre.Release();
+        }
+    }
+}
+
 /// <summary>Hält den letzten Lauf jedes Abgleichs in der Datenbank fest und sagt, ob der tägliche Lauf ansteht.</summary>
 public class Abgleichprotokoll(AvisDb db, TimeProvider uhr, Ortszeit ortszeit)
 {

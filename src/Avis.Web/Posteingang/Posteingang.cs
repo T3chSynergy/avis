@@ -89,7 +89,25 @@ public class ImapPosteingang(IOptions<PosteingangOptionen> optionen, ILogger<Ima
         var verarbeitet = 0;
         foreach (var uid in ungelesen.Take(50))
         {
-            var mail = await ordner.GetMessageAsync(uid, abbruch);
+            MimeMessage mail;
+            try
+            {
+                mail = await ordner.GetMessageAsync(uid, abbruch);
+            }
+            catch (Exception ex) when (ex is ImapCommandException or MessageNotFoundException)
+            {
+                // Der Server gibt diese eine Mail nicht heraus; die Verbindung steht noch. Ohne diese Behandlung
+                // bräche der Abruf hier jedes Mal ab, und alle Mails dahinter blieben liegen.
+                var abrufe = _fehlversuche.AddOrUpdate(uid.ToString(), 1, (_, bisher) => bisher + 1);
+                log.LogError(ex, "Die Mail mit der Kennung {Uid} ließ sich nicht abrufen (Versuch {Versuch}).", uid, abrufe);
+                if (abrufe >= Hoechstversuche)
+                {
+                    await ordner.StoreAsync([uid], new StoreFlagsRequest(StoreAction.Add, MessageFlags.Seen | MessageFlags.Flagged) { Silent = true }, abbruch);
+                    _fehlversuche.TryRemove(uid.ToString(), out _);
+                }
+                continue;
+            }
+
             var schluessel = mail.MessageId ?? uid.ToString();
             try
             {

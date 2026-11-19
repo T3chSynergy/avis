@@ -190,7 +190,8 @@ alle drei Abgleiche gilt:
   ändert sich also nichts von selbst.
 - **Jetzt abgleichen** startet den Abgleich sofort, zum Beispiel wenn eine
   neue Kollegin nicht bis morgen warten soll. Bei vielen Einträgen kann das
-  eine Weile dauern.
+  eine Weile dauern. Läuft derselbe Abgleich gerade schon, startet kein
+  zweiter; die Seite sagt das.
 
 Die Seite zeigt den letzten Lauf: wann er war, wie viele Einträge gelesen,
 neu angelegt und geändert wurden und was dabei auffiel („Hinweise“).
