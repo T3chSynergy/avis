@@ -82,7 +82,6 @@ public static class AnmeldungExtensions
                 .RequireRole(Rollen.Bearbeiter)
                 .Build())
             .AddPolicy(Richtlinien.Angemeldet, p => p.RequireClaim(BenutzerIdClaim))
-            .AddPolicy(Rollen.Bearbeiter, p => p.RequireRole(Rollen.Bearbeiter))
             .AddPolicy(Rollen.Administrator, p => p.RequireRole(Rollen.Administrator));
 
         builder.Services.AddScoped<Kundenzuordnung>();
@@ -177,9 +176,17 @@ public class BenutzerMiddleware(RequestDelegate next)
                 await db.SaveChangesAsync();
             }
 
+            // Die Rollen kommen allein aus der Benutzertabelle. Unter der Windows-Anmeldung ist der Angemeldete
+            // ein WindowsPrincipal, und der fragt bei jeder Rollenprüfung zuerst Windows nach einer Gruppe oder
+            // einem Konto dieses Namens: Eine Gruppe namens "Bearbeiter" gäbe ihren Mitgliedern die Rolle an der
+            // Tabelle vorbei, auch deaktivierten Konten. Ein gewöhnlicher ClaimsPrincipal mit denselben
+            // Identitäten prüft nur, was hier vergeben wird.
+            var identitaeten = context.User.Identities.ToList();
+
             // Deaktivierte Konten bekommen keine Rollen und damit keinen Zugriff.
             if (benutzer.Aktiv)
-                context.User.AddIdentity(AnmeldungExtensions.AlsIdentity(benutzer));
+                identitaeten.Add(AnmeldungExtensions.AlsIdentity(benutzer));
+            context.User = new ClaimsPrincipal(identitaeten);
         }
 
         await next(context);

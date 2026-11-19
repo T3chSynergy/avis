@@ -103,6 +103,12 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         {
             ModelState.AddModelError(nameof(KundeId), "Bitte einen Kunden suchen und auswählen. Ist er nicht dabei, lässt er sich nach der Suche neu anlegen.");
         }
+        else if (Adresse(Eingabe.KundeEmail) is { } email
+            && await db.Kunden.FirstOrDefaultAsync(k => k.Email == email) is { Aktiv: false } inaktiv)
+        {
+            // Wer zu einer Adresse schon einen Kunden hat, bekommt diesen. Ist er inaktiv, gilt dasselbe wie oben.
+            ModelState.AddModelError("Eingabe.KundeEmail", $"Diese Adresse gehört zu {inaktiv.Name}. {inaktiv.Name} ist als inaktiv markiert. Für inaktive Kunden wird kein Auftrag erfasst.");
+        }
 
         var gruppe = await db.Gruppen.FirstOrDefaultAsync(g => g.Id == Eingabe.GruppeId && g.Aktiv);
         if (gruppe is null)
@@ -112,12 +118,14 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         Benutzer? bevorzugt = null;
         if (Eingabe.BevorzugtId is not null && !Eingabe.SofortUebernehmen)
         {
-            bevorzugt = await db.Benutzer.FirstOrDefaultAsync(b => b.Id == Eingabe.BevorzugtId && b.Aktiv && b.IstBearbeiter);
-            if (bevorzugt is null)
-                ModelState.AddModelError("Eingabe.BevorzugtId", "Der bevorzugte Bearbeiter wurde nicht gefunden.");
-            else if (gruppe is { Gesperrt: true }
-                && !await db.Gruppen.AnyAsync(g => g.Id == gruppe.Id && g.Mitglieder.Any(m => m.Id == bevorzugt.Id)))
-                ModelState.AddModelError("Eingabe.BevorzugtId", $"{bevorzugt.Name} ist kein Mitglied der gesperrten Gruppe {gruppe.Name}.");
+            try
+            {
+                bevorzugt = await db.BevorzugterBearbeiterAsync(Eingabe.BevorzugtId.Value, gruppe);
+            }
+            catch (AuftragException ex)
+            {
+                ModelState.AddModelError("Eingabe.BevorzugtId", ex.Message);
+            }
         }
 
         var angaben = await Eingabe.Felder.AlsAngabenAsync(db, ModelState, "Eingabe.Felder");
@@ -185,9 +193,12 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         && ((Request.HasFormContentType && Request.Form.ContainsKey("kundeId"))
             || new[] { Eingabe.KundeName, Eingabe.KundeEmail, Eingabe.KundeTelefon }.Any(t => !string.IsNullOrWhiteSpace(t)));
 
+    private static string? Adresse(string? eingabe) =>
+        string.IsNullOrWhiteSpace(eingabe) ? null : eingabe.Trim().ToLowerInvariant();
+
     private async Task<Kunde> KundeFindenOderAnlegenAsync()
     {
-        var email = string.IsNullOrWhiteSpace(Eingabe.KundeEmail) ? null : Eingabe.KundeEmail.Trim().ToLowerInvariant();
+        var email = Adresse(Eingabe.KundeEmail);
         var telefon = string.IsNullOrWhiteSpace(Eingabe.KundeTelefon) ? null : Eingabe.KundeTelefon.Trim();
 
         if (email is not null)

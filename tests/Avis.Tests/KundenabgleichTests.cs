@@ -98,6 +98,18 @@ public class KundenabgleichTests
         Assert.Contains("Test, Eva ist als inaktiv markiert.", await erfassen.Content.ReadAsStringAsync());
         Assert.False(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.Betreff == "Für eine Inaktive")));
 
+        // Auch nicht über "neuer Kunde" mit ihrer Adresse: Zu einer Adresse gehört immer derselbe Kunde.
+        var alsNeu = await anna.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        {
+            ["Eingabe.KundeName"] = "Eva Test",
+            ["Eingabe.KundeEmail"] = eva.Email!.ToUpperInvariant(),
+            ["Eingabe.Felder.Betreff"] = "Für eine Inaktive, anders",
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.GruppeId"] = (await app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync())).ToString(),
+        });
+        Assert.Contains("Diese Adresse gehört zu Test, Eva. Test, Eva ist als inaktiv markiert.", await alsNeu.Content.ReadAsStringAsync());
+        Assert.False(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.Betreff == "Für eine Inaktive, anders")));
+
         // Steht Eva wieder in der Gruppe, ist sie wieder aktiv, derselbe Eintrag.
         app.Kundenquelle.Kunden.Add(Eva);
         ergebnis = await AbgleichenAsync(app);
@@ -301,6 +313,27 @@ public class KundenabgleichTests
         var treffer = await anna.GetStringAsync("/Kunden/Treffer?q=bauamt&leer=neu");
         Assert.Contains("Hanna Verzeichnis", treffer);
         Assert.DoesNotContain("Jana Ehemals", treffer);
+    }
+
+    [Fact]
+    public async Task Ein_im_Verzeichnis_neu_angelegtes_Konto_mit_altem_Anmeldenamen_wird_wiedererkannt()
+    {
+        using var app = await OhneVerzeichniskundenAsync();
+        app.Kundenquelle.Kunden.AddRange([Eva, Hans]);
+        await AbgleichenAsync(app);
+        var hans = await KundeAsync(app, "Neu, Hans");
+
+        // Das Konto wurde gelöscht und mit demselben Anmeldenamen neu angelegt: Die Kennung ist eine andere.
+        app.Kundenquelle.Kunden.Clear();
+        app.Kundenquelle.Kunden.AddRange([Eva, Hans with { Kennung = "guid-hans-neu" }]);
+        var ergebnis = await AbgleichenAsync(app);
+
+        // Derselbe Kunde mit seinen Aufträgen und seiner Adresse, kein zweiter Eintrag.
+        Assert.Null(ergebnis.Fehler);
+        Assert.Empty(ergebnis.Hinweise ?? []);
+        Assert.Equal((2, 0, 1, 0, 0), (ergebnis.Gelesen, ergebnis.Neu, ergebnis.Geaendert, ergebnis.Reaktiviert, ergebnis.Inaktiv));
+        var danach = await KundeAsync(app, "Neu, Hans");
+        Assert.Equal((hans.Id, "guid-hans-neu", "hans.neu@example.org", true), (danach.Id, danach.ExterneKennung, danach.Email, danach.Aktiv));
     }
 
     /// <summary>

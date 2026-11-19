@@ -18,6 +18,35 @@ public static class Abfragen
             || a.ErfasstVonId == benutzerId
             || a.BearbeiterId == benutzerId);
 
+    /// <summary>
+    /// Lädt mit, was die Methoden des Auftrags lesen, wenn sie ihn ändern: Gruppe, Bearbeiter, Kunde und
+    /// Kategorie. Fehlte eines davon, stünde im Verlauf ein halber Satz ("Übernommen von "), oder der
+    /// bisherige Bearbeiter würde nicht erkannt. Jede Stelle, die einen Auftrag zum Ändern lädt, nimmt deshalb
+    /// diese Abfrage.
+    /// </summary>
+    public static IQueryable<Auftrag> ZumAendern(this IQueryable<Auftrag> auftraege) =>
+        auftraege
+            .Include(a => a.Gruppe)
+            .Include(a => a.Bearbeiter)
+            .Include(a => a.Kunde)
+            .Include(a => a.Kategorie);
+
+    /// <summary>
+    /// Der Bearbeiter, der an einem Auftrag in dieser Gruppe als bevorzugt genannt werden soll. In einer
+    /// gesperrten Gruppe muss er Mitglied sein: Sonst bekäme jemand Hinweise und Mails zu einem Auftrag, den er
+    /// nicht sehen darf.
+    /// </summary>
+    /// <exception cref="AuftragException">Es gibt ihn nicht, oder er gehört nicht zur gesperrten Gruppe.</exception>
+    public static async Task<Benutzer> BevorzugterBearbeiterAsync(this AvisDb db, int benutzerId, Gruppe? gruppe)
+    {
+        var bevorzugt = await db.Benutzer.FirstOrDefaultAsync(b => b.Id == benutzerId && b.Aktiv && b.IstBearbeiter)
+            ?? throw new AuftragException("Der bevorzugte Bearbeiter wurde nicht gefunden.");
+        if (gruppe is { Gesperrt: true }
+            && !await db.Gruppen.AnyAsync(g => g.Id == gruppe.Id && g.Mitglieder.Any(m => m.Id == bevorzugt.Id)))
+            throw new AuftragException($"{bevorzugt.Name} ist kein Mitglied der gesperrten Gruppe {gruppe.Name}.");
+        return bevorzugt;
+    }
+
     /// <summary>Lädt alles, was die Auftragsliste anzeigt.</summary>
     public static IQueryable<Auftrag> FuerListe(this IQueryable<Auftrag> auftraege) =>
         auftraege

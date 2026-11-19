@@ -6,47 +6,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Verwaltung;
 
-/// <summary>Was die gemeinsame Ansicht der Auswahllisten braucht.</summary>
-public interface IStammliste
-{
-    string Titel { get; }
-    string Einzahl { get; }
-    string Erklaerung { get; }
-    IReadOnlyList<IStammwert> Eintraege { get; }
-}
-
 /// <summary>
-/// Pflege einer Auswahlliste: anlegen, umbenennen, aktivieren und
-/// deaktivieren. Gelöscht wird nichts, weil bestehende Aufträge auf die
-/// Einträge verweisen.
+/// Pflege der Kategorien: anlegen, umbenennen, aktivieren und deaktivieren. Gelöscht wird nichts, weil
+/// bestehende Aufträge auf die Einträge verweisen.
 /// </summary>
-public abstract class StammlisteModel<T>(AvisDb db) : PageModel, IStammliste
-    where T : class, IStammwert, new()
+public class KategorienModel(AvisDb db) : PageModel
 {
     public const int Hoechstlaenge = 100;
 
-    public abstract string Titel { get; }
-    public abstract string Einzahl { get; }
-    public abstract string Erklaerung { get; }
-    public IReadOnlyList<IStammwert> Eintraege { get; private set; } = [];
+    public IReadOnlyList<Kategorie> Eintraege { get; private set; } = [];
 
     public async Task OnGetAsync() =>
-        Eintraege = await db.Set<T>().AsNoTracking().OrderBy(e => e.Name).ToListAsync();
+        Eintraege = await db.Kategorien.AsNoTracking().OrderBy(e => e.Name).ToListAsync();
 
     public async Task<IActionResult> OnPostAnlegenAsync(string? name)
     {
         if (await NamePruefenAsync(name, ausser: null) is { } bereinigt)
         {
-            db.Set<T>().Add(new T { Name = bereinigt });
+            db.Kategorien.Add(new Kategorie { Name = bereinigt });
             await db.SaveChangesAsync();
-            TempData["Meldung"] = $"{Einzahl} {bereinigt} wurde angelegt.";
+            TempData["Meldung"] = $"Kategorie {bereinigt} wurde angelegt.";
         }
         return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostSpeichernAsync(int id, string? name, bool aktiv)
     {
-        var eintrag = await db.Set<T>().FirstOrDefaultAsync(e => e.Id == id);
+        var eintrag = await db.Kategorien.FirstOrDefaultAsync(e => e.Id == id);
         if (eintrag is null)
             return NotFound();
 
@@ -55,7 +41,7 @@ public abstract class StammlisteModel<T>(AvisDb db) : PageModel, IStammliste
             eintrag.Name = bereinigt;
             eintrag.Aktiv = aktiv;
             await db.SaveChangesAsync();
-            TempData["Meldung"] = $"{Einzahl} {bereinigt} wurde gespeichert.";
+            TempData["Meldung"] = $"Kategorie {bereinigt} wurde gespeichert.";
         }
         return RedirectToPage();
     }
@@ -69,19 +55,12 @@ public abstract class StammlisteModel<T>(AvisDb db) : PageModel, IStammliste
             TempData["Fehler"] = $"Der Name darf höchstens {Hoechstlaenge} Zeichen lang sein.";
         // Der Vergleich läuft in der Datenbank; ToLower() wird dort zu lower().
 #pragma warning disable CA1304, CA1311, CA1862
-        else if (await db.Set<T>().AnyAsync(e => e.Id != ausser && e.Name.ToLower() == bereinigt.ToLower()))
+        else if (await db.Kategorien.AnyAsync(e => e.Id != ausser && e.Name.ToLower() == bereinigt.ToLower()))
 #pragma warning restore CA1304, CA1311, CA1862
-            TempData["Fehler"] = $"{Einzahl} {bereinigt} gibt es schon.";
+            TempData["Fehler"] = $"Kategorie {bereinigt} gibt es schon.";
         else
             return bereinigt;
 
         return null;
     }
-}
-
-public class KategorienModel(AvisDb db) : StammlisteModel<Kategorie>(db)
-{
-    public override string Titel => "Kategorien";
-    public override string Einzahl => "Kategorie";
-    public override string Erklaerung => "Kategorien ordnen Aufträge nach ihrer Art.";
 }

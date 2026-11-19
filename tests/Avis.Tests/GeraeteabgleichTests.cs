@@ -396,6 +396,54 @@ public class GeraeteabgleichTests
             Task.FromResult(antworten(request));
     }
 
+    [Fact]
+    public async Task Ein_in_der_Quelle_neu_angelegtes_Geraet_mit_alter_Inventarnummer_wird_wiedererkannt()
+    {
+        using var app = await OhneQuellgeraeteAsync();
+        app.Geraetequelle.Geraete.AddRange([Lesegeraet, Plotter]);
+        await AbgleichenAsync(app);
+        var scanner = await GeraetAsync(app, "SC-7001");
+
+        // In der Quelle gelöscht und mit derselben Inventarnummer neu angelegt: Die Kennung ist eine andere.
+        app.Geraetequelle.Geraete.Clear();
+        app.Geraetequelle.Geraete.AddRange([Plotter, new("901", "SC-7001", "Dokumentenscanner, neu", "Scanner", "A 106", null)]);
+        var ergebnis = await AbgleichenAsync(app);
+
+        // Derselbe Eintrag mit seinen Aufträgen, jetzt unter der neuen Kennung. Kein Hinweis, nichts ausgemustert.
+        Assert.Null(ergebnis.Fehler);
+        Assert.Empty(ergebnis.Hinweise ?? []);
+        Assert.Equal((2, 0, 1, 0, 0), (ergebnis.Gelesen, ergebnis.Neu, ergebnis.Geaendert, ergebnis.Reaktiviert, ergebnis.Inaktiv));
+        var danach = await GeraetAsync(app, "SC-7001");
+        Assert.Equal((scanner.Id, "901", "Dokumentenscanner, neu", true), (danach.Id, danach.ExterneKennung, danach.Bezeichnung, danach.Aktiv));
+
+        // Steht das alte Gerät dagegen noch in der Quelle, bleibt es bei dem Hinweis: Dann gibt es die Nummer dort zweimal.
+        app.Geraetequelle.Geraete.Add(new("902", "PL-7002", "Zweiter Plotter", "Plotter", null, null));
+        ergebnis = await AbgleichenAsync(app);
+        Assert.Contains("PL-7002: Die Inventarnummer kommt in der Quelle mehrfach vor.", Assert.Single(ergebnis.Hinweise!));
+    }
+
+    [Fact]
+    public async Task Derselbe_Abgleich_laeuft_nicht_zweimal_gleichzeitig()
+    {
+        using var app = await OhneQuellgeraeteAsync();
+        app.Geraetequelle.Geraete.Add(Lesegeraet);
+
+        // Ein Lauf ist unterwegs, etwa der geplante. Ein zweiter von Hand tut dann nichts.
+        using (app.Services.GetRequiredService<Abgleichsperre>().Belegen(Abgleichlauf.Geraete))
+        {
+            var zweiter = await AbgleichenAsync(app);
+
+            Assert.Equal(Abgleichsperre.LaeuftBereits, zweiter.Fehler);
+            Assert.False(await app.DatenbankAsync(db => db.Geraete.AnyAsync(g => g.Inventarnummer == "SC-7001")));
+            // Er hinterlässt auch keinen Eintrag als letzter Lauf.
+            Assert.False(await app.DatenbankAsync(db => db.Abgleichlaeufe.AnyAsync(l => l.Art == Abgleichlauf.Geraete)));
+        }
+
+        // Danach läuft er wieder.
+        Assert.Null((await AbgleichenAsync(app)).Fehler);
+        Assert.True(await app.DatenbankAsync(db => db.Geraete.AnyAsync(g => g.Inventarnummer == "SC-7001")));
+    }
+
     /// <summary>
     /// Eine Anwendung ohne die Geräte aus dem Inventar, die die Testdaten
     /// mitbringen: Diese Tests zählen genau, was ein Abgleich tut.

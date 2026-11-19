@@ -65,6 +65,7 @@ public class Geraeteabgleich(
     AvisDb db,
     IEnumerable<IGeraetequelle> quellen,
     Abgleichprotokoll protokoll,
+    Abgleichsperre sperre,
     TimeProvider uhr,
     ILogger<Geraeteabgleich> log)
 {
@@ -74,6 +75,11 @@ public class Geraeteabgleich(
 
     public async Task<Abgleichergebnis> AusfuehrenAsync(CancellationToken abbruch = default)
     {
+        // Läuft derselbe Abgleich schon, geschieht nichts: Das Ergebnis des laufenden bleibt das letzte.
+        using var belegt = sperre.Belegen(Abgleichlauf.Geraete);
+        if (belegt is null)
+            return new(uhr.GetUtcNow().UtcDateTime, Fehler: Abgleichsperre.LaeuftBereits);
+
         Abgleichergebnis ergebnis;
         try
         {
@@ -150,6 +156,7 @@ public class Geraeteabgleich(
             .GroupBy(g => g.ExterneKennung!)
             .ToDictionary(g => g.Key, g => g.First());
         var nachNummer = geraete.ToDictionary(g => g.Nummernschluessel);
+        var kennungenDerQuelle = eintraege.Select(e => e.Kennung.Trim()).ToHashSet();
 
         foreach (var eintrag in eintraege)
         {
@@ -158,10 +165,14 @@ public class Geraeteabgleich(
             var schluessel = Inventargeraet.Schluessel(nummer);
 
             // Wiedererkannt wird über die Kennung der Quelle. Ein Gerät, das mit derselben Inventarnummer schon
-            // von Hand in AVIS angelegt wurde, wird übernommen statt verdoppelt.
+            // von Hand in AVIS angelegt wurde, wird übernommen statt verdoppelt. Dasselbe gilt für ein Gerät aus
+            // dieser Quelle, dessen Kennung es dort nicht mehr gibt: Es wurde in der Quelle gelöscht und mit
+            // derselben Inventarnummer neu angelegt. Sonst bliebe das neue für immer ausgelassen.
             nachNummer.TryGetValue(schluessel, out var mitNummer);
-            var geraet = nachKennung.GetValueOrDefault(kennung)
-                ?? (mitNummer is { Quelle: null } && !vergeben.Contains(mitNummer) ? mitNummer : null);
+            var uebernehmbar = mitNummer is not null && !vergeben.Contains(mitNummer)
+                && (mitNummer.Quelle is null
+                    || (mitNummer.Quelle == _quelle.Name && !kennungenDerQuelle.Contains(mitNummer.ExterneKennung ?? "")));
+            var geraet = nachKennung.GetValueOrDefault(kennung) ?? (uebernehmbar ? mitNummer : null);
 
             // Die Inventarnummer ist in AVIS eindeutig. Trägt sie schon ein anderes Gerät, bleibt dieses hier aus.
             if (mitNummer is not null && mitNummer != geraet)
@@ -238,6 +249,7 @@ public static class GeraeteabgleichExtensions
         var abschnitt = builder.Configuration.GetSection("Geraeteabgleich");
         builder.Services.Configure<GeraeteabgleichOptionen>(abschnitt);
         builder.Services.TryAddScoped<Abgleichprotokoll>();
+        builder.Services.TryAddSingleton<Abgleichsperre>();
         builder.Services.AddScoped<Geraeteabgleich>();
 
         var optionen = abschnitt.Get<GeraeteabgleichOptionen>() ?? new GeraeteabgleichOptionen();

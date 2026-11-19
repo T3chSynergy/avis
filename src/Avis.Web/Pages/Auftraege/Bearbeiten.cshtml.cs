@@ -99,7 +99,5 @@ public class BearbeitenModel(AvisDb db, TimeProvider uhr) : PageModel
     }
 
     private Task<Auftrag?> LadenAsync(int id) =>
-        db.AuftraegeFuer(User.BenutzerId())
-            .Include(a => a.Kategorie)
-            .FirstOrDefaultAsync(a => a.Id == id);
+        db.AuftraegeFuer(User.BenutzerId()).ZumAendern().FirstOrDefaultAsync(a => a.Id == id);
 }

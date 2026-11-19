@@ -59,6 +59,7 @@ public class Bearbeiterabgleich(
     AvisDb db,
     IEnumerable<IBearbeiterquelle> quellen,
     Abgleichprotokoll protokoll,
+    Abgleichsperre sperre,
     TimeProvider uhr,
     ILogger<Bearbeiterabgleich> log)
 {
@@ -71,6 +72,11 @@ public class Bearbeiterabgleich(
 
     public async Task<Abgleichergebnis> AusfuehrenAsync(CancellationToken abbruch = default)
     {
+        // Läuft derselbe Abgleich schon, geschieht nichts: Das Ergebnis des laufenden bleibt das letzte.
+        using var belegt = sperre.Belegen(Abgleichlauf.Bearbeiter);
+        if (belegt is null)
+            return new(uhr.GetUtcNow().UtcDateTime, Fehler: Abgleichsperre.LaeuftBereits);
+
         Abgleichergebnis ergebnis;
         try
         {
@@ -123,7 +129,7 @@ public class Bearbeiterabgleich(
         foreach (var eintrag in gelesen)
         {
             var anmeldename = Bereinigt(eintrag.Anmeldename, 200)?.ToLowerInvariant();
-            if (anmeldename is null || anmeldename.StartsWith("avis:", StringComparison.Ordinal))
+            if (anmeldename is null || anmeldename.StartsWith(Benutzer.Systemkonten, StringComparison.Ordinal))
                 hinweise.Add($"{eintrag.Name ?? eintrag.Kennung}: Das Konto hat keinen brauchbaren Anmeldenamen und wurde ausgelassen.");
             else
                 eintraege.Add((eintrag.Kennung.Trim(), anmeldename, eintrag));
@@ -236,6 +242,7 @@ public static class BearbeiterabgleichExtensions
         var abschnitt = builder.Configuration.GetSection("Bearbeiterabgleich");
         builder.Services.Configure<BearbeiterabgleichOptionen>(abschnitt);
         builder.Services.TryAddScoped<Abgleichprotokoll>();
+        builder.Services.TryAddSingleton<Abgleichsperre>();
         builder.Services.AddScoped<Bearbeiterabgleich>();
 
         var optionen = abschnitt.Get<BearbeiterabgleichOptionen>() ?? new BearbeiterabgleichOptionen();
@@ -267,8 +274,7 @@ public static class BearbeiterabgleichExtensions
         var auftraege = await db.Auftraege
             .InBearbeitung()
             .Where(a => a.BearbeiterId == benutzer.Id)
-            .Include(a => a.Gruppe)
-            .Include(a => a.Bearbeiter)
+            .ZumAendern()
             .ToListAsync(abbruch);
 
         foreach (var auftrag in auftraege)

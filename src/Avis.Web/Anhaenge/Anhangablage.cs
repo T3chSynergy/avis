@@ -103,9 +103,18 @@ public class Anhangablage(IOptions<AnhangOptionen> optionen, IWebHostEnvironment
         var bildtyp = await BildtypAsync(inhalt, abbruch);
         inhalt.Position = 0;
 
-        await using var ziel = new FileStream(pfad, FileMode.CreateNew, FileAccess.Write);
-        await inhalt.CopyToAsync(ziel, abbruch);
-        return new Anhang(Bereinigt(dateiname), Gekuerzt(inhaltstyp, 200), ziel.Length, ablagename, bildtyp);
+        try
+        {
+            await using var ziel = new FileStream(pfad, FileMode.CreateNew, FileAccess.Write);
+            await inhalt.CopyToAsync(ziel, abbruch);
+            return new Anhang(Bereinigt(dateiname), Gekuerzt(inhaltstyp, 200), ziel.Length, ablagename, bildtyp);
+        }
+        catch
+        {
+            // Eine halb geschriebene Datei bliebe sonst liegen, ohne dass ein Anhang auf sie zeigt.
+            File.Delete(pfad);
+            throw;
+        }
     }
 
     /// <summary>

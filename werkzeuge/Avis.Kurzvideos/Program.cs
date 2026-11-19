@@ -1,5 +1,6 @@
-// Nimmt die Kurzvideos zu AVIS auf und baut die Seite, auf der sie veröffentlicht werden.
-// Aufruf und Voraussetzungen stehen in docs/entwicklung.md, Abschnitt „Kurzvideos“.
+// Nimmt die Kurzvideos zu AVIS auf, baut die Kurzanleitung für Bearbeiter mit ihren Bildschirmfotos und die
+// Seiten, auf denen beides veröffentlicht wird. Aufruf und Voraussetzungen stehen in docs/entwicklung.md,
+// Abschnitt „Kurzvideos und Kurzanleitung“.
 using Avis.Kurzvideos;
 using Microsoft.Playwright;
 
@@ -15,22 +16,18 @@ try
     var readmeBild = args is ["readme-bild", _, ..] ? args[1] : null;
     var optionen = Optionen.Lesen(readmeBild is null ? args : args[2..]);
     Directory.CreateDirectory(optionen.Ziel);
+    using var playwright = await Playwright.CreateAsync();
+    using var sprecher = new Sprecher(optionen);
+    await using var kamera = await Kamera.StartenAsync(playwright, optionen, sprecher);
+    var drehbuecher = new Drehbuecher(kamera);
     if (readmeBild is not null)
     {
-        using var einPlaywright = await Playwright.CreateAsync();
-        using var keinSprecher = new Sprecher(optionen);
-        await using var eineKamera = await Kamera.StartenAsync(einPlaywright, optionen, keinSprecher);
-        await new Drehbuecher(eineKamera).ReadmeBildAsync(readmeBild);
+        await drehbuecher.ReadmeBildAsync(readmeBild);
         return 0;
     }
 
     Console.WriteLine(optionen.Schnell ? "Nur prüfen: Die Videos laufen ohne Ton und ohne Wartezeiten durch und werden nicht abgelegt."
         : optionen.MitTon ? "Aufnahme mit Ton." : "Aufnahme ohne Ton: OPENROUTER_API_KEY ist nicht gesetzt.");
-
-    using var playwright = await Playwright.CreateAsync();
-    using var sprecher = new Sprecher(optionen);
-    await using var kamera = await Kamera.StartenAsync(playwright, optionen, sprecher);
-    var drehbuecher = new Drehbuecher(kamera);
 
     // Kurzanleitung und Videos verändern die Testdaten; jedes beginnt deshalb mit frischen.
     await kamera.TestdatenNeuAnlegenAsync();
