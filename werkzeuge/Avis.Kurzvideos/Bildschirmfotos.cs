@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 using Microsoft.Playwright;
+using static Avis.Kurzvideos.Handgriffe;
 
 namespace Avis.Kurzvideos;
 
@@ -11,10 +11,6 @@ namespace Avis.Kurzvideos;
 internal sealed class Bildschirmfotos(Kamera kamera, string ordner)
 {
     private const int Breit = 1100, Schmal = 540;
-
-    private static Regex Adresse(string muster) => new(muster, RegexOptions.None, TimeSpan.FromSeconds(1));
-
-    private static ILocator Aktion(IPage p, string name) => p.Locator(".leiste label.knopf", new() { HasText = name });
 
     private async Task FotoAsync(IPage p, string datei) =>
         await p.ScreenshotAsync(new() { Path = Path.Combine(ordner, datei), FullPage = true });
@@ -35,39 +31,18 @@ internal sealed class Bildschirmfotos(Kamera kamera, string ordner)
         });
     }
 
-    private async Task FuellenAsync(IPage p, string suche, string kunde, string betreff, string text,
+    private Task FuellenAsync(IPage p, string suche, string kunde, string betreff, string text,
         string? dringlichkeit = null, string? wichtigkeit = null, string? kategorie = null, string? termin = null,
-        string? gruppe = null, string? bevorzugt = null)
-    {
-        ILocator Stufe(string feld, string wert) =>
-            p.GetByRole(AriaRole.Radiogroup, new() { Name = feld }).GetByText(wert, new() { Exact = true });
-        await p.GotoAsync(kamera.Adresse + "/Auftraege/Neu");
-        await p.FillAsync("#kundensuche", suche);
-        await p.Locator("#kundentreffer label", new() { HasText = kunde }).First.ClickAsync();
-        await p.FillAsync("#Eingabe_Felder_Betreff", betreff);
-        await p.FillAsync("#Eingabe_Felder_Beschreibung", text);
-        if (dringlichkeit is not null) await Stufe("Dringlichkeit", dringlichkeit).ClickAsync();
-        if (wichtigkeit is not null) await Stufe("Wichtigkeit", wichtigkeit).ClickAsync();
-        if (kategorie is not null) await p.SelectOptionAsync("#Eingabe_Felder_KategorieId", new SelectOptionValue { Label = kategorie });
-        if (termin is not null) await p.FillAsync("#Eingabe_Felder_Termin", termin);
-        if (gruppe is not null) await p.SelectOptionAsync("#Eingabe_GruppeId", new SelectOptionValue { Label = gruppe });
-        if (bevorzugt is not null) await p.SelectOptionAsync("#Eingabe_BevorzugtId", new SelectOptionValue { Label = bevorzugt });
-    }
-
-    private static async Task<int> AbsendenAsync(IPage p, bool selbst = false)
-    {
-        if (selbst)
+        string? gruppe = null, string? bevorzugt = null) =>
+        Handgriffe.FuellenAsync(p, kamera.Adresse, new Neu(suche, kunde, betreff, text)
         {
-            await p.GetByRole(AriaRole.Button, new() { Name = "Erfassen und selbst übernehmen" }).ClickAsync();
-        }
-        else
-        {
-            await p.Locator(".knoepfe button.haupt").ClickAsync();
-        }
-
-        await p.WaitForURLAsync(Adresse(@"Auftraege/\d+$"));
-        return int.Parse(p.Url[(p.Url.LastIndexOf('/') + 1)..], CultureInfo.InvariantCulture);
-    }
+            Dringlichkeit = dringlichkeit,
+            Wichtigkeit = wichtigkeit,
+            Kategorie = kategorie,
+            Termin = termin,
+            Gruppe = gruppe,
+            Bevorzugt = bevorzugt,
+        });
 
     /// <summary>Klappt eine Aktion auf, füllt ihr Textfeld und sendet ab, wenn eine Schaltfläche genannt ist.</summary>
     private static async Task AktionAsync(IPage p, string name, string feld, string text, string? knopf = null)

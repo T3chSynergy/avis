@@ -221,9 +221,11 @@ Testdaten in einem Browser (Playwright für .NET).
 | Datei | Inhalt |
 |---|---|
 | `Drehbuch.cs` | Die Videos: Titel, gesprochene Sätze und der Ablauf im Browser |
-| `Kamera.cs` | Aufnahme und die Handgriffe eines Videos (Maus, Klick, Tippen, Zeile im Band) |
+| `Kamera.cs` | Browser, Anmeldung und Aufnahme; legt die Testdaten neu an |
+| `Film.cs` | Die Handgriffe im Bild: Maus, Klick, Tippen, Zeile im Band |
+| `Handgriffe.cs` | Was Videos und Bildschirmfotos gleichermaßen ohne Bild tun, etwa einen Auftrag erfassen |
 | `Einblendung.js` | Was während der Aufnahme in der Seite mitläuft: Mauszeiger, Klickring, Band am unteren Rand |
-| `Sprecher.cs` | Sprachausgabe und Schnitt |
+| `Sprecher.cs`, `Schnitt.cs` | Sprachausgabe; Schnitt mit ffmpeg zu Video, Standbild, Untertiteln und GIF |
 | `Kurzanleitung.md` | Der Text der Kurzanleitung; am Anfang steht, welche Platzhalter er kennt |
 | `Bildschirmfotos.cs` | Das Szenario, an dessen Stationen die Bilder der Kurzanleitung entstehen |
 | `Anleitung.cs`, `Anleitung.css`, `Ablauf.svg` | Webseite und PDF der Kurzanleitung |
