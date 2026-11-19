@@ -21,6 +21,14 @@ else
         AVIS liest dort nur. Die Quelle gewinnt: Inventarnummer, Bezeichnung, Typ, Standort und Nutzer werden überschrieben.
         Was dort fehlt, wird nicht gelöscht, sondern ausgemustert. Geräte, die nur in AVIS angelegt wurden, bleiben unberührt.
         Der Nutzer wird über die E-Mail-Adresse eines Kunden zugeordnet.
+        @if (Model.Optionen.VonHandAnlegen)
+        {
+            <text>Daneben lassen sich weiter Geräte von Hand anlegen (<code>Geraeteabgleich:VonHandAnlegen</code>).</text>
+        }
+        else
+        {
+            <text>Von Hand werden keine Geräte mehr angelegt (<code>Geraeteabgleich:VonHandAnlegen = false</code>).</text>
+        }
     </p>
     <p class="erklaerung">Der Abgleich läuft täglich um @Model.Optionen.Laufzeit.ToString("HH:mm") Uhr. Lief AVIS zu dieser Zeit nicht, wird er nachgeholt.</p>
 

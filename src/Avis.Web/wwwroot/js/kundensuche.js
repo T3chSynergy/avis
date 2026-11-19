@@ -11,14 +11,17 @@
     // Beim Erfassen: Ein Kunde muss gewählt sein, und wer einen neuen anlegt, muss dessen
     // Namen nennen. Das prüft der Browser vor dem Absenden, damit das Formular nicht
     // mit einem Fehler zurückkommt und dabei die gewählten Anhänge verliert.
+    // Die Felder für einen neuen Kunden gibt es nur, wo das Anlegen von Hand erlaubt ist.
+    const pflichtig = feld.closest('[data-kunde-pflicht]');
     const neuerName = document.querySelector('.neukunde input[name$=".KundeName"]');
     function pflicht() {
-        if (!neuerName) return;
+        if (!pflichtig) return;
         const neu = treffer.querySelector('#kunde-neu');
-        neuerName.required = !!neu && neu.checked;
-        feld.setCustomValidity(treffer.querySelector('input[name="kundeId"]:checked')
-            ? ''
-            : 'Bitte einen Kunden suchen und auswählen. Ist er nicht dabei, lässt er sich nach der Suche neu anlegen.');
+        if (neuerName) neuerName.required = !!neu && neu.checked;
+        const hinweis = neuerName
+            ? 'Bitte einen Kunden suchen und auswählen. Ist er nicht dabei, lässt er sich nach der Suche neu anlegen.'
+            : 'Bitte einen Kunden suchen und auswählen.';
+        feld.setCustomValidity(treffer.querySelector('input[name="kundeId"]:checked') ? '' : hinweis);
     }
     treffer.addEventListener('change', ereignis => {
         pflicht();

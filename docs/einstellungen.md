@@ -32,10 +32,12 @@ Unterstrichen statt des Doppelpunkts (`Mail__Server`).
 | `Kundenabgleich:Filter` | LDAP-Filter, der bestimmt, wer Kunde ist, zum Beispiel `(department=*)` |
 | `Kundenabgleich:Suchbasis` | Wo im Verzeichnis gesucht wird, zum Beispiel `OU=Mitarbeiter,DC=example,DC=org`. Leer: in der ganzen Domäne |
 | `Kundenabgleich:Uhrzeit` | Wann der Abgleich täglich läuft, in der eingestellten Zeitzone, Standard `02:00` |
+| `Kundenabgleich:VonHandAnlegen` | `false`: Neben dem Abgleich legen Bearbeiter keine Kunden mehr von Hand an. Standard `true`. Ohne Abgleich ohne Wirkung |
 | `Geraeteabgleich:Art` | `SnipeIt` gleicht die Geräte mit Snipe-IT ab, `Aus` lässt das aus |
 | `Geraeteabgleich:Adresse` | Adresse der Installation von Snipe-IT, zum Beispiel `https://inventar.example.org` |
 | `Geraeteabgleich:Schluessel` | Zugangsschlüssel (API-Token) eines Benutzers in Snipe-IT |
 | `Geraeteabgleich:Uhrzeit` | Wann der Abgleich täglich läuft, in der eingestellten Zeitzone, Standard `02:30`. Nach dem Kundenabgleich, weil der Nutzer eines Geräts ein Kunde ist |
+| `Geraeteabgleich:VonHandAnlegen` | `false`: Neben dem Abgleich werden keine Geräte mehr von Hand angelegt. Standard `true`. Ohne Abgleich ohne Wirkung |
 | `Mail:Art` | `Smtp` versendet, `Ordner` legt Mails als Dateien ab, `Aus` sendet nichts |
 | `Mail:Server`, `Mail:Port` | Mailserver, Standardport 25 |
 | `Mail:Verschluesselung` | `Auto`, `Keine`, `StartTls` oder `Ssl` |
@@ -286,6 +288,13 @@ Verzeichnisses beschränken, zum Beispiel auf eine Organisationseinheit.
   nur nicht mehr zur Wahl, wenn ein Auftrag erfasst wird.
 - Kunden, die nur in AVIS angelegt wurden, bleiben unberührt. Ein Bearbeiter
   markiert sie auf der Seite des Kunden als inaktiv.
+- Sollen neue Kunden nur noch aus dem Verzeichnis kommen, schaltet
+  `Kundenabgleich:VonHandAnlegen = false` das Anlegen von Hand ab: in der
+  Kundenliste und beim Erfassen eines Auftrags. Wer in der Suche fehlt, muss
+  dann erst ins Verzeichnis. Unberührt bleibt, was von selbst geschieht: Wer
+  sich anmeldet oder eine Mail schickt, wird weiterhin Kunde (für Mails siehe
+  `Posteingang:NurBekannteAbsender`). Kunden, die schon von Hand angelegt
+  sind, bleiben und lassen sich weiter bearbeiten.
 - Liefert das Verzeichnis keinen einzigen Kunden oder ist es nicht
   erreichbar, ändert sich nichts.
 
@@ -324,6 +333,9 @@ sofort anstoßen.
   wird ausgemustert. Es bleibt mit seinen Aufträgen erhalten und lässt sich
   nur nicht mehr neu verknüpfen.
 - Geräte, die nur in AVIS angelegt wurden, bleiben unberührt.
+- Sollen neue Geräte nur noch aus Snipe-IT kommen, schaltet
+  `Geraeteabgleich:VonHandAnlegen = false` das Anlegen von Hand ab. Geräte,
+  die schon von Hand angelegt sind, bleiben und lassen sich weiter bearbeiten.
 - Assets ohne Asset Tag werden übergangen. Kommt eine Inventarnummer mehrfach
   vor oder gehört sie in AVIS schon einem anderen Gerät, das die Quelle noch
   liefert, wird das Asset ausgelassen und in der Verwaltung genannt.

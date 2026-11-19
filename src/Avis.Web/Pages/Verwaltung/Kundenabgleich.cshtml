@@ -20,6 +20,14 @@ else
         Quelle: <strong>@Model.Optionen.Art</strong>@if (!string.IsNullOrWhiteSpace(Model.Optionen.Filter)) {<text>, Filter <code>@Model.Optionen.Filter</code></text>}@if (!string.IsNullOrWhiteSpace(Model.Optionen.Suchbasis)) {<text>, gesucht in <code>@Model.Optionen.Suchbasis</code></text>}.
         Die Quelle gewinnt: Name, E-Mail, Telefon, Organisationseinheit und Standort werden überschrieben.
         Wer dort fehlt, wird nicht gelöscht, sondern als inaktiv markiert. Kunden, die nur in AVIS angelegt wurden, bleiben unberührt.
+        @if (Model.Optionen.VonHandAnlegen)
+        {
+            <text>Bearbeiter können daneben weiter Kunden von Hand anlegen (<code>Kundenabgleich:VonHandAnlegen</code>).</text>
+        }
+        else
+        {
+            <text>Von Hand legen Bearbeiter keine Kunden mehr an (<code>Kundenabgleich:VonHandAnlegen = false</code>).</text>
+        }
     </p>
     <p class="erklaerung">Der Abgleich läuft täglich um @Model.Optionen.Laufzeit.ToString("HH:mm") Uhr. Lief AVIS zu dieser Zeit nicht, wird er nachgeholt.</p>
 

@@ -230,6 +230,10 @@ Filter passt.
   Konto mit derselben E-Mail-Adresse aus der Quelle, wird daraus ein Kunde
   und kein zweiter. Deshalb lohnt es, beim Anlegen die E-Mail-Adresse
   einzutragen.
+- Sollen neue Kunden nur noch aus der Quelle kommen, lässt sich das Anlegen
+  von Hand abschalten (`Kundenabgleich:VonHandAnlegen`). Die Seite des
+  Abgleichs zeigt, was gilt. Wer sich anmeldet oder eine Mail schickt, wird
+  weiterhin von selbst Kunde.
 
 ## Geräteabgleich
 
@@ -251,7 +255,9 @@ zurück.
 Unter **Geräte** steht für Administratoren neben der Suche „Gerät anlegen“,
 und auf der Seite eines Geräts „Bearbeiten“. Das gilt nur für Geräte, die in
 AVIS selbst angelegt wurden. Geräte aus dem Geräteabgleich werden im
-Inventarsystem gepflegt.
+Inventarsystem gepflegt. Sollen neue Geräte nur noch von dort kommen, lässt
+sich „Gerät anlegen“ abschalten (`Geraeteabgleich:VonHandAnlegen`); die Seite
+des Geräteabgleichs zeigt, was gilt.
 
 - Pflicht sind Inventarnummer und Bezeichnung. Über die Inventarnummer
   verknüpfen Bearbeiter das Gerät mit einem Auftrag, indem sie `INV` und die

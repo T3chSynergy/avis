@@ -50,6 +50,12 @@ else
     }
 }
 
+@if (!Model.DarfAnlegen)
+{
+    <p class="erklaerung">Kunden kommen aus dem Kundenabgleich. Von Hand werden hier keine angelegt.</p>
+    return;
+}
+
 <form method="post" class="kasten">
     <h3>Kunde anlegen</h3>
     <label for="neu-name">Name</label>

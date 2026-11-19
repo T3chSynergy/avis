@@ -12,8 +12,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Auftraege;
 
-public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageModel
+public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage, Abgleich.Kundenabgleich kundenabgleich) : PageModel
 {
+    /// <summary>
+    /// Ob sich beim Erfassen ein neuer Kunde anlegen lässt (Kundenabgleich:VonHandAnlegen). Sonst muss der
+    /// Kunde schon in AVIS stehen.
+    /// </summary>
+    public bool NeuerKundeErlaubt => kundenabgleich.VonHandAnlegen;
+
     public class Formular
     {
         [StringLength(200)]
@@ -98,6 +104,13 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
             {
                 ModelState.AddModelError(nameof(KundeId), $"{kunde.Name} ist als inaktiv markiert. Für inaktive Kunden wird kein Auftrag erfasst.");
             }
+        }
+        else if (!NeuerKundeErlaubt)
+        {
+            // Auch wenn jemand die Felder für einen neuen Kunden mitschickt, die das Formular nicht anbietet.
+            foreach (var feld in new[] { nameof(Formular.KundeName), nameof(Formular.KundeEmail), nameof(Formular.KundeTelefon) })
+                ModelState.Remove($"{nameof(Eingabe)}.{feld}");
+            ModelState.AddModelError(nameof(KundeId), "Bitte einen Kunden suchen und auswählen. Neue Kunden kommen aus dem Kundenabgleich und werden hier nicht angelegt.");
         }
         else if (neuerName.Length == 0)
         {
@@ -226,6 +239,8 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
             .Select(b => new SelectListItem(b.Name, b.Id.ToString(CultureInfo.InvariantCulture)))
             .ToListAsync();
         Auswahl = await AuftragAuswahl.LadenAsync(db);
-        Kundenauswahl = await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "neu", neuGewaehlt: NeuerKundeGewaehlt());
+        Kundenauswahl = NeuerKundeErlaubt
+            ? await Kundenauswahl.LadenAsync(db, Suche, KundeId, leer: "neu", neuGewaehlt: NeuerKundeGewaehlt())
+            : await Kundenauswahl.LadenAsync(db, Suche, KundeId);
     }
 }

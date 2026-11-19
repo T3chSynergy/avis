@@ -3,6 +3,10 @@ using System.Text.RegularExpressions;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.EntityFrameworkCore;
+using Avis.Web.Abgleich;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Avis.Tests;
 
@@ -387,6 +391,68 @@ public class KundenTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
     private Task<int> KundeIdAsync(string name) =>
         app.DatenbankAsync(db => db.Kunden.Where(k => k.Name == name).Select(k => k.Id).FirstAsync());
+
+    [Fact]
+    public async Task Neben_dem_Kundenabgleich_laesst_sich_das_Anlegen_von_Hand_abschalten()
+    {
+        using var nurAusDerQuelle = app.WithWebHostBuilder(b => b.UseSetting("Kundenabgleich:VonHandAnlegen", "false"));
+        var bernd = nurAusDerQuelle.CreateClient();
+        await bernd.PostFormularAsync("/Anmeldung", "/Anmeldung", new() { ["anmeldename"] = "bernd" });
+        var hotline = (await app.DatenbankAsync(db => db.Gruppen.Where(g => g.IstEingangsgruppe).Select(g => g.Id).FirstAsync())).ToString();
+
+        // Die Kundenliste bietet das Anlegen nicht an und nimmt es auch nicht an.
+        var liste = await bernd.GetStringAsync("/Kunden");
+        Assert.DoesNotContain("Kunde anlegen", liste);
+        Assert.Contains("Von Hand werden hier keine angelegt.", liste);
+        var anlegen = await bernd.PostFormularAsync("/Auftraege/Neu", "/Kunden", new() { ["name"] = "Hanna Hand" });
+        Assert.Equal(HttpStatusCode.NotFound, anlegen.StatusCode);
+
+        // Beim Erfassen gibt es weder die Wahl "neuer Kunde" noch dessen Felder.
+        var formular = await bernd.GetStringAsync("/Auftraege/Neu");
+        Assert.DoesNotContain("Eingabe.KundeName", formular);
+        Assert.Contains("Neue Kunden kommen aus dem Kundenabgleich.", formular);
+        Assert.DoesNotContain("neuen Kunden anlegen", await bernd.GetStringAsync("/Kunden/Treffer?q=niemand&leer=neu"));
+
+        // Auch wer die Felder trotzdem mitschickt, legt keinen Kunden an.
+        var erfassen = await bernd.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        {
+            ["Eingabe.KundeName"] = "Hanna Hand",
+            ["Eingabe.Felder.Betreff"] = "Für eine Neue",
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.GruppeId"] = hotline,
+        });
+        Assert.Contains("Neue Kunden kommen aus dem Kundenabgleich und werden hier nicht angelegt.", await erfassen.Content.ReadAsStringAsync());
+        Assert.False(await app.DatenbankAsync(db => db.Kunden.AnyAsync(k => k.Name == "Hanna Hand")));
+        Assert.False(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.Betreff == "Für eine Neue")));
+
+        // Für einen Kunden, den es gibt, geht alles wie sonst.
+        var frank = await app.DatenbankAsync(db => db.Kunden.Where(k => k.Name == "Frank Müller").Select(k => k.Id).SingleAsync());
+        await bernd.PostFormularAsync("/Auftraege/Neu", "/Auftraege/Neu", new()
+        {
+            ["kundeId"] = frank.ToString(),
+            ["Eingabe.Felder.Betreff"] = "Für einen Bekannten",
+            ["Eingabe.Felder.Beschreibung"] = "Für einen Test.",
+            ["Eingabe.GruppeId"] = hotline,
+        });
+        Assert.True(await app.DatenbankAsync(db => db.Auftraege.AnyAsync(a => a.Betreff == "Für einen Bekannten" && a.KundeId == frank)));
+
+        var anna = nurAusDerQuelle.CreateClient();
+        await anna.PostFormularAsync("/Anmeldung", "/Anmeldung", new() { ["anmeldename"] = "anna" });
+        Assert.Contains("Von Hand legen Bearbeiter keine Kunden mehr an", await anna.GetStringAsync("/Verwaltung/Kundenabgleich"));
+    }
+
+    [Fact]
+    public async Task Ohne_Kundenabgleich_hat_die_Einstellung_keine_Wirkung()
+    {
+        using var ohneAbgleich = app.WithWebHostBuilder(b => b
+            .UseSetting("Kundenabgleich:VonHandAnlegen", "false")
+            .ConfigureTestServices(s => s.RemoveAll<IKundenquelle>()));
+        var bernd = ohneAbgleich.CreateClient();
+        await bernd.PostFormularAsync("/Anmeldung", "/Anmeldung", new() { ["anmeldename"] = "bernd" });
+
+        Assert.Contains("Kunde anlegen", await bernd.GetStringAsync("/Kunden"));
+        Assert.Contains("Eingabe.KundeName", await bernd.GetStringAsync("/Auftraege/Neu"));
+    }
 
     private Task<Auftrag> LadenAsync(int id) => app.DatenbankAsync(db => db.Auftraege
         .AsNoTracking()
