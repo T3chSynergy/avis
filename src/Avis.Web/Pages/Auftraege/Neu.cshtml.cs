@@ -118,12 +118,14 @@ public class NeuModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : PageMo
         Benutzer? bevorzugt = null;
         if (Eingabe.BevorzugtId is not null && !Eingabe.SofortUebernehmen)
         {
-            bevorzugt = await db.Benutzer.FirstOrDefaultAsync(b => b.Id == Eingabe.BevorzugtId && b.Aktiv && b.IstBearbeiter);
-            if (bevorzugt is null)
-                ModelState.AddModelError("Eingabe.BevorzugtId", "Der bevorzugte Bearbeiter wurde nicht gefunden.");
-            else if (gruppe is { Gesperrt: true }
-                && !await db.Gruppen.AnyAsync(g => g.Id == gruppe.Id && g.Mitglieder.Any(m => m.Id == bevorzugt.Id)))
-                ModelState.AddModelError("Eingabe.BevorzugtId", $"{bevorzugt.Name} ist kein Mitglied der gesperrten Gruppe {gruppe.Name}.");
+            try
+            {
+                bevorzugt = await db.BevorzugterBearbeiterAsync(Eingabe.BevorzugtId.Value, gruppe);
+            }
+            catch (AuftragException ex)
+            {
+                ModelState.AddModelError("Eingabe.BevorzugtId", ex.Message);
+            }
         }
 
         var angaben = await Eingabe.Felder.AlsAngabenAsync(db, ModelState, "Eingabe.Felder");

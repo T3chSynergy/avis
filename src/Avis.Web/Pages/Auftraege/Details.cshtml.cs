@@ -92,13 +92,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
         {
             var ziel = await db.Gruppen.FirstOrDefaultAsync(g => g.Id == gruppeId && g.Aktiv)
                 ?? throw new AuftragException("Bitte eine Gruppe wählen.");
-            var bevorzugt = bevorzugtId is null
-                ? null
-                : await db.Benutzer.FirstOrDefaultAsync(b => b.Id == bevorzugtId && b.Aktiv && b.IstBearbeiter)
-                    ?? throw new AuftragException("Der bevorzugte Bearbeiter wurde nicht gefunden.");
-            if (bevorzugt is not null && ziel.Gesperrt
-                && !await db.Gruppen.AnyAsync(g => g.Id == ziel.Id && g.Mitglieder.Any(m => m.Id == bevorzugt.Id)))
-                throw new AuftragException($"{bevorzugt.Name} ist kein Mitglied der gesperrten Gruppe {ziel.Name}.");
+            var bevorzugt = bevorzugtId is null ? null : await db.BevorzugterBearbeiterAsync(bevorzugtId.Value, ziel);
             auftrag.Weiterleiten(ziel, ich, jetzt, bevorzugt, text);
         }, formular: "weiterleiten", entwurf: text);
 
@@ -161,10 +155,7 @@ public class DetailsModel(AvisDb db, TimeProvider uhr, Anhangablage ablage) : Pa
         string? formular = null,
         string? entwurf = null)
     {
-        var auftrag = await db.AuftraegeFuer(User.BenutzerId())
-            .Include(a => a.Gruppe)
-            .Include(a => a.Bearbeiter)
-            .FirstOrDefaultAsync(a => a.Id == id);
+        var auftrag = await db.AuftraegeFuer(User.BenutzerId()).ZumAendern().FirstOrDefaultAsync(a => a.Id == id);
         if (auftrag is null)
             return NotFound();
 

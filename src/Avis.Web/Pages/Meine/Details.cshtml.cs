@@ -67,10 +67,7 @@ public class DetailsModel(AvisDb db, Kundenzuordnung zuordnung, TimeProvider uhr
     public async Task<IActionResult> OnPostAsync(int id, string? text, List<IFormFile> dateien)
     {
         var kunde = await zuordnung.FuerBenutzerAsync(User.BenutzerId());
-        var auftrag = await db.Auftraege
-            .Include(a => a.Gruppe)
-            .Include(a => a.Bearbeiter)
-            .FirstOrDefaultAsync(a => a.Id == id && a.KundeId == kunde.Id);
+        var auftrag = await db.Auftraege.ZumAendern().FirstOrDefaultAsync(a => a.Id == id && a.KundeId == kunde.Id);
         if (auftrag is null)
             return NotFound();
 

@@ -200,11 +200,7 @@ public partial class Mailannahme(
         if (!treffer.Success || !int.TryParse(treffer.Groups[1].Value, out var nummer))
             return null;
 
-        return await db.Auftraege
-            .Include(a => a.Kunde)
-            .Include(a => a.Gruppe)
-            .Include(a => a.Bearbeiter)
-            .FirstOrDefaultAsync(a => a.Id == nummer, abbruch);
+        return await db.Auftraege.ZumAendern().FirstOrDefaultAsync(a => a.Id == nummer, abbruch);
     }
 
     /// <summary>

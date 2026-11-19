@@ -71,6 +71,7 @@ public class EintragAendernModel(AvisDb db, TimeProvider uhr) : PageModel
     private async Task<(Auftrag?, Verlaufseintrag?)> LadenAsync(int id, int eintrag)
     {
         var auftrag = await db.AuftraegeFuer(User.BenutzerId())
+            .ZumAendern()
             .Include(a => a.Verlauf.Where(v => v.Id == eintrag)).ThenInclude(v => v.Anhaenge)
             .FirstOrDefaultAsync(a => a.Id == id);
         return (auftrag, auftrag?.Verlauf.FirstOrDefault(v => v.Id == eintrag));

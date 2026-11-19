@@ -274,8 +274,7 @@ public static class BearbeiterabgleichExtensions
         var auftraege = await db.Auftraege
             .InBearbeitung()
             .Where(a => a.BearbeiterId == benutzer.Id)
-            .Include(a => a.Gruppe)
-            .Include(a => a.Bearbeiter)
+            .ZumAendern()
             .ToListAsync(abbruch);
 
         foreach (var auftrag in auftraege)

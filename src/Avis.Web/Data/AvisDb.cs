@@ -30,33 +30,13 @@ public class AvisDb(DbContextOptions<AvisDb> options) : DbContext(options)
     /// </summary>
     public bool BenachrichtigungenAnlegen { get; set; } = true;
 
-    public override int SaveChanges(bool acceptAllChangesOnSuccess)
-    {
-        var automatisch = EinmalFeststellen();
-        try
-        {
-            BenachrichtigungenVormerken();
-            SuchtexteAktualisieren();
-            foreach (var auftrag in AuftraegeMitNeuemText())
-            {
-                var texte = GenannteTexte(auftrag, GespeicherteTexte(auftrag)?.ToList());
-                var nummern = Geraetebezug.Nummern(texte);
-                var genannt = Auftragsbezug.Nummern(texte);
-                if (Entry(auftrag).State != EntityState.Added)
-                {
-                    Entry(auftrag).Collection(a => a.Geraete).Load();
-                    Entry(auftrag).Collection(a => a.Bezuege).Load();
-                }
-                auftrag.GeraeteSetzen(nummern.Count == 0 ? [] : Geraete.Where(g => nummern.Contains(g.Nummernschluessel)).ToList());
-                auftrag.BezuegeSetzen(genannt.Count == 0 ? [] : Auftraege.Where(a => genannt.Contains(a.Id)).ToList());
-            }
-        }
-        finally
-        {
-            ChangeTracker.AutoDetectChangesEnabled = automatisch;
-        }
-        return base.SaveChanges(acceptAllChangesOnSuccess);
-    }
+    /// <summary>
+    /// AVIS speichert nur über SaveChangesAsync. Dort stehen die Schritte vor dem Speichern (Mails vormerken,
+    /// Suchtexte, genannte Geräte und Aufträge). Eine zweite Fassung derselben Schritte für das Speichern ohne
+    /// "Async" müsste bei jeder Änderung mitgepflegt werden, ohne dass sie je liefe.
+    /// </summary>
+    public override int SaveChanges(bool acceptAllChangesOnSuccess) =>
+        throw new NotSupportedException("AVIS speichert nur über SaveChangesAsync.");
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
