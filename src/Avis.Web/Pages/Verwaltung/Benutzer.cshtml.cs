@@ -72,7 +72,7 @@ public class BenutzerModel(AvisDb db) : PageModel
 
         // Die Konten, die AVIS sich selbst anlegt, etwa für den E-Mail-Eingang, werden nicht gepflegt.
         var gesucht = db.Benutzer.AsNoTracking()
-            .Where(b => !b.Anmeldename.StartsWith("avis:"))
+            .Where(b => !b.Anmeldename.StartsWith(Domain.Benutzer.Systemkonten))
             .Suchen(Q);
 
         var rollen = await gesucht

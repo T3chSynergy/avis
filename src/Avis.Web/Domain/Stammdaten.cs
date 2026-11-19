@@ -1,6 +1,5 @@
 namespace Avis.Web.Domain;
 
-/// <summary>Anmeldekonto. Jeder, der sich anmeldet, bekommt eines.</summary>
 /// <summary>
 /// Wie die Oberfläche für einen Benutzer aussieht. "Wie das Gerät" folgt der
 /// Einstellung des Betriebssystems oder Browsers und ist die Voreinstellung.
@@ -12,8 +11,15 @@ public enum Darstellung
     Dunkel = 2,
 }
 
+/// <summary>Anmeldekonto. Jeder, der sich anmeldet, bekommt eines.</summary>
 public class Benutzer
 {
+    /// <summary>
+    /// So beginnt der Anmeldename der Konten, die AVIS für sich selbst anlegt, etwa für den E-Mail-Eingang. Mit
+    /// ihnen kann sich niemand anmelden, und in der Verwaltung stehen sie nicht.
+    /// </summary>
+    public const string Systemkonten = "avis:";
+
     public int Id { get; set; }
 
     /// <summary>Anmeldename in Kleinbuchstaben, bei Windows-Anmeldung "domäne\name".</summary>
@@ -105,7 +111,7 @@ public class Kunde
     /// </summary>
     public string? Standort { get; set; }
 
-    /// <summary>Kennung in einem externen System, für einen späteren Abgleich.</summary>
+    /// <summary>Kennung in einem externen System, bei Kunden aus dem Kundenabgleich.</summary>
     public string? ExterneKennung { get; set; }
 
     /// <summary>Name des externen Systems, aus dem der Eintrag stammt.</summary>
@@ -142,15 +148,8 @@ public class Kunde
     }
 }
 
-/// <summary>Eintrag einer Auswahlliste, die der Administrator pflegt.</summary>
-public interface IStammwert
-{
-    int Id { get; }
-    string Name { get; set; }
-    bool Aktiv { get; set; }
-}
-
-public class Kategorie : IStammwert
+/// <summary>Ordnet Aufträge nach ihrer Art. Die Liste pflegt der Administrator.</summary>
+public class Kategorie
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";

@@ -82,7 +82,6 @@ public static class AnmeldungExtensions
                 .RequireRole(Rollen.Bearbeiter)
                 .Build())
             .AddPolicy(Richtlinien.Angemeldet, p => p.RequireClaim(BenutzerIdClaim))
-            .AddPolicy(Rollen.Bearbeiter, p => p.RequireRole(Rollen.Bearbeiter))
             .AddPolicy(Rollen.Administrator, p => p.RequireRole(Rollen.Administrator));
 
         builder.Services.AddScoped<Kundenzuordnung>();

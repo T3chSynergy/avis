@@ -1,10 +1,10 @@
 namespace Avis.Web.Domain;
 
 /// <summary>
-/// Ein Gerät aus dem Inventar, mit dem Aufträge verknüpft werden können.
-/// Die Verknüpfung ist nie Pflicht, das Freitextfeld am Auftrag bleibt daneben
-/// bestehen. Externe Kennung und Quelle bereiten einen späteren Abgleich mit
-/// einem externen System vor.
+/// Ein Gerät aus dem Inventar. Ein Auftrag ist mit ihm verknüpft, wenn einer
+/// seiner Texte es mit "INV" und der Inventarnummer nennt; Pflicht ist das nie.
+/// Externe Kennung und Quelle tragen Geräte, die der Geräteabgleich aus einem
+/// externen System übernommen hat.
 /// </summary>
 public class Inventargeraet
 {

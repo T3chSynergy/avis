@@ -129,7 +129,7 @@ public class Bearbeiterabgleich(
         foreach (var eintrag in gelesen)
         {
             var anmeldename = Bereinigt(eintrag.Anmeldename, 200)?.ToLowerInvariant();
-            if (anmeldename is null || anmeldename.StartsWith("avis:", StringComparison.Ordinal))
+            if (anmeldename is null || anmeldename.StartsWith(Benutzer.Systemkonten, StringComparison.Ordinal))
                 hinweise.Add($"{eintrag.Name ?? eintrag.Kennung}: Das Konto hat keinen brauchbaren Anmeldenamen und wurde ausgelassen.");
             else
                 eintraege.Add((eintrag.Kennung.Trim(), anmeldename, eintrag));
