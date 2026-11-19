@@ -68,14 +68,23 @@ public partial class Mailannahme(
             Von = Kuerzen(adresse, 320),
             Betreff = Kuerzen(mail.Subject, 300),
         };
-        db.Maileingaenge.Add(eingang);
+
+        // Die Mail gilt erst als verarbeitet, wenn feststeht, was aus ihr geworden ist. Ihr Eintrag kommt deshalb
+        // erst mit dem letzten Speichern in die Datenbank. Stünde er schon vorher dort, nähme ihn jedes Speichern
+        // unterwegs mit (die Zuordnung eines Kontos zu seinem Kunden speichert selbst), und scheiterte die Annahme
+        // danach, hielte der nächste Abruf die Mail für erledigt.
+        async Task<Maileingang> FesthaltenAsync()
+        {
+            db.Maileingaenge.Add(eingang);
+            await db.SaveChangesAsync(abbruch);
+            return eingang;
+        }
 
         if (Automatisch(mail, adresse) is { } grund)
         {
             eingang.Ergebnis = MaileingangErgebnis.Uebergangen;
             eingang.Hinweis = grund;
-            await db.SaveChangesAsync(abbruch);
-            return eingang;
+            return await FesthaltenAsync();
         }
 
         var bezug = await BezugAsync(mail.Subject, abbruch);
@@ -86,7 +95,7 @@ public partial class Mailannahme(
         {
             eingang.Ergebnis = MaileingangErgebnis.Uebergangen;
             eingang.Hinweis = UnbekannterAbsender;
-            await db.SaveChangesAsync(abbruch);
+            await FesthaltenAsync();
             log.LogInformation("Mail von {Von} übergangen: Absender unbekannt.", adresse);
             return eingang;
         }
@@ -149,7 +158,7 @@ public partial class Mailannahme(
                 eingang.Auftrag = auftrag;
             }
 
-            await db.SaveChangesAsync(abbruch);
+            await FesthaltenAsync();
             log.LogInformation("Mail von {Von} verarbeitet: {Ergebnis}, Auftrag {Auftrag}.", adresse, eingang.Ergebnis, eingang.Auftrag?.Id);
             return eingang;
         }

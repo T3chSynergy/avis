@@ -183,6 +183,41 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Scheitert_die_Annahme_mittendrin_gilt_die_Mail_nicht_als_verarbeitet()
+    {
+        // Ein Konto mit Adresse, aber noch ohne Kunde: Bei seiner ersten Mail wird der Kunde nebenbei angelegt
+        // und sofort gespeichert, bevor der Auftrag steht.
+        await app.DatenbankAsync(async db =>
+        {
+            db.Benutzer.Add(new Benutzer { Anmeldename = "nora.neu", Name = "Nora Neu", Email = "nora.neu@example.org" });
+            return await db.SaveChangesAsync();
+        });
+        var mail = Mail("nora.neu@example.org", "Monitor flackert", "Seit heute flackert mein Monitor.");
+
+        // Der erste Versuch bricht ab, gleich nachdem der Kunde gespeichert ist: wie beim Herunterfahren
+        // mitten in der Annahme.
+        using (var scope = app.Services.CreateScope())
+        {
+            using var abbruch = new CancellationTokenSource();
+            scope.ServiceProvider.GetRequiredService<AvisDb>().SavedChanges += (_, _) => abbruch.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => scope.ServiceProvider.GetRequiredService<Mailannahme>().AnnehmenAsync(mail, abbruch.Token));
+        }
+
+        // Von der Mail ist nichts festgehalten. Sonst hielte der nächste Abruf sie für erledigt.
+        Assert.False(await app.DatenbankAsync(db => db.Maileingaenge.AnyAsync(m => m.Von == "nora.neu@example.org")));
+
+        // Der nächste Abruf bringt dieselbe Mail noch einmal. Jetzt wird sie ein Auftrag, für denselben Kunden.
+        var eingang = await AnnehmenAsync(mail);
+
+        Assert.Equal(MaileingangErgebnis.NeuerAuftrag, eingang.Ergebnis);
+        var auftrag = await LadenAsync(eingang.AuftragId!.Value);
+        Assert.Equal("Monitor flackert", auftrag.Betreff);
+        Assert.Equal("Nora Neu", auftrag.Kunde.Name);
+        Assert.Equal(1, await app.DatenbankAsync(db => db.Kunden.CountAsync(k => k.Email == "nora.neu@example.org")));
+    }
+
+    [Fact]
     public async Task Anhaenge_werden_uebernommen_Logos_und_zu_grosse_Dateien_nicht()
     {
         var gestaltet = new BodyBuilder { TextBody = "Siehe Anhang.", HtmlBody = "<p>Siehe Anhang.</p>" };
