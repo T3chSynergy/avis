@@ -34,6 +34,12 @@ public class GeraeteabgleichOptionen
     /// </summary>
     public string Uhrzeit { get; set; } = "02:30";
 
+    /// <summary>
+    /// Ob neben dem Abgleich noch Geräte von Hand angelegt werden dürfen. Mit "false" kommen neue Geräte nur
+    /// noch aus der Quelle. Ohne Abgleich hat die Einstellung keine Wirkung.
+    /// </summary>
+    public bool VonHandAnlegen { get; set; } = true;
+
     public TimeOnly Laufzeit => Abgleichplan.Uhrzeit(Uhrzeit, "Geraeteabgleich:Uhrzeit");
 }
 
@@ -66,12 +72,16 @@ public class Geraeteabgleich(
     IEnumerable<IGeraetequelle> quellen,
     Abgleichprotokoll protokoll,
     Abgleichsperre sperre,
+    IOptions<GeraeteabgleichOptionen> optionen,
     TimeProvider uhr,
     ILogger<Geraeteabgleich> log)
 {
     private readonly IGeraetequelle? _quelle = quellen.FirstOrDefault();
 
     public bool Eingerichtet => _quelle is not null;
+
+    /// <summary>Ob sich Geräte von Hand anlegen lassen: immer ohne Abgleich, mit Abgleich nach der Einstellung.</summary>
+    public bool VonHandAnlegen => !Eingerichtet || optionen.Value.VonHandAnlegen;
 
     public async Task<Abgleichergebnis> AusfuehrenAsync(CancellationToken abbruch = default)
     {

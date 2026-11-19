@@ -2,6 +2,10 @@ using System.Net;
 using Avis.Web.Data;
 using Avis.Web.Domain;
 using Microsoft.EntityFrameworkCore;
+using Avis.Web.Abgleich;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Avis.Tests;
 
@@ -286,6 +290,49 @@ public class GeraeteTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
 
     private Task<int> KundeIdAsync(string name) =>
         app.DatenbankAsync(db => db.Kunden.Where(k => k.Name == name).Select(k => k.Id).FirstAsync());
+
+    [Fact]
+    public async Task Neben_dem_Geraeteabgleich_laesst_sich_das_Anlegen_von_Hand_abschalten()
+    {
+        // In den Tests ist ein Geräteabgleich eingerichtet. Ohne die Einstellung bleibt das Anlegen erlaubt.
+        var anna = await app.AnmeldenAlsAsync("anna");
+        Assert.Contains("Gerät anlegen", await anna.GetStringAsync("/Geraete"));
+        Assert.Contains("Daneben lassen sich weiter Geräte von Hand anlegen", await anna.GetStringAsync("/Verwaltung/Geraeteabgleich"));
+
+        using var nurAusDerQuelle = app.WithWebHostBuilder(b => b.UseSetting("Geraeteabgleich:VonHandAnlegen", "false"));
+        var admin = nurAusDerQuelle.CreateClient();
+        await admin.PostFormularAsync("/Anmeldung", "/Anmeldung", new() { ["anmeldename"] = "anna" });
+
+        // Weder der Verweis noch die Seite, auch nicht auf direktem Weg.
+        Assert.DoesNotContain("Gerät anlegen", await admin.GetStringAsync("/Geraete"));
+        Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync("/Geraete/Bearbeiten")).StatusCode);
+        var anlegen = await admin.PostFormularAsync("/Verwaltung/Gruppen", "/Geraete/Bearbeiten", new()
+        {
+            ["Eingabe.Inventarnummer"] = "HAND-1",
+            ["Eingabe.Bezeichnung"] = "Von Hand",
+        });
+        Assert.Equal(HttpStatusCode.NotFound, anlegen.StatusCode);
+        Assert.False(await app.DatenbankAsync(db => db.Geraete.AnyAsync(g => g.Inventarnummer == "HAND-1")));
+        Assert.Contains("Von Hand werden keine Geräte mehr angelegt", await admin.GetStringAsync("/Verwaltung/Geraeteabgleich"));
+
+        // Was schon von Hand angelegt ist, lässt sich weiter bearbeiten.
+        var notebook = await app.DatenbankAsync(db => db.Geraete.Where(g => g.Inventarnummer == "NB-1017").Select(g => g.Id).SingleAsync());
+        Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync($"/Geraete/Bearbeiten/{notebook}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Ohne_Geraeteabgleich_hat_die_Einstellung_keine_Wirkung()
+    {
+        // Sonst ließe sich in einer Installation ohne Abgleich gar kein Gerät mehr anlegen.
+        using var ohneAbgleich = app.WithWebHostBuilder(b => b
+            .UseSetting("Geraeteabgleich:VonHandAnlegen", "false")
+            .ConfigureTestServices(s => s.RemoveAll<IGeraetequelle>()));
+        var admin = ohneAbgleich.CreateClient();
+        await admin.PostFormularAsync("/Anmeldung", "/Anmeldung", new() { ["anmeldename"] = "anna" });
+
+        Assert.Contains("Gerät anlegen", await admin.GetStringAsync("/Geraete"));
+        Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync("/Geraete/Bearbeiten")).StatusCode);
+    }
 
     private Task<Auftrag> LadenAsync(int id) => app.DatenbankAsync(db => db.Auftraege
         .AsNoTracking()

@@ -11,7 +11,7 @@
         <input id="q" name="q" value="@Model.Q" type="search" autocomplete="off" />
     </div>
     <button type="submit" class="haupt">Suchen</button>
-    @if (User.IstAdministrator())
+    @if (Model.DarfAnlegen)
     {
         <a asp-page="Bearbeiten">Gerät anlegen</a>
     }

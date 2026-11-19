@@ -11,9 +11,10 @@ namespace Avis.Web.Pages.Geraete;
 /// <summary>
 /// Anlegen und Bearbeiten eines Geräts. Nur für Administratoren. Ein Gerät
 /// aus einem externen System wird dort gepflegt und lässt sich hier nicht
-/// ändern.
+/// ändern. Läuft ein Geräteabgleich und ist das Anlegen von Hand abgeschaltet
+/// (Geraeteabgleich:VonHandAnlegen), gibt es die Seite zum Anlegen nicht.
 /// </summary>
-public class BearbeitenModel(AvisDb db) : PageModel
+public class BearbeitenModel(AvisDb db, Abgleich.Geraeteabgleich abgleich) : PageModel
 {
     public class Formular
     {
@@ -50,6 +51,9 @@ public class BearbeitenModel(AvisDb db) : PageModel
 
     public async Task<IActionResult> OnGetAsync(int? id)
     {
+        if (id is null && !abgleich.VonHandAnlegen)
+            return NotFound();
+
         Inventargeraet? geraet = null;
         if (id is not null)
         {
@@ -76,12 +80,18 @@ public class BearbeitenModel(AvisDb db) : PageModel
     /// <summary>Sucht Kunden und zeigt das Formular mit allen Eingaben wieder an.</summary>
     public async Task<IActionResult> OnPostSuchenAsync(int? id)
     {
+        if (id is null && !abgleich.VonHandAnlegen)
+            return NotFound();
+
         ModelState.Clear();
         return await SeiteAsync(id);
     }
 
     public async Task<IActionResult> OnPostAsync(int? id)
     {
+        if (id is null && !abgleich.VonHandAnlegen)
+            return NotFound();
+
         var geraet = await LadenAsync(id);
         if (id is not null && geraet is null)
             return NotFound();

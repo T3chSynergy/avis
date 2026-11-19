@@ -156,7 +156,8 @@ Anliegen aufschreiben, fertig.
    Standort. Die Treffer erscheinen schon beim Tippen. Wähle den Kunden aus.
 2. **Der Kunde ist nicht dabei?** Nach einer Suche steht unter den Treffern „Nicht dabei: neuen Kunden anlegen“. Trag
    dann möglichst auch die E-Mail-Adresse ein: An sie gehen die Mails zum Auftrag, und über sie wird der Kunde später
-   wiedergefunden, sodass kein doppelter Eintrag entsteht.
+   wiedergefunden, sodass kein doppelter Eintrag entsteht. Kommen die Kunden bei euch nur aus dem Verzeichnis, gibt
+   es diese Wahl nicht: Wer in der Suche fehlt, muss dann erst dort eingetragen werden.
 3. **Betreff und Beschreibung.** Beides ist Pflicht. Geräte und andere Aufträge nennst du im Text, siehe Abschnitt 7.
 4. **Dringlichkeit und Wichtigkeit** ergeben die Priorität. Kategorie und Termin sind freiwillig.
 5. **Gruppe.** Vorbelegt ist die Eingangsgruppe. Du kannst den Auftrag gleich in die richtige Gruppe geben und einen

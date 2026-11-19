@@ -8,9 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Kunden;
 
-public class IndexModel(AvisDb db) : PageModel
+public class IndexModel(AvisDb db, Abgleich.Kundenabgleich abgleich) : PageModel
 {
     public const int Hoechstzahl = 50;
+
+    /// <summary>Ob "Kunde anlegen" angeboten wird (Kundenabgleich:VonHandAnlegen).</summary>
+    public bool DarfAnlegen => abgleich.VonHandAnlegen;
 
     public record Zeile(int Id, string Name, string? Email, string? Telefon, string? Organisationseinheit, string? Standort, int Laufend, bool Aktiv);
 
@@ -44,6 +47,9 @@ public class IndexModel(AvisDb db) : PageModel
 
     public async Task<IActionResult> OnPostAsync(string? name, string? email, string? telefon)
     {
+        if (!DarfAnlegen)
+            return NotFound();
+
         var kunde = new Kunde();
         var fehler = await KundeRegeln.UebernehmenAsync(db, kunde, name, email, telefon, organisationseinheit: null, standort: null);
         if (fehler is not null)

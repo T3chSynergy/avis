@@ -6,9 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Avis.Web.Pages.Geraete;
 
-public class IndexModel(AvisDb db) : PageModel
+public class IndexModel(AvisDb db, Abgleich.Geraeteabgleich abgleich) : PageModel
 {
     public const int Hoechstzahl = 100;
+
+    /// <summary>Ob "Gerät anlegen" angeboten wird: nur Administratoren, und nur wenn es neben dem Abgleich erlaubt ist.</summary>
+    public bool DarfAnlegen => User.IstAdministrator() && abgleich.VonHandAnlegen;
 
     public record Zeile(int Id, string Inventarnummer, string Bezeichnung, string? Typ, string? Standort, string? Nutzer, bool Aktiv, int Laufend);
 

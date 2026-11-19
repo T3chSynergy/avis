@@ -36,6 +36,13 @@ public class KundenabgleichOptionen
     /// <summary>Wann der Abgleich täglich läuft, in der Zeitzone der Anwendung, in der Form "02:00".</summary>
     public string Uhrzeit { get; set; } = "02:00";
 
+    /// <summary>
+    /// Ob Bearbeiter neben dem Abgleich noch Kunden von Hand anlegen dürfen, in der Kundenliste und beim
+    /// Erfassen eines Auftrags. Mit "false" kommen neue Kunden nur noch aus der Quelle, und wer sich anmeldet
+    /// oder eine Mail schickt, wird weiterhin von selbst Kunde. Ohne Abgleich hat die Einstellung keine Wirkung.
+    /// </summary>
+    public bool VonHandAnlegen { get; set; } = true;
+
     public TimeOnly Laufzeit => Abgleichplan.Uhrzeit(Uhrzeit, "Kundenabgleich:Uhrzeit");
 }
 
@@ -79,12 +86,16 @@ public class Kundenabgleich(
     IEnumerable<IKundenquelle> quellen,
     Abgleichprotokoll protokoll,
     Abgleichsperre sperre,
+    IOptions<KundenabgleichOptionen> optionen,
     TimeProvider uhr,
     ILogger<Kundenabgleich> log)
 {
     private readonly IKundenquelle? _quelle = quellen.FirstOrDefault();
 
     public bool Eingerichtet => _quelle is not null;
+
+    /// <summary>Ob sich Kunden von Hand anlegen lassen: immer ohne Abgleich, mit Abgleich nach der Einstellung.</summary>
+    public bool VonHandAnlegen => !Eingerichtet || optionen.Value.VonHandAnlegen;
 
     public async Task<Abgleichergebnis> AusfuehrenAsync(CancellationToken abbruch = default)
     {

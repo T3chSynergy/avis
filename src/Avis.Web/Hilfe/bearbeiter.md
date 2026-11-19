@@ -72,7 +72,9 @@ kein Mitglied bist, findet die Suche nicht.
    Treffern „Nicht dabei: neuen Kunden anlegen“. Trag dann möglichst auch die
    E-Mail-Adresse ein: An sie gehen die Mails zum Auftrag, und über sie findet
    der Kundenabgleich den Eintrag später wieder, sodass kein doppelter Kunde
-   entsteht.
+   entsteht. Kommen die Kunden bei euch nur aus dem Verzeichnis, gibt es
+   diese Wahl nicht: Wer in der Suche fehlt, muss dann erst dort eingetragen
+   werden.
 3. **Betreff und Beschreibung.** Beides ist Pflicht. Geräte nennst du im
    Text, siehe [Geräte nennen](#geraete-nennen).
 4. **Dringlichkeit und Wichtigkeit** ergeben die [Priorität](#prioritaet).
@@ -215,6 +217,8 @@ Auftrag für ihn erfassen.
 - Kunden, die nur in AVIS stehen, pflegst du selbst. Wer nicht mehr gebraucht
   wird, lässt sich als inaktiv markieren: Er bleibt mit seinen Aufträgen
   erhalten, steht aber beim Erfassen nicht mehr zur Wahl.
+- Unter der Liste legst du einen neuen Kunden an, sofern das bei euch nicht
+  abgeschaltet ist, weil alle Kunden aus dem Verzeichnis kommen.
 - Eine E-Mail-Adresse gehört immer nur zu einem Kunden.
 - Ist ein Telefonbuch des Hauses angebunden, führt ein Verweis auf der Seite
   des Kunden und am Auftrag zu seinem Eintrag dort. Am Auftrag führt auch der
