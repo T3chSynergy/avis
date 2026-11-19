@@ -13,6 +13,7 @@ Grundlegendes ändern.
 
 | Version | Was dazukam |
 |---|---|
+| 0.2.2 | Anlegen von Hand neben einem Abgleich abschaltbar, Korrekturen aus einer Durchsicht des Codes |
 | 0.2.1 | Favicon auch in einem Unterverzeichnis, Verweis aus der Hilfe auf Kurzvideos und Kurzanleitung |
 | 0.2.0 | Bezug zwischen Aufträgen, E-Mail-Eingang nur für bekannte Absender, Link vom Gerät nach Snipe-IT, Verweis ins Telefonbuch |
 | 0.1.0 | Die erste Version |
@@ -50,6 +51,24 @@ Mit Version 0.2.1 kamen dazu:
 - in der Hilfe für Bearbeiter der Verweis auf die Kurzvideos und die
   Kurzanleitung; Verweise der Hilfe nach außen geben die Adresse der
   Installation nicht weiter
+
+Mit Version 0.2.2 kamen dazu:
+
+- zwei Einstellungen, mit denen sich das Anlegen von Hand neben einem Abgleich
+  abschalten lässt: für Geräte (`Geraeteabgleich:VonHandAnlegen`) und für
+  Kunden (`Kundenabgleich:VonHandAnlegen`)
+- Korrekturen aus einer Durchsicht des Codes:
+  - Sicherheit: Adressen in spitzen Klammern werden nur mit http, https oder
+    mailto zu Links, und die Rollen kommen allein aus der Benutzertabelle von
+    AVIS, unabhängig von gleichnamigen Gruppen in Windows.
+  - Mails: Eine Mail gilt erst als verarbeitet, wenn ihr Auftrag steht.
+    Anhänge ohne ausdrückliche Kennzeichnung werden übernommen, und eine nicht
+    abrufbare Mail hält den Abruf nicht mehr auf.
+  - Abgleiche: Derselbe Abgleich läuft nicht zweimal gleichzeitig. Ein in der
+    Quelle gelöschter und neu angelegter Eintrag wird wiedererkannt.
+  - Oberfläche: kein Auftrag mehr für inaktive Kunden, der Filter nach dem
+    Bearbeiter gilt auch für abgeschlossene Aufträge, und es gibt eine Meldung
+    statt einer Fehlerseite, wenn zwei gleichzeitig am selben Auftrag ändern.
 
 Neben der Anwendung gibt es [Kurzvideos](https://t3chsynergy.github.io/avis/)
 und eine [Kurzanleitung](https://t3chsynergy.github.io/avis/kurzanleitung.html)
