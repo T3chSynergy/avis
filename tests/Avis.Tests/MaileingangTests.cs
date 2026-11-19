@@ -210,6 +210,41 @@ public class MaileingangTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
     }
 
     [Fact]
+    public async Task Auch_Dateien_die_das_Mailprogramm_nicht_als_Anhang_kennzeichnet_werden_uebernommen()
+    {
+        // Manche Mailprogramme schicken ein PDF als "inline", Scanner oft ganz ohne Angabe.
+        var eingebettet = new MimePart("application", "pdf")
+        {
+            Content = new MimeContent(new MemoryStream(new byte[1500])),
+            ContentDisposition = new ContentDisposition(ContentDisposition.Inline) { FileName = "rechnung.pdf" },
+            ContentTransferEncoding = ContentEncoding.Base64,
+        };
+        var ohneAngabe = new MimePart("application", "pdf")
+        {
+            Content = new MimeContent(new MemoryStream(new byte[2500])),
+            ContentTransferEncoding = ContentEncoding.Base64,
+        };
+        ohneAngabe.ContentType.Name = "scan.pdf";
+        var protokoll = new TextPart("plain")
+        {
+            Text = "Zeile 1\r\nZeile 2\r\n",
+            ContentDisposition = new ContentDisposition(ContentDisposition.Inline) { FileName = "protokoll.txt" },
+        };
+        var mail = Mail("gabi.mueller@example.org", "Scan und Rechnung", "");
+        mail.Body = new Multipart("mixed") { new TextPart("plain") { Text = "Beides anbei." }, eingebettet, ohneAngabe, protokoll };
+
+        var eingang = await AnnehmenAsync(mail);
+
+        var id = eingang.AuftragId!.Value;
+        var anhaenge = await app.DatenbankAsync(db => db.Anhaenge.AsNoTracking()
+            .Where(a => a.Verlaufseintrag.AuftragId == id).OrderBy(a => a.Dateiname).ToListAsync());
+        // Der Text der Mail selbst ist kein Anhang.
+        Assert.Equal(["protokoll.txt", "rechnung.pdf", "scan.pdf"], anhaenge.Select(a => a.Dateiname));
+        Assert.Equal([1500, 2500], anhaenge.Skip(1).Select(a => a.Groesse));
+        Assert.Equal("Beides anbei.", (await LadenAsync(id)).Beschreibung);
+    }
+
+    [Fact]
     public async Task Aus_einer_reinen_HTML_Mail_wird_lesbarer_Text()
     {
         var mail = Mail("gabi.mueller@example.org", "Nur HTML", "");

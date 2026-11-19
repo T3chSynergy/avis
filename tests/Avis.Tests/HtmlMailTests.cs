@@ -491,6 +491,44 @@ public class HtmlMailTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains("[Bild: Geheim]", html);
     }
 
+    [Theory]
+    [InlineData("<ul><li>a")]
+    [InlineData("<ol><li>a")]
+    [InlineData("<blockquote>a")]
+    [InlineData("<blockquote><ul><li>a")]
+    public void Tiefe_Verschachtelung_blaeht_den_Text_nicht_auf(string baustein)
+    {
+        // Ohne Grenze wüchse die Einrückung mit jeder Stufe, der Text also mit dem Quadrat der Tiefe.
+        var html = string.Concat(Enumerable.Repeat(baustein, 3000));
+
+        var text = HtmlZuMarkdown.Wandeln(html);
+
+        Assert.Contains("a", text);
+        Assert.True(text.Length < 40 * html.Length, $"Aus {html.Length} Zeichen wurden {text.Length}.");
+    }
+
+    [Fact]
+    public void Wenige_Stufen_bleiben_eingerueckt_wie_bisher()
+    {
+        var text = HtmlZuMarkdown.Wandeln("<ul><li>eins<ul><li>zwei<ul><li>drei</li></ul></li></ul></li></ul>");
+
+        Assert.Equal("- eins\n   - zwei\n      - drei", text);
+    }
+
+    [Fact]
+    public void Ein_uebergrosser_HTML_Teil_wird_nicht_umgewandelt()
+    {
+        var gross = "<p>" + new string('x', Mailtext.HoechstlaengeHtml) + "</p>";
+        var mail = Mail("gabi.mueller@example.org", "Sehr groß", html: gross, text: "Das Wichtige steht hier.");
+
+        Assert.Equal("Das Wichtige steht hier.", Mailtext.Lesen(mail));
+
+        // Ohne Nur-Text-Teil bleibt der Text aus dem HTML, aber ohne die aufwendige Umwandlung.
+        var nurHtml = Mail("gabi.mueller@example.org", "Sehr groß", html: gross, text: "");
+        nurHtml.Body = new TextPart("html") { Text = gross };
+        Assert.Equal(Mailtext.HoechstlaengeHtml, Mailtext.Lesen(nurHtml).Length);
+    }
+
     [Fact]
     public async Task Fehlt_dem_HTML_Teil_der_Inhalt_gilt_der_Nur_Text_Teil()
     {

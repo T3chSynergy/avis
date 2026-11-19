@@ -745,7 +745,13 @@ public sealed partial class HtmlZuMarkdown
         Leerzeile();
     }
 
-    private string Zitatpraefix() => string.Concat(Enumerable.Repeat("> ", _zitat));
+    /// <summary>
+    /// Tiefer als so wird im Text nicht eingerückt. Sonst wüchse er mit dem Quadrat der Verschachtelung: Eine
+    /// Mail aus nichts als ineinandergesteckten Listen oder Zitaten würde aus wenigen Kilobyte viele Megabyte.
+    /// </summary>
+    private const int HoechsteTiefe = 10;
+
+    private string Zitatpraefix() => string.Concat(Enumerable.Repeat("> ", Math.Min(_zitat, HoechsteTiefe)));
 
     /// <summary>Schließt die aktuelle Zeile ab und gibt sie mit ihrem Anfang (Zitat, Listenpunkt, Überschrift) aus.</summary>
     private void ZeileBeenden()
@@ -764,7 +770,7 @@ public sealed partial class HtmlZuMarkdown
         if (_listen.Count > 0 && _listen.Peek().ImPunkt)
         {
             var liste = _listen.Peek();
-            praefix.Append(' ', 3 * (_listen.Count - 1));
+            praefix.Append(' ', 3 * (Math.Min(_listen.Count, HoechsteTiefe) - 1));
             if (liste.NeuerPunkt)
             {
                 var marke = liste.Geordnet ? $"{liste.Zaehler++}. " : "- ";

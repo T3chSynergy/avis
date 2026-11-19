@@ -54,6 +54,31 @@ public class MarkdownTests(AvisAnwendung app) : IClassFixture<AvisAnwendung>
         Assert.Contains("&lt;", html);
     }
 
+    // Die Kurzform in spitzen Klammern ist für Markdig ein anderer Knoten als [Text](Adresse).
+    [Theory]
+    [InlineData("<javascript:alert(1)>")]
+    [InlineData("<JaVaScRiPt:alert(document.cookie)>")]
+    [InlineData("<vbscript:msgbox(1)>")]
+    [InlineData("<data:text/html,x>")]
+    [InlineData("<ftp://example.org/datei>")]
+    [InlineData("Bitte ansehen: <javascript:alert(1)> und melden.")]
+    public void Auch_in_spitzen_Klammern_fuehren_Links_nur_zu_http_https_und_mailto(string text)
+    {
+        var html = Html(text);
+
+        Assert.DoesNotContain("<a", html);
+        Assert.DoesNotContain("href", html);
+        // Der Text bleibt stehen, wie er eingegeben wurde.
+        Assert.Contains("&lt;", html);
+    }
+
+    [Fact]
+    public void Adressen_in_spitzen_Klammern_bleiben_Links_wenn_sie_erlaubt_sind()
+    {
+        Assert.Contains("<a href=\"https://example.org/hilfe\"", Html("<https://example.org/hilfe>"));
+        Assert.Contains("<a href=\"mailto:hotline@example.org\"", Html("<hotline@example.org>"));
+    }
+
     [Theory]
     [InlineData("[klick](javascript:alert(1))")]
     [InlineData("[klick](JaVaScRiPt:alert(1))")]

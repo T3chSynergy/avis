@@ -117,11 +117,16 @@ geschah, steht unter Verwaltung → Posteingang.
   eindeutig ist: fett, kursiv, Überschriften, Links, Listen, Zitate und kleine,
   einfache Tabellen (höchstens 6 Spalten und 30 Zeilen, keine verbundenen
   Zellen, keine Tabelle in der Tabelle). Alles andere wird gewöhnlicher Text:
-  Schriftarten, Farben, Layout-Tabellen wie in Signaturen.
+  Schriftarten, Farben, Layout-Tabellen wie in Signaturen. Listen und Zitate
+  werden höchstens zehn Stufen tief eingerückt. Ein HTML-Teil mit mehr als
+  einer Million Zeichen wird nicht umgewandelt; dann gilt der Nur-Text-Teil
+  der Mail oder, wenn sie keinen hat, der Text ohne Formatierung.
 - Ein Bild im Text der Mail, etwa ein eingefügtes Bildschirmfoto, steht im
   Auftrag an derselben Stelle im Text.
-- Anhänge werden übernommen. Zu große Dateien bleiben weg und werden im
-  Auftrag genannt.
+- Anhänge werden übernommen, auch Dateien, die das Mailprogramm nicht
+  ausdrücklich als Anhang kennzeichnet (manche schicken ein PDF als Teil des
+  Textes, Scanner oft ganz ohne Angabe). Zu große Dateien bleiben weg und
+  werden im Auftrag genannt.
 - Logos in Signaturen bleiben weg. Als Logo gilt ein Bild im Text, das als
   Datei klein ist (`Posteingang:BilderImTextAbKb`) und höchstens 300 × 120
   Bildpunkte misst. Ein eingefügtes Bildschirmfoto ist fast immer breiter
